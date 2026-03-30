@@ -82,30 +82,36 @@ Deploy the `backend` folder as the Railway service root directory.
 
 Required Railway environment variables:
 
-- `PORT`
+- `JWT_SECRET`
+- `CORS_ORIGINS`
+
+Database configuration, choose one:
+
+- Preferred: link a Railway PostgreSQL service so Railway injects `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, and `PGPASSWORD`
+- Or set `DATABASE_URL` manually
+
+Do not set these local fallback variables on Railway unless you intentionally want to override the linked database:
+
 - `DATABASE_HOST`
 - `DATABASE_PORT`
 - `DATABASE_NAME`
 - `DATABASE_USER`
 - `DATABASE_PASSWORD`
-- `JWT_SECRET`
-- `JWT_EXPIRE`
-- `CORS_ORIGINS`
-- `CORS_ORIGIN_PATTERNS`
-- `VERIFY_EMAIL_BASE_URL`
-- `SMTP_HOST`
-- `SMTP_PORT`
-- `SMTP_SECURE`
-- `SMTP_USER`
-- `SMTP_PASSWORD`
-- `SMTP_FROM_EMAIL`
-- `SMTP_FROM_NAME`
+
+If those are set to values like `localhost`, the backend will fail to boot on Railway with a refused database connection.
 
 Recommended production values:
 
 - `CORS_ORIGINS=https://<your-vercel-domain>`
 - `CORS_ORIGIN_PATTERNS=https://*.vercel.app`
 - `VERIFY_EMAIL_BASE_URL=https://<your-railway-domain>/api/auth/verify-email`
+
+Optional for temporary hosting with existing profiles only:
+
+- `VERIFY_EMAIL_BASE_URL`
+- all `SMTP_*` variables
+
+If the frontend is deployed with `VITE_ENABLE_SIGNUP=false`, existing users can sign in without SMTP being configured.
 
 Railway start command:
 
@@ -128,6 +134,7 @@ Deploy the `frontend` folder as the Vercel project root.
 Required Vercel environment variable:
 
 - `VITE_API_URL=https://<your-railway-domain>/api`
+- `VITE_ENABLE_SIGNUP=false`
 
 Build settings:
 

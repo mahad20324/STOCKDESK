@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { login, signup } from '../utils/api';
 import { saveSession } from '../utils/auth';
 
+const signupEnabled = String(import.meta.env.VITE_ENABLE_SIGNUP || 'false').toLowerCase() === 'true';
+
 export default function Login() {
   const [mode, setMode] = useState('login');
   const [loginInput, setLoginInput] = useState('mahad');
@@ -75,7 +77,7 @@ export default function Login() {
           <p className="mt-2 text-slate-500">Secure inventory and POS access for single or multi-shop teams</p>
         </div>
 
-        <div className="mb-6 grid grid-cols-2 rounded-3xl bg-slate-100 p-1">
+        <div className={`mb-6 grid rounded-3xl bg-slate-100 p-1 ${signupEnabled ? 'grid-cols-2' : 'grid-cols-1'}`}>
           <button
             type="button"
             onClick={() => {
@@ -89,19 +91,21 @@ export default function Login() {
           >
             Sign In
           </button>
-          <button
-            type="button"
-            onClick={() => {
-              setMode('signup');
-              setError('');
-              setSuccess('');
-            }}
-            className={`rounded-3xl px-4 py-3 text-sm font-semibold transition ${
-              mode === 'signup' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'
-            }`}
-          >
-            Create Shop
-          </button>
+          {signupEnabled ? (
+            <button
+              type="button"
+              onClick={() => {
+                setMode('signup');
+                setError('');
+                setSuccess('');
+              }}
+              className={`rounded-3xl px-4 py-3 text-sm font-semibold transition ${
+                mode === 'signup' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'
+              }`}
+            >
+              Create Shop
+            </button>
+          ) : null}
         </div>
 
         {mode === 'login' ? (
@@ -125,6 +129,11 @@ export default function Login() {
 
             {error && <div className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
             {success && <div className="rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{success}</div>}
+            {!signupEnabled && (
+              <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                Shop signup is temporarily disabled on this hosted build. Sign in with an existing profile.
+              </div>
+            )}
 
             <button
               type="submit"
