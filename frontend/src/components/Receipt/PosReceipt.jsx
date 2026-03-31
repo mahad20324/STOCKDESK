@@ -14,6 +14,17 @@ function escapeHtml(value) {
     .replace(/'/g, '&#39;');
 }
 
+function formatMoneyValue(value) {
+  return Number.parseFloat(value || 0).toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+function formatMoney(currency, value) {
+  return `${currency} ${formatMoneyValue(value)}`;
+}
+
 export default function PosReceipt({ sale, settings, cashierName, onClose }) {
   const [receiptData, setReceiptData] = useState(null);
   const shopName = settings?.shop?.name || settings?.shopName || 'StockDesk';
@@ -32,10 +43,10 @@ export default function PosReceipt({ sale, settings, cashierName, onClose }) {
     const vatAmount = (sale.total * vatRate / (1 + vatRate)).toFixed(2);
 
     setReceiptData({
-      subtotal: subtotal.toFixed(2),
-      discount: parseFloat(sale.discount || 0).toFixed(2),
-      total: parseFloat(sale.total).toFixed(2),
-      vat: vatAmount,
+      subtotal: subtotal,
+      discount: parseFloat(sale.discount || 0),
+      total: parseFloat(sale.total),
+      vat: Number(vatAmount),
       vatPercent: settings.vat || 0,
       currency: sale.currency || settings.currency || 'USD',
     });
@@ -56,9 +67,9 @@ export default function PosReceipt({ sale, settings, cashierName, onClose }) {
             <div class="item-head">
               <span class="qty">${escapeHtml(item.quantity)}</span>
               <span class="desc">${escapeHtml(item.Product?.name || item.name || 'Item')}</span>
-              <span class="amount">${escapeHtml(settings.currency)} ${escapeHtml(lineTotal)}</span>
+              <span class="amount">${escapeHtml(formatMoney(receiptData.currency, lineTotal))}</span>
             </div>
-            <div class="item-sub">@ ${escapeHtml(settings.currency)} ${escapeHtml(parseFloat(item.price).toFixed(2))} ea</div>
+            <div class="item-sub">@ ${escapeHtml(formatMoney(receiptData.currency, item.price))} ea</div>
           </div>
         `;
       })
@@ -66,8 +77,8 @@ export default function PosReceipt({ sale, settings, cashierName, onClose }) {
 
     const hasDiscount = parseFloat(sale.discount || 0) > 0;
     const hasVat = parseFloat(settings.vat || 0) > 0;
-    const discountRow = `<div class="summary-row ${hasDiscount ? 'discount' : 'muted-row'}"><span>Discount</span><span>${hasDiscount ? '-' : ''} ${escapeHtml(receiptData.currency)} ${escapeHtml(receiptData.discount)}</span></div>`;
-    const vatRow = `<div class="summary-row ${hasVat ? '' : 'muted-row'}"><span>VAT @ ${escapeHtml(settings.vat || 0)}%</span><span>${escapeHtml(receiptData.currency)} ${escapeHtml(receiptData.vat)}</span></div>`;
+    const discountRow = `<div class="summary-row ${hasDiscount ? 'discount' : 'muted-row'}"><span>Discount</span><span>${hasDiscount ? '- ' : ''}${escapeHtml(formatMoney(receiptData.currency, receiptData.discount))}</span></div>`;
+    const vatRow = `<div class="summary-row ${hasVat ? '' : 'muted-row'}"><span>VAT @ ${escapeHtml(settings.vat || 0)}%</span><span>${escapeHtml(formatMoney(receiptData.currency, receiptData.vat))}</span></div>`;
     const footerText = settings.receiptFooter ? `<p class="footer-note">${escapeHtml(settings.receiptFooter)}</p>` : '';
 
     const printWindow = window.open('', '_blank', 'width=420,height=760');
@@ -242,10 +253,10 @@ export default function PosReceipt({ sale, settings, cashierName, onClose }) {
 
             <section class="summary-card">
               <p class="summary-title">Receipt Summary</p>
-              <div class="summary-row"><span>Subtotal</span><span class="money">${escapeHtml(receiptData.currency)} ${escapeHtml(receiptData.subtotal)}</span></div>
+              <div class="summary-row"><span>Subtotal</span><span class="money">${escapeHtml(formatMoney(receiptData.currency, receiptData.subtotal))}</span></div>
               ${discountRow}
               ${vatRow}
-              <div class="total-row"><span>TOTAL</span><span class="money">${escapeHtml(receiptData.currency)} ${escapeHtml(receiptData.total)}</span></div>
+              <div class="total-row"><span>TOTAL</span><span class="money">${escapeHtml(formatMoney(receiptData.currency, receiptData.total))}</span></div>
             </section>
 
             <div class="divider"></div>
@@ -279,10 +290,9 @@ export default function PosReceipt({ sale, settings, cashierName, onClose }) {
   const receiptNumber = sale.receipt?.receiptNumber || sale.id;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 no-print" onClick={onClose}>
-      <div className="bg-white w-full max-w-md rounded-[28px] shadow-2xl">
-        {/* Print Container */}
-        <div className="p-7 print:p-0 print:rounded-none print:shadow-none print:max-w-none" onClick={(event) => event.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 p-3 sm:items-center sm:p-4 no-print" onClick={onClose}>
+      <div className="flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-[28px] bg-white shadow-2xl" onClick={(event) => event.stopPropagation()}>
+        <div className="overflow-y-auto px-5 py-5 sm:px-7 sm:py-7 print:p-0 print:rounded-none print:shadow-none print:max-w-none">
           {/* Receipt Header */}
           <div className="mb-5 rounded-[24px] bg-[#1f7a8c] px-5 py-5 text-white">
             <div className="flex items-start justify-between gap-4">
@@ -336,11 +346,11 @@ export default function PosReceipt({ sale, settings, cashierName, onClose }) {
                   <span className="font-semibold">{item.quantity}</span>
                   <span className="pr-2 font-medium">{item.Product?.name}</span>
                   <span className="text-right font-semibold font-mono tabular-nums">
-                    {receiptData.currency} {(parseFloat(item.price) * item.quantity).toFixed(2)}
+                    {formatMoney(receiptData.currency, parseFloat(item.price) * item.quantity)}
                   </span>
                 </div>
                 <div className="pl-[48px] pt-1 text-xs text-slate-500 font-mono tabular-nums">
-                  @ {receiptData.currency} {parseFloat(item.price).toFixed(2)} ea
+                  @ {formatMoney(receiptData.currency, item.price)} ea
                 </div>
               </div>
             ))}
@@ -360,21 +370,21 @@ export default function PosReceipt({ sale, settings, cashierName, onClose }) {
                 <div className="flex justify-between px-4 py-3 text-sm">
                   <span className="text-slate-600">Subtotal</span>
                   <span className="font-semibold text-slate-900 font-mono tabular-nums">
-                    {receiptData.currency} {receiptData.subtotal}
+                    {formatMoney(receiptData.currency, receiptData.subtotal)}
                   </span>
                 </div>
 
                 <div className={`flex justify-between px-4 py-3 text-sm ${parseFloat(sale.discount) > 0 ? 'text-rose-700' : 'text-slate-400'}`}>
                   <span>Discount</span>
                   <span className="font-semibold font-mono tabular-nums">
-                    {parseFloat(sale.discount) > 0 ? '-' : ''}{receiptData.currency} {receiptData.discount}
+                    {parseFloat(sale.discount) > 0 ? '- ' : ''}{formatMoney(receiptData.currency, receiptData.discount)}
                   </span>
                 </div>
 
                 <div className={`flex justify-between px-4 py-3 text-sm ${parseFloat(settings.vat) > 0 ? 'text-slate-600' : 'text-slate-400'}`}>
                   <span>VAT @ {settings.vat || 0}%</span>
                   <span className="font-semibold text-slate-900 font-mono tabular-nums">
-                    {receiptData.currency} {receiptData.vat}
+                    {formatMoney(receiptData.currency, receiptData.vat)}
                   </span>
                 </div>
               </div>
@@ -382,7 +392,7 @@ export default function PosReceipt({ sale, settings, cashierName, onClose }) {
               <div className="mt-3 flex justify-between rounded-2xl bg-[#0f766e] px-4 py-4 text-lg font-bold text-white shadow-sm">
                 <span>TOTAL</span>
                 <span className="font-mono tabular-nums">
-                  {receiptData.currency} {receiptData.total}
+                  {formatMoney(receiptData.currency, receiptData.total)}
                 </span>
               </div>
             </div>
@@ -394,21 +404,21 @@ export default function PosReceipt({ sale, settings, cashierName, onClose }) {
             <p className="mt-1 text-xs text-slate-500">Please keep this receipt for your records.</p>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-3 justify-center no-print">
-            <button
-              onClick={handlePrint}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition"
-            >
-              Print
-            </button>
-            <button
-              onClick={onClose}
-              className="px-4 py-2 bg-slate-200 text-slate-900 rounded-lg text-sm font-medium hover:bg-slate-300 transition"
-            >
-              Close
-            </button>
-          </div>
+        </div>
+
+        <div className="sticky bottom-0 flex justify-end gap-3 border-t border-slate-200 bg-white px-5 py-4 sm:px-7 no-print">
+          <button
+            onClick={onClose}
+            className="rounded-2xl bg-slate-200 px-4 py-2 text-sm font-medium text-slate-900 transition hover:bg-slate-300"
+          >
+            Close
+          </button>
+          <button
+            onClick={handlePrint}
+            className="rounded-2xl bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+          >
+            Print Receipt
+          </button>
         </div>
 
         {/* Print Styles */}
@@ -449,6 +459,9 @@ export default function PosReceipt({ sale, settings, cashierName, onClose }) {
             .w-full {
               width: 80mm;
               margin: 0 auto;
+            }
+            .sticky {
+              position: static;
             }
           }
         `}</style>
