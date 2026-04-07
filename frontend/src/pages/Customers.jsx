@@ -132,13 +132,13 @@ export default function Customers() {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Search customers"
-              className="w-full max-w-xs rounded-lg border border-slate-200 bg-[#F9FAFB] px-4 py-3 text-sm outline-none transition focus:border-[#2563EB] focus:bg-white"
+              className="w-full max-w-xs rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 text-sm outline-none transition focus:border-[#2FA8C6] focus:bg-white"
             />
           </div>
 
           <div className="mt-6 overflow-x-auto rounded-lg border border-slate-200">
             <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
-              <thead className="bg-[#F9FAFB] text-[#6B7280]">
+              <thead className="bg-[#F5FAFD] text-[#6B7280]">
                 <tr>
                   <th className="px-4 py-3 font-medium">Customer</th>
                   <th className="px-4 py-3 font-medium">Contact</th>
@@ -155,7 +155,7 @@ export default function Customers() {
                 ) : filteredCustomers.length === 0 ? (
                   <tr>
                     <td className="px-4 py-8" colSpan="5">
-                      <div className="rounded-lg border border-dashed border-slate-200 bg-[#F9FAFB] px-4 py-8 text-center">
+                      <div className="rounded-lg border border-dashed border-slate-200 bg-[#F5FAFD] px-4 py-8 text-center">
                         <p className="text-sm font-medium text-[#111827]">No customers found</p>
                         <p className="mt-2 text-sm text-[#6B7280]">Try a different search or create a new customer profile.</p>
                       </div>
@@ -163,7 +163,7 @@ export default function Customers() {
                   </tr>
                 ) : (
                   filteredCustomers.map((customer) => (
-                    <tr key={customer.id} className="transition hover:bg-[#F9FAFB]">
+                    <tr key={customer.id} className="transition hover:bg-[#F5FAFD]">
                       <td className="px-4 py-4">
                         <div>
                           <p className="font-semibold text-[#111827]">{customer.name}</p>
@@ -193,14 +193,14 @@ export default function Customers() {
                               notes: customer.notes || '',
                               isActive: customer.isActive !== false,
                             })}
-                            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-[#374151] transition hover:bg-[#F9FAFB]"
+                            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-[#374151] transition hover:bg-[#F5FAFD]"
                           >
                             Edit
                           </button>
                           <button
                             type="button"
                             onClick={() => handleDelete(customer)}
-                            className="rounded-lg bg-[#FEF2F2] px-3 py-2 text-xs font-medium text-[#DC2626] transition hover:bg-[#FEE2E2] disabled:opacity-50"
+                            className="rounded-lg bg-[#FFF1F0] px-3 py-2 text-xs font-medium text-[#F97066] transition hover:bg-[#FCE1DE] disabled:opacity-50"
                             disabled={!canDelete}
                           >
                             Delete
@@ -225,7 +225,7 @@ export default function Customers() {
               <button
                 type="button"
                 onClick={resetForm}
-                className="rounded-lg border border-slate-200 px-4 py-2 text-xs font-medium text-[#374151] transition hover:bg-[#F9FAFB]"
+                className="rounded-lg border border-slate-200 px-4 py-2 text-xs font-medium text-[#374151] transition hover:bg-[#F5FAFD]"
               >
                 New Customer
               </button>
@@ -237,34 +237,34 @@ export default function Customers() {
               value={form.name}
               onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
               placeholder="Customer name"
-              className="w-full rounded-lg border border-slate-200 bg-[#F9FAFB] px-4 py-3 outline-none transition focus:border-[#2563EB] focus:bg-white"
+              className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white"
             />
             <input
               value={form.phone}
               onChange={(event) => setForm((prev) => ({ ...prev, phone: event.target.value }))}
               placeholder="Phone number"
-              className="w-full rounded-lg border border-slate-200 bg-[#F9FAFB] px-4 py-3 outline-none transition focus:border-[#2563EB] focus:bg-white"
+              className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white"
             />
             <input
               value={form.email}
               onChange={(event) => setForm((prev) => ({ ...prev, email: event.target.value }))}
               placeholder="Email address"
-              className="w-full rounded-lg border border-slate-200 bg-[#F9FAFB] px-4 py-3 outline-none transition focus:border-[#2563EB] focus:bg-white"
+              className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white"
             />
             <input
               value={form.address}
               onChange={(event) => setForm((prev) => ({ ...prev, address: event.target.value }))}
               placeholder="Address"
-              className="w-full rounded-lg border border-slate-200 bg-[#F9FAFB] px-4 py-3 outline-none transition focus:border-[#2563EB] focus:bg-white"
+              className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white"
             />
             <textarea
               value={form.notes}
               onChange={(event) => setForm((prev) => ({ ...prev, notes: event.target.value }))}
               placeholder="Notes about this customer"
               rows="4"
-              className="w-full rounded-lg border border-slate-200 bg-[#F9FAFB] px-4 py-3 outline-none transition focus:border-[#2563EB] focus:bg-white"
+              className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white"
             />
-            <label className="flex items-center gap-3 rounded-lg border border-slate-200 bg-[#F9FAFB] px-4 py-3 text-sm text-[#374151]">
+            <label className="flex items-center gap-3 rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 text-sm text-[#374151]">
               <input
                 type="checkbox"
                 checked={form.isActive}
@@ -272,13 +272,13 @@ export default function Customers() {
               />
               Customer is active and available for new sales.
             </label>
-            <button className="w-full rounded-lg bg-[#2563EB] px-4 py-3 text-white transition hover:bg-[#1D4ED8]">
+            <button className="w-full rounded-lg bg-[#2FA8C6] px-4 py-3 text-white transition hover:bg-[#258EA8]">
               {form.id ? 'Save Changes' : 'Create Customer'}
             </button>
           </form>
 
           {message ? (
-            <div className={`mt-4 rounded-lg px-4 py-3 text-sm ${message.includes('successfully') ? 'bg-[#F0FDF4] text-[#166534]' : 'bg-[#FEF2F2] text-[#991B1B]'}`}>
+            <div className={`mt-4 rounded-lg px-4 py-3 text-sm ${message.includes('successfully') ? 'bg-[#E9FBF4] text-[#1E8E65]' : 'bg-[#FFF1F0] text-[#C84E47]'}`}>
               {message}
             </div>
           ) : null}

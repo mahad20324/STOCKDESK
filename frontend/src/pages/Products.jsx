@@ -11,9 +11,9 @@ function formatMoney(currency, value) {
 function StatTile({ label, value, tone = 'default' }) {
   const tones = {
     default: 'text-[#111827] bg-white',
-    success: 'text-[#16A34A] bg-[#F0FDF4]',
-    danger: 'text-[#DC2626] bg-[#FEF2F2]',
-    warning: 'text-[#F59E0B] bg-[#FFFBEB]',
+    success: 'text-[#26B07C] bg-[#E9FBF4]',
+    danger: 'text-[#F97066] bg-[#FFF1F0]',
+    warning: 'text-[#E8A34E] bg-[#FFF8EC]',
   };
 
   return (
@@ -119,7 +119,7 @@ export default function Products() {
         </div>
 
         {!isAdmin ? (
-          <div className="mt-5 rounded-lg border border-slate-200 bg-[#F9FAFB] px-4 py-3 text-sm text-[#6B7280]">
+          <div className="mt-5 rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 text-sm text-[#6B7280]">
             Cashiers have read-only access here. Admins can add, edit, and delete products.
           </div>
         ) : null}
@@ -144,7 +144,7 @@ export default function Products() {
               <h3 className="text-lg font-semibold text-[#111827]">{editingId ? 'Update Product' : 'Add Product'}</h3>
               <p className="mt-1 text-sm text-[#6B7280]">Keep stock counts and pricing accurate for smooth sales and reporting.</p>
             </div>
-            <div className="rounded-lg bg-[#F9FAFB] px-3 py-2 text-sm text-[#6B7280]">Stock value: {formatMoney(currency, stockValue)}</div>
+            <div className="rounded-lg bg-[#F5FAFD] px-3 py-2 text-sm text-[#6B7280]">Stock value: {formatMoney(currency, stockValue)}</div>
           </div>
 
           <form className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3" onSubmit={saveProduct}>
@@ -154,7 +154,7 @@ export default function Products() {
                 placeholder="e.g. Premium Rice"
                 value={form.name}
                 onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
-                className="w-full rounded-lg border border-slate-200 bg-[#F9FAFB] px-4 py-3 outline-none transition focus:border-[#2563EB] focus:bg-white"
+                className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white"
               />
             </label>
             <label className="space-y-2 text-sm text-[#374151]">
@@ -163,7 +163,7 @@ export default function Products() {
                 placeholder="e.g. Grocery"
                 value={form.category}
                 onChange={(e) => setForm((prev) => ({ ...prev, category: e.target.value }))}
-                className="w-full rounded-lg border border-slate-200 bg-[#F9FAFB] px-4 py-3 outline-none transition focus:border-[#2563EB] focus:bg-white"
+                className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white"
               />
             </label>
             <label className="space-y-2 text-sm text-[#374151]">
@@ -174,7 +174,7 @@ export default function Products() {
                 step="0.01"
                 value={form.buyPrice}
                 onChange={(e) => setForm((prev) => ({ ...prev, buyPrice: e.target.value }))}
-                className="w-full rounded-lg border border-slate-200 bg-[#F9FAFB] px-4 py-3 outline-none transition focus:border-[#2563EB] focus:bg-white"
+                className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white"
               />
             </label>
             <label className="space-y-2 text-sm text-[#374151]">
@@ -185,7 +185,7 @@ export default function Products() {
                 step="0.01"
                 value={form.sellPrice}
                 onChange={(e) => setForm((prev) => ({ ...prev, sellPrice: e.target.value }))}
-                className="w-full rounded-lg border border-slate-200 bg-[#F9FAFB] px-4 py-3 outline-none transition focus:border-[#2563EB] focus:bg-white"
+                className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white"
               />
             </label>
             <label className="space-y-2 text-sm text-[#374151]">
@@ -195,7 +195,7 @@ export default function Products() {
                 type="number"
                 value={form.quantity}
                 onChange={(e) => setForm((prev) => ({ ...prev, quantity: Number(e.target.value) }))}
-                className="w-full rounded-lg border border-slate-200 bg-[#F9FAFB] px-4 py-3 outline-none transition focus:border-[#2563EB] focus:bg-white"
+                className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white"
               />
             </label>
             <label className="space-y-2 text-sm text-[#374151]">
@@ -205,11 +205,11 @@ export default function Products() {
                 type="number"
                 value={form.lowStock}
                 onChange={(e) => setForm((prev) => ({ ...prev, lowStock: Number(e.target.value) }))}
-                className="w-full rounded-lg border border-slate-200 bg-[#F9FAFB] px-4 py-3 outline-none transition focus:border-[#2563EB] focus:bg-white"
+                className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white"
               />
             </label>
             <div className="md:col-span-2 xl:col-span-3 flex flex-wrap gap-3 pt-2">
-              <button className="rounded-lg bg-[#2563EB] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#1D4ED8]">
+              <button className="rounded-lg bg-[#2FA8C6] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#258EA8]">
                 {editingId ? 'Update Product' : 'Add Product'}
               </button>
               {editingId ? (
@@ -219,7 +219,7 @@ export default function Products() {
                     setEditingId(null);
                     setForm(emptyForm);
                   }}
-                  className="rounded-lg border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-[#374151] transition hover:bg-[#F9FAFB]"
+                  className="rounded-lg border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-[#374151] transition hover:bg-[#F5FAFD]"
                 >
                   Cancel Editing
                 </button>
@@ -235,7 +235,7 @@ export default function Products() {
             <h3 className="text-lg font-semibold text-[#111827]">Inventory List</h3>
             <p className="mt-1 text-sm text-[#6B7280]">Current stock, pricing, and reorder thresholds.</p>
           </div>
-          <div className="rounded-lg bg-[#F9FAFB] px-3 py-2 text-sm text-[#6B7280]">{currency} pricing shown per item</div>
+          <div className="rounded-lg bg-[#F5FAFD] px-3 py-2 text-sm text-[#6B7280]">{currency} pricing shown per item</div>
         </div>
 
         {loading ? (
@@ -245,14 +245,14 @@ export default function Products() {
             ))}
           </div>
         ) : products.length === 0 ? (
-          <div className="mt-5 rounded-lg border border-dashed border-slate-200 bg-[#F9FAFB] px-4 py-10 text-center">
+          <div className="mt-5 rounded-lg border border-dashed border-slate-200 bg-[#F5FAFD] px-4 py-10 text-center">
             <p className="text-sm font-medium text-[#111827]">No products yet</p>
             <p className="mt-2 text-sm text-[#6B7280]">Add your first product to begin tracking inventory and sales.</p>
           </div>
         ) : (
           <div className="mt-5 overflow-x-auto rounded-lg border border-slate-200">
             <table className="min-w-full text-left text-sm">
-              <thead className="bg-[#F9FAFB] text-[#6B7280]">
+              <thead className="bg-[#F5FAFD] text-[#6B7280]">
                 <tr>
                   <th className="px-4 py-3 font-medium">Name</th>
                   <th className="px-4 py-3 font-medium">Category</th>
@@ -267,13 +267,13 @@ export default function Products() {
                 {products.map((product) => {
                   const isLow = Number(product.quantity || 0) <= Math.max(5, Number(product.lowStock || 0));
                   return (
-                    <tr key={product.id} className="transition hover:bg-[#F9FAFB]">
+                    <tr key={product.id} className="transition hover:bg-[#F5FAFD]">
                       <td className="px-4 py-3 font-medium text-[#111827]">{product.name}</td>
                       <td className="px-4 py-3 text-[#6B7280]">{product.category || 'Uncategorized'}</td>
                       <td className="px-4 py-3 text-[#6B7280]">{formatMoney(currency, product.buyPrice)}</td>
                       <td className="px-4 py-3 text-[#111827]">{formatMoney(currency, product.sellPrice)}</td>
                       <td className="px-4 py-3">
-                        <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${isLow ? 'bg-[#FEF2F2] text-[#DC2626]' : 'bg-[#F0FDF4] text-[#166534]'}`}>
+                        <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${isLow ? 'bg-[#FFF1F0] text-[#F97066]' : 'bg-[#E9FBF4] text-[#1E8E65]'}`}>
                           {product.quantity}
                         </span>
                       </td>
@@ -284,14 +284,14 @@ export default function Products() {
                             <button
                               type="button"
                               onClick={() => editProduct(product)}
-                              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-[#374151] transition hover:bg-[#F9FAFB]"
+                              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-[#374151] transition hover:bg-[#F5FAFD]"
                             >
                               Edit
                             </button>
                             <button
                               type="button"
                               onClick={() => removeProduct(product.id)}
-                              className="rounded-lg bg-[#FEF2F2] px-3 py-1.5 text-sm text-[#DC2626] transition hover:bg-[#FEE2E2]"
+                              className="rounded-lg bg-[#FFF1F0] px-3 py-1.5 text-sm text-[#F97066] transition hover:bg-[#FCE1DE]"
                             >
                               Delete
                             </button>

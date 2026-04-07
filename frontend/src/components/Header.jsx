@@ -39,7 +39,7 @@ export default function Header({ user, onLogout, onOpenSidebar }) {
           <p className="text-sm font-medium text-[#111827]">{user?.name || 'Cashier'}</p>
           <p className="text-xs text-[#6B7280]">{user?.role || 'User'}</p>
         </div>
-        <button onClick={onLogout} className="rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#1D4ED8]">
+        <button onClick={onLogout} className="rounded-lg bg-[#2FA8C6] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#258EA8]">
           Logout
         </button>
       </div>

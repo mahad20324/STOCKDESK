@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { fetchReports, fetchBestSelling, fetchCashierReport, fetchSettings } from '../utils/api';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, CartesianGrid } from 'recharts';
 
-const colors = ['#2563EB', '#60A5FA', '#93C5FD', '#1D4ED8', '#DBEAFE'];
+const colors = ['#2FA8C6', '#7DD3E6', '#BEEAF4', '#26B07C', '#A7E7CB'];
 
 function formatMoney(currency, value) {
   return `${currency} ${Number(value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -32,7 +32,7 @@ function SectionCard({ title, subtitle, children }) {
 
 function EmptyState({ title, message }) {
   return (
-    <div className="rounded-lg border border-dashed border-slate-200 bg-[#F9FAFB] px-4 py-10 text-center">
+    <div className="rounded-lg border border-dashed border-slate-200 bg-[#F5FAFD] px-4 py-10 text-center">
       <p className="text-sm font-medium text-[#111827]">{title}</p>
       <p className="mt-2 text-sm text-[#6B7280]">{message}</p>
     </div>
@@ -121,7 +121,7 @@ export default function Reports() {
                     <XAxis dataKey="name" stroke="#6B7280" tickLine={false} axisLine={false} />
                     <YAxis stroke="#6B7280" tickLine={false} axisLine={false} />
                     <Tooltip formatter={(value) => formatMoney(currency, value)} />
-                    <Bar dataKey="total" fill="#2563EB" radius={[8, 8, 0, 0]} />
+                    <Bar dataKey="total" fill="#2FA8C6" radius={[8, 8, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -147,7 +147,7 @@ export default function Reports() {
                 </div>
                 <div className="mt-4 space-y-2">
                   {bestProductData.map((item, index) => (
-                    <div key={item.name} className="flex items-center justify-between rounded-lg bg-[#F9FAFB] px-3 py-2 text-sm">
+                    <div key={item.name} className="flex items-center justify-between rounded-lg bg-[#F5FAFD] px-3 py-2 text-sm">
                       <div className="flex items-center gap-3">
                         <span className="h-3 w-3 rounded-full" style={{ backgroundColor: colors[index % colors.length] }} />
                         <span className="text-[#111827]">{item.name}</span>
@@ -172,13 +172,13 @@ export default function Reports() {
                       <XAxis type="number" stroke="#6B7280" tickLine={false} axisLine={false} />
                       <YAxis type="category" dataKey="name" stroke="#6B7280" tickLine={false} axisLine={false} width={90} />
                       <Tooltip formatter={(value) => formatMoney(currency, value)} />
-                      <Bar dataKey="revenue" fill="#2563EB" radius={[8, 8, 8, 8]} />
+                      <Bar dataKey="revenue" fill="#2FA8C6" radius={[8, 8, 8, 8]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
                 <div className="mt-4 space-y-2">
                   {cashierData.map((item) => (
-                    <div key={item.name} className="flex items-center justify-between rounded-lg bg-[#F9FAFB] px-3 py-2 text-sm">
+                    <div key={item.name} className="flex items-center justify-between rounded-lg bg-[#F5FAFD] px-3 py-2 text-sm">
                       <span className="text-[#111827]">{item.name}</span>
                       <span className="font-medium text-[#6B7280]">{formatMoney(currency, item.revenue)}</span>
                     </div>

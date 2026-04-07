@@ -178,17 +178,17 @@ function SectionCard({ title, subtitle, children, danger = false }) {
 }
 
 function statusClasses(message) {
-  if (!message) return 'bg-[#F9FAFB] text-[#374151]';
+  if (!message) return 'bg-[#F5FAFD] text-[#374151]';
 
   const lowered = message.toLowerCase();
   if (lowered.includes('success') || lowered.includes('saved') || lowered.includes('configured') || lowered.includes('sent')) {
-    return 'bg-[#F0FDF4] text-[#166534]';
+    return 'bg-[#E9FBF4] text-[#1E8E65]';
   }
   if (lowered.includes('error') || lowered.includes('failed')) {
-    return 'bg-[#FEF2F2] text-[#991B1B]';
+    return 'bg-[#FFF1F0] text-[#C84E47]';
   }
 
-  return 'bg-[#F9FAFB] text-[#374151]';
+  return 'bg-[#F5FAFD] text-[#374151]';
 }
 
 export default function Settings() {
@@ -308,7 +308,7 @@ export default function Settings() {
         </p>
 
         {!isAdmin ? (
-          <div className="mt-5 rounded-lg border border-slate-200 bg-[#F9FAFB] px-4 py-3 text-sm text-[#6B7280]">
+          <div className="mt-5 rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 text-sm text-[#6B7280]">
             You have read-only access to this page.
           </div>
         ) : null}
@@ -332,7 +332,7 @@ export default function Settings() {
                   value={settings.shopName}
                   onChange={(e) => setSettings((prev) => ({ ...prev, shopName: e.target.value }))}
                   disabled={!isAdmin}
-                  className="w-full rounded-lg border border-slate-200 bg-[#F9FAFB] px-4 py-3 outline-none transition focus:border-[#2563EB] focus:bg-white disabled:cursor-not-allowed"
+                  className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white disabled:cursor-not-allowed"
                 />
               </label>
               <label className="space-y-2 text-sm text-[#374151]">
@@ -341,7 +341,7 @@ export default function Settings() {
                   value={settings.phone}
                   onChange={(e) => setSettings((prev) => ({ ...prev, phone: e.target.value }))}
                   disabled={!isAdmin}
-                  className="w-full rounded-lg border border-slate-200 bg-[#F9FAFB] px-4 py-3 outline-none transition focus:border-[#2563EB] focus:bg-white disabled:cursor-not-allowed"
+                  className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white disabled:cursor-not-allowed"
                 />
               </label>
               <label className="md:col-span-2 space-y-2 text-sm text-[#374151]">
@@ -350,7 +350,7 @@ export default function Settings() {
                   value={settings.address}
                   onChange={(e) => setSettings((prev) => ({ ...prev, address: e.target.value }))}
                   disabled={!isAdmin}
-                  className="w-full rounded-lg border border-slate-200 bg-[#F9FAFB] px-4 py-3 outline-none transition focus:border-[#2563EB] focus:bg-white disabled:cursor-not-allowed"
+                  className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white disabled:cursor-not-allowed"
                   rows="4"
                 />
               </label>
@@ -360,7 +360,7 @@ export default function Settings() {
                   value={settings.currency}
                   onChange={(e) => setSettings((prev) => ({ ...prev, currency: e.target.value }))}
                   disabled={!isAdmin}
-                  className="w-full rounded-lg border border-slate-200 bg-[#F9FAFB] px-4 py-3 outline-none transition focus:border-[#2563EB] focus:bg-white disabled:cursor-not-allowed"
+                  className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white disabled:cursor-not-allowed"
                 >
                   {currencies.map((curr) => (
                     <option key={curr.code} value={curr.code}>
@@ -379,7 +379,7 @@ export default function Settings() {
                   value={settings.vat || 0}
                   onChange={(e) => setSettings((prev) => ({ ...prev, vat: parseFloat(e.target.value) || 0 }))}
                   disabled={!isAdmin}
-                  className="w-full rounded-lg border border-slate-200 bg-[#F9FAFB] px-4 py-3 outline-none transition focus:border-[#2563EB] focus:bg-white disabled:cursor-not-allowed"
+                  className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white disabled:cursor-not-allowed"
                 />
               </label>
               <label className="space-y-2 text-sm text-[#374151]">
@@ -389,7 +389,7 @@ export default function Settings() {
                   onChange={(e) => setSettings((prev) => ({ ...prev, shopLogoUrl: e.target.value }))}
                   disabled={!isAdmin}
                   placeholder="https://example.com/logo.png"
-                  className="w-full rounded-lg border border-slate-200 bg-[#F9FAFB] px-4 py-3 outline-none transition focus:border-[#2563EB] focus:bg-white disabled:cursor-not-allowed"
+                  className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white disabled:cursor-not-allowed"
                 />
               </label>
               <label className="md:col-span-2 space-y-2 text-sm text-[#374151]">
@@ -399,7 +399,7 @@ export default function Settings() {
                   onChange={(e) => setSettings((prev) => ({ ...prev, receiptHeader: e.target.value }))}
                   disabled={!isAdmin}
                   placeholder="Welcome to our store"
-                  className="w-full rounded-lg border border-slate-200 bg-[#F9FAFB] px-4 py-3 outline-none transition focus:border-[#2563EB] focus:bg-white disabled:cursor-not-allowed"
+                  className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white disabled:cursor-not-allowed"
                   rows="2"
                 />
               </label>
@@ -416,7 +416,7 @@ export default function Settings() {
               </label>
               {isAdmin ? (
                 <div className="md:col-span-2 pt-2">
-                  <button className="rounded-lg bg-[#2563EB] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#1D4ED8]">Save Settings</button>
+                  <button className="rounded-lg bg-[#2FA8C6] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#258EA8]">Save Settings</button>
                 </div>
               ) : null}
             </form>
@@ -434,7 +434,7 @@ export default function Settings() {
                   <select
                     value={printerSettings.type}
                     onChange={(e) => setPrinterSettings((prev) => ({ ...prev, type: e.target.value }))}
-                    className="w-full rounded-lg border border-slate-200 bg-[#F9FAFB] px-4 py-3 outline-none transition focus:border-[#2563EB] focus:bg-white"
+                    className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white"
                   >
                     <option value="usb">USB Printer</option>
                     <option value="network">Network Printer (IP)</option>
@@ -449,7 +449,7 @@ export default function Settings() {
                         value={printerSettings.vendorId}
                         onChange={(e) => setPrinterSettings((prev) => ({ ...prev, vendorId: e.target.value }))}
                         placeholder="0x04b8"
-                        className="w-full rounded-lg border border-slate-200 bg-[#F9FAFB] px-4 py-3 outline-none transition focus:border-[#2563EB] focus:bg-white"
+                        className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white"
                       />
                     </label>
                     <label className="space-y-2 text-sm text-[#374151]">
@@ -458,7 +458,7 @@ export default function Settings() {
                         value={printerSettings.productId}
                         onChange={(e) => setPrinterSettings((prev) => ({ ...prev, productId: e.target.value }))}
                         placeholder="0x0202"
-                        className="w-full rounded-lg border border-slate-200 bg-[#F9FAFB] px-4 py-3 outline-none transition focus:border-[#2563EB] focus:bg-white"
+                        className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white"
                       />
                     </label>
                   </>
@@ -470,7 +470,7 @@ export default function Settings() {
                         value={printerSettings.ip}
                         onChange={(e) => setPrinterSettings((prev) => ({ ...prev, ip: e.target.value }))}
                         placeholder="192.168.1.100"
-                        className="w-full rounded-lg border border-slate-200 bg-[#F9FAFB] px-4 py-3 outline-none transition focus:border-[#2563EB] focus:bg-white"
+                        className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white"
                       />
                     </label>
                     <label className="space-y-2 text-sm text-[#374151]">
@@ -479,13 +479,13 @@ export default function Settings() {
                         value={printerSettings.port}
                         onChange={(e) => setPrinterSettings((prev) => ({ ...prev, port: e.target.value }))}
                         placeholder="9100"
-                        className="w-full rounded-lg border border-slate-200 bg-[#F9FAFB] px-4 py-3 outline-none transition focus:border-[#2563EB] focus:bg-white"
+                        className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white"
                       />
                     </label>
                   </>
                 )}
 
-                <label className="md:col-span-2 flex items-center gap-3 rounded-lg border border-slate-200 bg-[#F9FAFB] px-4 py-3 text-sm text-[#374151]">
+                <label className="md:col-span-2 flex items-center gap-3 rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 text-sm text-[#374151]">
                   <input
                     type="checkbox"
                     checked={printerSettings.autoPrint}
@@ -497,14 +497,14 @@ export default function Settings() {
               </div>
 
               <div className="mt-5 flex flex-wrap gap-3">
-                <button type="button" onClick={handlePrinterConfigure} className="rounded-lg bg-[#2563EB] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#1D4ED8]">
+                <button type="button" onClick={handlePrinterConfigure} className="rounded-lg bg-[#2FA8C6] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#258EA8]">
                   Connect Printer
                 </button>
                 <button
                   type="button"
                   onClick={handleTestPrint}
                   disabled={testingPrinter}
-                  className="rounded-lg border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-[#374151] transition hover:bg-[#F9FAFB] disabled:opacity-60"
+                  className="rounded-lg border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-[#374151] transition hover:bg-[#F5FAFD] disabled:opacity-60"
                 >
                   {testingPrinter ? 'Testing...' : 'Test Print'}
                 </button>
@@ -538,7 +538,7 @@ export default function Settings() {
                   type="button"
                   onClick={handleCloseBusinessDay}
                   disabled={closingDay}
-                  className="rounded-lg bg-[#DC2626] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#B91C1C] disabled:opacity-60"
+                  className="rounded-lg bg-[#F97066] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#D95C54] disabled:opacity-60"
                 >
                   {closingDay ? 'Closing Day...' : 'Close Business Day'}
                 </button>
@@ -549,7 +549,7 @@ export default function Settings() {
                 <p className="mt-1 text-sm text-[#6B7280]">Review the latest saved daily summaries.</p>
 
                 {dayClosures.length === 0 ? (
-                  <div className="mt-4 rounded-lg border border-dashed border-slate-200 bg-[#F9FAFB] px-4 py-8 text-center">
+                  <div className="mt-4 rounded-lg border border-dashed border-slate-200 bg-[#F5FAFD] px-4 py-8 text-center">
                     <p className="text-sm font-medium text-[#111827]">No day closures yet</p>
                     <p className="mt-2 text-sm text-[#6B7280]">Your saved day summaries will appear here after the first close.</p>
                   </div>

@@ -212,12 +212,12 @@ export default function POS() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search product"
-                className="w-full min-w-0 rounded-lg border border-slate-200 bg-[#F9FAFB] px-4 py-3 outline-none transition focus:border-[#2563EB] focus:bg-white"
+                className="w-full min-w-0 rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white"
               />
               <button
                 type="button"
                 onClick={loadProducts}
-                className="rounded-lg bg-[#2563EB] px-4 py-3 text-white transition hover:bg-[#1D4ED8]"
+                className="rounded-lg bg-[#2FA8C6] px-4 py-3 text-white transition hover:bg-[#258EA8]"
               >
                 Search
               </button>
@@ -226,7 +226,7 @@ export default function POS() {
 
           <div className="mt-6 grid gap-4">
             {filteredProducts.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-slate-200 bg-[#F9FAFB] px-4 py-12 text-center">
+              <div className="rounded-lg border border-dashed border-slate-200 bg-[#F5FAFD] px-4 py-12 text-center">
                 <p className="text-sm font-medium text-[#111827]">No matching products</p>
                 <p className="mt-2 text-sm text-[#6B7280]">Try another search term or refresh the product list.</p>
               </div>
@@ -243,7 +243,7 @@ export default function POS() {
                     <button
                       type="button"
                       onClick={() => addToCart(product)}
-                      className="mt-2 rounded-lg bg-[#2563EB] px-4 py-2 text-sm text-white transition hover:bg-[#1D4ED8]"
+                      className="mt-2 rounded-lg bg-[#2FA8C6] px-4 py-2 text-sm text-white transition hover:bg-[#258EA8]"
                     >
                       Add
                     </button>
@@ -272,14 +272,14 @@ export default function POS() {
             </div>
             <div className="mt-4 space-y-4">
               {cart.length === 0 ? (
-                <div className="rounded-lg border border-dashed border-slate-200 bg-[#F9FAFB] px-4 py-10 text-center">
+                  <div className="rounded-lg border border-dashed border-slate-200 bg-[#F5FAFD] px-4 py-10 text-center">
                   <p className="text-sm font-medium text-[#111827]">No items in the cart yet</p>
                   <p className="mt-2 text-sm text-[#6B7280]">Add products from the list to start a sale.</p>
                 </div>
               ) : (
                 <>
                   {cart.map((item) => (
-                    <div key={item.productId} className="rounded-lg border border-slate-200 bg-[#F9FAFB] p-4 sm:p-5">
+                    <div key={item.productId} className="rounded-lg border border-slate-200 bg-[#F5FAFD] p-4 sm:p-5">
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <p className="font-semibold text-[#111827]">{item.name}</p>
@@ -337,7 +337,7 @@ export default function POS() {
                     <select
                       value={customerId}
                       onChange={(event) => setCustomerId(event.target.value)}
-                      className="w-full rounded-lg border border-slate-200 bg-[#F9FAFB] px-4 py-3 outline-none transition focus:border-[#2563EB] focus:bg-white"
+                      className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white"
                     >
                       <option value="">Walk-in / no customer</option>
                       {customers.map((customer) => (
@@ -355,12 +355,12 @@ export default function POS() {
                 </>
               )}
             </div>
-            <div className="mt-6 rounded-lg border border-slate-200 bg-[#F9FAFB] p-4 sm:p-5">
+            <div className="mt-6 rounded-lg border border-slate-200 bg-[#F5FAFD] p-4 sm:p-5">
               <p className="text-sm text-[#6B7280]">Payment method</p>
               <select
                 value={paymentMethod}
                 onChange={(event) => setPaymentMethod(event.target.value)}
-                className="mt-3 w-full rounded-lg border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-[#2563EB]"
+                className="mt-3 w-full rounded-lg border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-[#2FA8C6]"
               >
                 {paymentMethods.map((method) => (
                   <option key={method} value={method}>{method}</option>
@@ -368,13 +368,13 @@ export default function POS() {
               </select>
             </div>
 
-            <div className="mt-6 rounded-lg border border-slate-200 bg-[#F9FAFB] p-4 sm:p-5">
+            <div className="mt-6 rounded-lg border border-slate-200 bg-[#F5FAFD] p-4 sm:p-5">
               <p className="text-sm text-[#6B7280]">Discount</p>
               <div className="mt-3 flex gap-2">
                 <select
                   value={discountType}
                   onChange={(event) => setDiscountType(event.target.value)}
-                  className="w-24 rounded-lg border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-[#2563EB]"
+                  className="w-24 rounded-lg border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-[#2FA8C6]"
                 >
                   <option value="fixed">Fixed</option>
                   <option value="percentage">Percent</option>
@@ -386,7 +386,7 @@ export default function POS() {
                   value={discount}
                   onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
                   placeholder={discountType === 'percentage' ? 'e.g., 10' : 'Amount'}
-                  className="flex-1 rounded-lg border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-[#2563EB]"
+                  className="flex-1 rounded-lg border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-[#2FA8C6]"
                 />
                 <span className="flex items-center px-2 text-sm text-[#6B7280]">{discountType === 'percentage' ? '%' : currency}</span>
               </div>
@@ -407,7 +407,7 @@ export default function POS() {
                 <span>Total</span>
                 <strong>{formatMoney(currency, total)}</strong>
               </div>
-              <label className="mt-4 flex items-center gap-3 rounded-lg bg-[#F9FAFB] px-4 py-3 text-sm text-[#374151]">
+              <label className="mt-4 flex items-center gap-3 rounded-lg bg-[#F5FAFD] px-4 py-3 text-sm text-[#374151]">
                 <input type="checkbox" checked={autoPrint} onChange={(event) => setAutoPrint(event.target.checked)} />
                 Print receipt automatically after checkout
               </label>
@@ -416,14 +416,14 @@ export default function POS() {
                 onClick={handleCheckout}
                 disabled={loading}
                 className={`mt-4 w-full rounded-3xl px-4 py-3 text-white transition ${
-                  loading ? 'cursor-not-allowed bg-gray-400' : 'bg-[#2563EB] hover:bg-[#1D4ED8]'
+                  loading ? 'cursor-not-allowed bg-gray-400' : 'bg-[#2FA8C6] hover:bg-[#258EA8]'
                 }`}
               >
                 {loading ? 'Processing...' : 'Complete Sale'}
               </button>
             </div>
             {message && (
-              <div className={`mt-4 rounded-lg px-4 py-3 text-sm ${message.includes('successfully') ? 'bg-[#F0FDF4] text-[#166534]' : 'bg-[#FEF2F2] text-[#991B1B]'}`}>
+              <div className={`mt-4 rounded-lg px-4 py-3 text-sm ${message.includes('successfully') ? 'bg-[#E9FBF4] text-[#1E8E65]' : 'bg-[#FFF1F0] text-[#C84E47]'}`}>
                 <div className="flex items-center justify-between gap-2">
                   <span>{message}</span>
                   {message.includes('successfully') && lastSaleId && (
@@ -431,7 +431,7 @@ export default function POS() {
                       <button
                         type="button"
                         onClick={() => downloadReceipt(lastSaleId)}
-                        className="whitespace-nowrap rounded-lg bg-[#16A34A] px-3 py-1 text-xs text-white transition hover:bg-[#15803D]"
+                        className="whitespace-nowrap rounded-lg bg-[#26B07C] px-3 py-1 text-xs text-white transition hover:bg-[#1E8E65]"
                       >
                         Download Receipt
                       </button>
@@ -439,7 +439,7 @@ export default function POS() {
                         type="button"
                         onClick={() => printToThermalPrinter(lastSaleId)}
                         disabled={printing}
-                        className="whitespace-nowrap rounded-lg bg-[#2563EB] px-3 py-1 text-xs text-white transition hover:bg-[#1D4ED8] disabled:opacity-50"
+                        className="whitespace-nowrap rounded-lg bg-[#2FA8C6] px-3 py-1 text-xs text-white transition hover:bg-[#258EA8] disabled:opacity-50"
                       >
                         {printing ? 'Printing...' : 'Print Receipt'}
                       </button>

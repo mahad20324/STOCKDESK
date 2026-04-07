@@ -7,12 +7,12 @@
 }
 
 body {
-  @apply bg-slate-50 text-slate-800 antialiased;
+  @apply bg-[#eef6fb] text-slate-800 antialiased;
 }
 
 button,
 input,
 select,
 textarea {
-  @apply outline-none focus:ring-2 focus:ring-brand-200 focus:border-brand-500;
+  @apply outline-none focus:ring-2 focus:ring-[#bfe7f1] focus:border-[#2fa8c6];
 }
