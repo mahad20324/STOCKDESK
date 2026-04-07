@@ -4,6 +4,7 @@ import Layout from './components/Layout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
+import Customers from './pages/Customers';
 import POS from './pages/POS';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
@@ -34,6 +35,7 @@ function App() {
       <Route path="/app" element={isAuthenticated ? <Layout /> : <Navigate to="/login" replace />}>
         <Route index element={<Dashboard />} />
         <Route path="products" element={<Products />} />
+        <Route path="customers" element={<Customers />} />
         <Route path="pos" element={<POS />} />
         <Route path="reports" element={<Reports />} />
         <Route path="settings" element={<Settings />} />

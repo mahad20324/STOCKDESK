@@ -4,6 +4,7 @@ import { getUser } from '../utils/auth';
 const links = [
   { to: '/app', label: 'Dashboard' },
   { to: '/app/products', label: 'Products' },
+  { to: '/app/customers', label: 'Customers' },
   { to: '/app/pos', label: 'Sales (POS)' },
   { to: '/app/reports', label: 'Reports' },
   { to: '/app/settings', label: 'Settings' },

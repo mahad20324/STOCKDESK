@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { fetchProducts, createSale, fetchSettings, downloadReceipt, fetchSale } from '../utils/api';
+import { fetchProducts, createSale, fetchSettings, downloadReceipt, fetchSale, fetchCustomers } from '../utils/api';
 import { getToken, getUser } from '../utils/auth';
 import PosReceipt from '../components/Receipt/PosReceipt';
 
@@ -7,8 +7,10 @@ const paymentMethods = ['Cash', 'Card', 'Mobile Money'];
 
 export default function POS() {
   const [products, setProducts] = useState([]);
+  const [customers, setCustomers] = useState([]);
   const [search, setSearch] = useState('');
   const [cart, setCart] = useState([]);
+  const [customerId, setCustomerId] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('Cash');
   const [currency, setCurrency] = useState('USD');
   const [message, setMessage] = useState('');
@@ -25,6 +27,7 @@ export default function POS() {
   useEffect(() => {
     loadProducts();
     loadSettings();
+    loadCustomers();
   }, []);
 
   const loadSettings = async () => {
@@ -41,6 +44,19 @@ export default function POS() {
   const loadProducts = async () => {
     const data = await fetchProducts(search ? `?search=${encodeURIComponent(search)}` : '');
     setProducts(data);
+  };
+
+  const loadCustomers = async () => {
+    try {
+      const data = await fetchCustomers();
+      setCustomers(data);
+      const walkIn = data.find((customer) => customer.name === 'Walk-in Customer');
+      if (walkIn) {
+        setCustomerId(String(walkIn.id));
+      }
+    } catch (error) {
+      console.error('Error loading customers:', error);
+    }
   };
 
   const filteredProducts = useMemo(
@@ -130,7 +146,14 @@ export default function POS() {
       }
       setLoading(true);
       setMessage('');
-      const response = await createSale({ items: cart, paymentMethod, currency: currency || 'USD', discount, discountType });
+      const response = await createSale({
+        items: cart,
+        paymentMethod,
+        currency: currency || 'USD',
+        discount,
+        discountType,
+        customerId: customerId ? Number(customerId) : null,
+      });
       
       // Fetch the full sale data to display in receipt
       const saleData = await fetchSale(response.saleId);
@@ -225,60 +248,77 @@ export default function POS() {
               {cart.length === 0 ? (
                 <p className="text-sm text-slate-500">No items in the cart yet.</p>
               ) : (
-                cart.map((item) => (
-                  <div key={item.productId} className="rounded-3xl bg-white p-4 shadow-sm">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <p className="font-semibold text-slate-900">{item.name}</p>
-                        <p className="text-sm text-slate-500">{currency} {item.price.toFixed(2)} each</p>
-                        <p className="mt-1 text-xs font-medium text-slate-400">Line total: {currency} {(item.price * item.quantity).toFixed(2)}</p>
-                      </div>
-                      <div className="flex flex-col items-end gap-3">
-                        <button
-                          type="button"
-                          onClick={() => removeFromCart(item.productId)}
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-rose-50 text-rose-700 hover:bg-rose-100"
-                          aria-label={`Remove ${item.name} from cart`}
-                        >
-                          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                            <path d="M3 6h18" />
-                            <path d="M8 6V4h8v2" />
-                            <path d="M19 6l-1 14H6L5 6" />
-                            <path d="M10 11v6" />
-                            <path d="M14 11v6" />
-                          </svg>
-                        </button>
-                        <div className="flex items-center gap-2">
+                <>
+                  {cart.map((item) => (
+                    <div key={item.productId} className="rounded-3xl bg-white p-4 shadow-sm">
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <p className="font-semibold text-slate-900">{item.name}</p>
+                          <p className="text-sm text-slate-500">{currency} {item.price.toFixed(2)} each</p>
+                          <p className="mt-1 text-xs font-medium text-slate-400">Line total: {currency} {(item.price * item.quantity).toFixed(2)}</p>
+                        </div>
+                        <div className="flex flex-col items-end gap-3">
                           <button
                             type="button"
-                            onClick={() => updateQuantity(item.productId, -1)}
-                            className="rounded-full bg-slate-100 px-3 py-1"
-                            aria-label={`Decrease quantity of ${item.name}`}
+                            onClick={() => removeFromCart(item.productId)}
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-rose-50 text-rose-700 hover:bg-rose-100"
+                            aria-label={`Remove ${item.name} from cart`}
                           >
-                            -
+                            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                              <path d="M3 6h18" />
+                              <path d="M8 6V4h8v2" />
+                              <path d="M19 6l-1 14H6L5 6" />
+                              <path d="M10 11v6" />
+                              <path d="M14 11v6" />
+                            </svg>
                           </button>
-                          <span className="w-8 text-center font-semibold">{item.quantity}</span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => updateQuantity(item.productId, -1)}
+                              className="rounded-full bg-slate-100 px-3 py-1"
+                              aria-label={`Decrease quantity of ${item.name}`}
+                            >
+                              -
+                            </button>
+                            <span className="w-8 text-center font-semibold">{item.quantity}</span>
+                            <button
+                              type="button"
+                              onClick={() => updateQuantity(item.productId, 1)}
+                              className="rounded-full bg-slate-100 px-3 py-1"
+                              aria-label={`Increase quantity of ${item.name}`}
+                            >
+                              +
+                            </button>
+                          </div>
                           <button
                             type="button"
-                            onClick={() => updateQuantity(item.productId, 1)}
-                            className="rounded-full bg-slate-100 px-3 py-1"
-                            aria-label={`Increase quantity of ${item.name}`}
+                            onClick={() => removeFromCart(item.productId)}
+                            className="rounded-full bg-rose-100 px-3 py-1 text-sm font-medium text-rose-700 hover:bg-rose-200"
+                            aria-label={`Remove ${item.name} from cart`}
                           >
-                            +
+                            Remove
                           </button>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => removeFromCart(item.productId)}
-                          className="rounded-full bg-rose-100 px-3 py-1 text-sm font-medium text-rose-700 hover:bg-rose-200"
-                          aria-label={`Remove ${item.name} from cart`}
-                        >
-                          Remove
-                        </button>
                       </div>
                     </div>
+                  ))}
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-slate-700">Customer</label>
+                    <select
+                      value={customerId}
+                      onChange={(event) => setCustomerId(event.target.value)}
+                      className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3"
+                    >
+                      <option value="">Walk-in / no customer</option>
+                      {customers.map((customer) => (
+                        <option key={customer.id} value={customer.id}>
+                          {customer.name}{customer.phone ? ` - ${customer.phone}` : ''}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                ))
+                </>
               )}
             </div>
             <div className="mt-6 rounded-3xl bg-white p-4 shadow-sm">
