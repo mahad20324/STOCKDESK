@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Area, AreaChart, Bar, BarChart, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { downloadReceipt, fetchBestSelling, fetchCashierReport, fetchCustomers, fetchDashboardSummary, fetchProducts, fetchSales, fetchSettings } from '../utils/api';
 import { getUser } from '../utils/auth';
-
-const chartColors = ['#0f766e', '#0891b2', '#2563eb', '#14b8a6', '#f59e0b'];
 
 function formatMoney(currency, value) {
   return `${currency} ${Number(value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -60,12 +58,10 @@ export default function Dashboard() {
     loadStats();
   }, []);
 
-  const totalProducts = products.length;
   const totalSales = sales.length;
   const totalRevenue = sales.reduce((sum, sale) => sum + parseFloat(sale.total), 0);
   const lowStockCount = products.filter((product) => product.quantity <= product.lowStock).length;
   const todaysSales = summary?.periods?.today?.orderCount || 0;
-  const todaysRevenue = summary?.periods?.today?.netSales || 0;
 
   const salesTrend = useMemo(() => {
     const buckets = new Map();
@@ -77,20 +73,18 @@ export default function Dashboard() {
   }, [sales]);
 
   const bestProductData = useMemo(
-    () => bestSelling.slice(0, 5).map((item, index) => ({
+    () => bestSelling.slice(0, 5).map((item) => ({
       name: item.Product?.name || 'Item',
       value: Number(item.unitsold || 0),
-      fill: chartColors[index % chartColors.length],
     })),
     [bestSelling]
   );
 
-  const cashierData = useMemo(
-    () => cashierReport.slice(0, 5).map((item) => ({ name: item.cashier?.name || 'Cashier', revenue: Number(item.revenue || 0) })),
+  const topCashiers = useMemo(
+    () => cashierReport.slice(0, 4).map((item) => ({ name: item.cashier?.name || 'Cashier', revenue: Number(item.revenue || 0), salesCount: Number(item.salesCount || 0) })),
     [cashierReport]
   );
 
-  const recentCustomers = useMemo(() => customers.slice(0, 5), [customers]);
   const repeatCustomers = useMemo(
     () => customers.filter((customer) => Number(customer.salesCount || 0) > 1).length,
     [customers]
@@ -115,13 +109,6 @@ export default function Dashboard() {
       comparison: todayVsYesterday,
     },
     {
-      title: 'Yesterday',
-      metrics: yesterdayMetrics,
-      subtitle: `${yesterdayMetrics?.orderCount || 0} sales yesterday.`,
-      comparisonLabel: 'reference day',
-      comparison: null,
-    },
-    {
       title: 'This Week',
       metrics: weekMetrics,
       subtitle: `${weekMetrics?.orderCount || 0} orders this week.`,
@@ -134,6 +121,29 @@ export default function Dashboard() {
       subtitle: `${monthMetrics?.orderCount || 0} orders this month.`,
       comparisonLabel: 'vs last month',
       comparison: monthVsLastMonth,
+    },
+  ];
+
+  const compactStats = [
+    {
+      label: 'Yesterday',
+      value: formatMoney(currency, yesterdayMetrics?.netSales || 0),
+      note: `${yesterdayMetrics?.orderCount || 0} sales`,
+    },
+    {
+      label: 'Average Ticket',
+      value: formatMoney(currency, averageTicket),
+      note: `${totalSales} total sales`,
+    },
+    {
+      label: 'Customers',
+      value: customers.length.toLocaleString(),
+      note: `${repeatCustomers} repeat customers`,
+    },
+    {
+      label: 'Inventory Risk',
+      value: lowStockCount.toLocaleString(),
+      note: 'items need attention',
     },
   ];
 
@@ -162,7 +172,7 @@ export default function Dashboard() {
         <div className="rounded-[2rem] bg-white p-8 text-center text-slate-500 shadow-sm">Loading dashboard metrics...</div>
       ) : (
         <>
-          <section className="grid gap-6 xl:grid-cols-4 md:grid-cols-2">
+          <section className="grid gap-6 xl:grid-cols-3 md:grid-cols-2">
             {performanceCards.map((card) => (
               <div key={card.title} className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
                 <div className="flex items-start justify-between gap-3">
@@ -171,11 +181,9 @@ export default function Dashboard() {
                     <h3 className="mt-3 text-3xl font-semibold text-slate-900">{formatMoney(currency, card.metrics?.netSales || 0)}</h3>
                     <p className="mt-2 text-sm text-slate-500">Net sales</p>
                   </div>
-                  {card.comparison ? (
-                    <div className={`rounded-full bg-slate-50 px-3 py-1 text-xs font-semibold ${comparisonTone(card.comparison.netSales.percentChange)}`}>
-                      {formatDelta(card.comparison.netSales.percentChange)}
-                    </div>
-                  ) : null}
+                  <div className={`rounded-full bg-slate-50 px-3 py-1 text-xs font-semibold ${comparisonTone(card.comparison.netSales.percentChange)}`}>
+                    {formatDelta(card.comparison.netSales.percentChange)}
+                  </div>
                 </div>
                 <div className="mt-5 grid gap-3 text-sm">
                   <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
@@ -192,32 +200,24 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <p className="mt-4 text-sm text-slate-500">{card.subtitle}</p>
-                {card.comparison ? (
-                  <div className="mt-3 flex flex-wrap gap-3 text-xs">
-                    <span className={`${comparisonTone(card.comparison.netSales.percentChange)}`}>Sales {formatDelta(card.comparison.netSales.percentChange)} {card.comparisonLabel}</span>
-                    <span className={`${comparisonTone(card.comparison.grossProfit.percentChange)}`}>Profit {formatDelta(card.comparison.grossProfit.percentChange)}</span>
-                    <span className={`${comparisonTone(card.comparison.itemsSold.percentChange)}`}>Items {formatDelta(card.comparison.itemsSold.percentChange)}</span>
-                  </div>
-                ) : null}
+                <div className="mt-3 flex flex-wrap gap-3 text-xs">
+                  <span className={`${comparisonTone(card.comparison.netSales.percentChange)}`}>Sales {formatDelta(card.comparison.netSales.percentChange)} {card.comparisonLabel}</span>
+                  <span className={`${comparisonTone(card.comparison.grossProfit.percentChange)}`}>Profit {formatDelta(card.comparison.grossProfit.percentChange)}</span>
+                  <span className={`${comparisonTone(card.comparison.itemsSold.percentChange)}`}>Items {formatDelta(card.comparison.itemsSold.percentChange)}</span>
+                </div>
               </div>
             ))}
           </section>
 
-          <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr_0.8fr]">
-            <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Average Ticket</p>
-              <h3 className="mt-3 text-3xl font-semibold text-slate-900">{formatMoney(currency, averageTicket)}</h3>
-              <p className="mt-2 text-sm text-slate-500">Across {totalSales} recorded sales.</p>
-            </div>
-            <div className="rounded-[2rem] border border-emerald-100 bg-gradient-to-br from-emerald-500 to-teal-600 p-6 text-white shadow-sm">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-100">Customers</p>
-              <h3 className="mt-3 text-3xl font-semibold">{customers.length}</h3>
-              <p className="mt-2 text-sm text-emerald-50">{repeatCustomers} repeat customers already in the system.</p>
-            </div>
-            <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Inventory Risk</p>
-              <h3 className="mt-3 text-3xl font-semibold text-slate-900">{lowStockCount}</h3>
-              <p className="mt-2 text-sm text-slate-500">Products currently at or below their low-stock limit.</p>
+          <section className="rounded-[2rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              {compactStats.map((item) => (
+                <div key={item.label} className="rounded-3xl bg-slate-50 px-4 py-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">{item.label}</p>
+                  <p className="mt-2 text-2xl font-semibold text-slate-900">{item.value}</p>
+                  <p className="mt-1 text-sm text-slate-500">{item.note}</p>
+                </div>
+              ))}
             </div>
           </section>
 
@@ -251,54 +251,50 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="grid gap-6">
-              <div className="rounded-[2rem] bg-white p-6 shadow-sm">
-                <h3 className="text-lg font-semibold text-slate-900">Best Sellers</h3>
-                <div className="mt-5 h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie data={bestProductData} dataKey="value" nameKey="name" innerRadius={50} outerRadius={90} paddingAngle={4}>
-                        {bestProductData.map((entry) => (
-                          <Cell key={entry.name} fill={entry.fill} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(value) => `${value} units`} />
-                    </PieChart>
-                  </ResponsiveContainer>
+            <div className="rounded-[2rem] bg-white p-6 shadow-sm">
+              <h3 className="text-lg font-semibold text-slate-900">Business Pulse</h3>
+              <p className="mt-1 text-sm text-slate-500">A cleaner view of what is moving inventory and who is driving revenue.</p>
+              <div className="mt-6 space-y-6">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">Best Sellers</h4>
+                    <span className="text-xs text-slate-400">Top 5</span>
+                  </div>
+                  <div className="mt-3 space-y-2">
+                    {bestProductData.map((item, index) => (
+                      <div key={item.name} className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 text-sm">
+                        <div className="flex items-center gap-3">
+                          <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold text-slate-700">{index + 1}</span>
+                          <span className="font-medium text-slate-800">{item.name}</span>
+                        </div>
+                        <span className="font-semibold text-slate-900">{item.value} units</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div className="mt-4 space-y-2 text-sm text-slate-600">
-                  {bestProductData.map((item) => (
-                    <div key={item.name} className="flex items-center justify-between rounded-2xl bg-slate-50 px-3 py-2">
-                      <span>{item.name}</span>
-                      <span className="font-semibold text-slate-900">{item.value} units</span>
-                    </div>
-                  ))}
+
+                <div className="border-t border-slate-200 pt-5">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">Top Cashiers</h4>
+                    <span className="text-xs text-slate-400">Current leaders</span>
+                  </div>
+                  <div className="mt-3 space-y-2">
+                    {topCashiers.map((cashier) => (
+                      <div key={cashier.name} className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 text-sm">
+                        <div>
+                          <p className="font-medium text-slate-800">{cashier.name}</p>
+                          <p className="text-xs text-slate-500">{cashier.salesCount} sales</p>
+                        </div>
+                        <span className="font-semibold text-slate-900">{formatMoney(currency, cashier.revenue)}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
           </section>
 
-          <section className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr_1fr]">
-            <div className="rounded-[2rem] bg-white p-6 shadow-sm">
-              <h3 className="text-lg font-semibold text-slate-900">Customer Momentum</h3>
-              <p className="mt-1 text-sm text-slate-500">Recent profiles added to your shop directory.</p>
-              <div className="mt-5 space-y-3">
-                {recentCustomers.map((customer) => (
-                  <div key={customer.id} className="rounded-3xl border border-slate-200 p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="font-semibold text-slate-900">{customer.name}</p>
-                        <p className="text-xs text-slate-500">{customer.phone || customer.email || 'No contact saved yet'}</p>
-                      </div>
-                      <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                        {Number(customer.salesCount || 0)} sales
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
+          <section className="grid gap-6 xl:grid-cols-[1fr_1fr]">
             <div className="rounded-[2rem] bg-white p-6 shadow-sm">
               <h3 className="text-lg font-semibold text-slate-900">Recent Sales</h3>
               <p className="mt-1 text-sm text-slate-500">Quick access to the most recent transactions.</p>
@@ -327,50 +323,40 @@ export default function Dashboard() {
             </div>
 
             <div className="rounded-[2rem] bg-white p-6 shadow-sm">
-              <h3 className="text-lg font-semibold text-slate-900">Cashier Performance</h3>
-              <p className="mt-1 text-sm text-slate-500">Revenue contribution by the top active cashiers.</p>
-              <div className="mt-5 h-72">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={cashierData} layout="vertical" margin={{ left: 12, right: 12 }}>
-                    <XAxis type="number" hide />
-                    <YAxis type="category" dataKey="name" width={96} tickLine={false} axisLine={false} stroke="#64748b" />
-                    <Tooltip formatter={(value) => formatMoney(currency, value)} />
-                    <Bar dataKey="revenue" fill="#2563eb" radius={[10, 10, 10, 10]} />
-                  </BarChart>
-                </ResponsiveContainer>
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-900">Inventory Watchlist</h3>
+                  <p className="mt-1 text-sm text-slate-500">Products that need replenishment attention before they affect sales.</p>
+                </div>
+                <div className="rounded-2xl bg-rose-50 px-4 py-3 text-right text-rose-700">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em]">Low Stock Count</p>
+                  <p className="mt-1 text-lg font-semibold">{lowStockCount}</p>
+                </div>
               </div>
-            </div>
-          </section>
-
-          <section className="rounded-[2rem] bg-white p-6 shadow-sm">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <h3 className="text-lg font-semibold text-slate-900">Inventory Watchlist</h3>
-                <p className="mt-1 text-sm text-slate-500">Products that need replenishment attention before they affect sales.</p>
-              </div>
-              <div className="rounded-2xl bg-rose-50 px-4 py-3 text-right text-rose-700">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em]">Low Stock Count</p>
-                <p className="mt-1 text-lg font-semibold">{lowStockCount}</p>
-              </div>
-            </div>
-            <div className="mt-5 grid gap-4 lg:grid-cols-3">
-              {products
-                .filter((product) => product.quantity <= product.lowStock)
-                .slice(0, 6)
-                .map((product) => (
-                  <div key={product.id} className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                    <p className="font-semibold text-slate-900">{product.name}</p>
-                    <p className="mt-1 text-sm text-slate-500">{product.category}</p>
-                    <div className="mt-4 flex items-center justify-between text-sm">
-                      <span className="text-slate-500">On hand</span>
-                      <span className="font-semibold text-slate-900">{product.quantity}</span>
+              <div className="mt-5 space-y-3">
+                {products
+                  .filter((product) => product.quantity <= product.lowStock)
+                  .slice(0, 6)
+                  .map((product) => (
+                    <div key={product.id} className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="font-semibold text-slate-900">{product.name}</p>
+                          <p className="mt-1 text-sm text-slate-500">{product.category}</p>
+                        </div>
+                        <div className="text-right text-sm">
+                          <p className="font-semibold text-slate-900">{product.quantity} in stock</p>
+                          <p className="text-rose-700">Low stock at {product.lowStock}</p>
+                        </div>
+                      </div>
                     </div>
-                    <div className="mt-2 flex items-center justify-between text-sm">
-                      <span className="text-slate-500">Low stock level</span>
-                      <span className="font-semibold text-rose-700">{product.lowStock}</span>
-                    </div>
+                  ))}
+                {products.filter((product) => product.quantity <= product.lowStock).length === 0 ? (
+                  <div className="rounded-3xl bg-slate-50 px-4 py-6 text-center text-sm text-slate-500">
+                    No products are currently below their low-stock threshold.
                   </div>
-                ))}
+                ) : null}
+              </div>
             </div>
           </section>
         </>
