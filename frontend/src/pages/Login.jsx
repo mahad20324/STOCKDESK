@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login, signup } from '../utils/api';
 import { saveSession } from '../utils/auth';
-import ThemeToggleButton from '../components/ThemeToggleButton';
 
 const signupEnabled = String(import.meta.env.VITE_ENABLE_SIGNUP || 'false').toLowerCase() === 'true';
 
@@ -72,9 +71,6 @@ export default function Login() {
 
   return (
     <div className="min-h-screen px-4 py-12" style={{ background: 'var(--bg-auth)' }}>
-      <div className="mx-auto mb-5 flex w-full max-w-2xl justify-center sm:justify-end">
-        <ThemeToggleButton stretch className="max-w-[20rem] sm:max-w-none" />
-      </div>
       <div className="app-modal mx-auto w-full max-w-2xl rounded-[2rem] border p-8 backdrop-blur">
         <div className="mb-6 text-center">
           <div className="text-4xl font-bold text-[var(--accent-strong)]">StockDesk</div>

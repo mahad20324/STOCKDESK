@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { closeBusinessDay, configurePrinter, disconnectPrinter, fetchDayClosures, fetchPrinterStatus, fetchSettings, saveSettings, testPrinter } from '../utils/api';
 import { getUser } from '../utils/auth';
+import ThemeToggleButton from '../components/ThemeToggleButton';
 
 const currencies = [
   { code: 'AED', country: 'United Arab Emirates - Dirham' },
@@ -330,6 +331,16 @@ export default function Settings() {
         </div>
       ) : (
         <>
+          <SectionCard title="Appearance" subtitle="Choose how StockDesk looks across this device.">
+            <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
+              <div>
+                <p className="text-sm font-medium text-[var(--text-primary)]">Theme mode</p>
+                <p className="mt-1 text-sm text-[var(--text-muted)]">Switch between light, dark, or system-based appearance preferences.</p>
+              </div>
+              <ThemeToggleButton stretch className="w-full lg:w-auto lg:min-w-[20rem]" />
+            </div>
+          </SectionCard>
+
           <SectionCard title="Shop Details" subtitle="Keep your store information and receipt branding accurate.">
             <form className="grid gap-4 md:grid-cols-2" onSubmit={handleSubmit}>
               <label className="space-y-2 text-sm text-[var(--text-secondary)]">
