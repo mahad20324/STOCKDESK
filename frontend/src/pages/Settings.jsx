@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { fetchSettings, saveSettings, resetRevenue } from '../utils/api';
+import { closeBusinessDay, fetchDayClosures, fetchSettings, saveSettings } from '../utils/api';
 import { getUser } from '../utils/auth';
 
 const currencies = [
@@ -168,18 +168,33 @@ const currencies = [
 export default function Settings() {
   const isAdmin = getUser()?.role === 'Admin';
   const [settings, setSettings] = useState({ shopName: '', address: '', phone: '', currency: 'USD' });
+  const [dayClosures, setDayClosures] = useState([]);
   const [printerSettings, setPrinterSettings] = useState({ type: 'usb', vendorId: '0x04b8', productId: '0x0202', ip: '192.168.1.100', port: '9100', autoPrint: false });
   const [status, setStatus] = useState('');
   const [printerStatus, setPrinterStatus] = useState('Not connected');
   const [testingPrinter, setTestingPrinter] = useState(false);
+  const [closingDay, setClosingDay] = useState(false);
 
   useEffect(() => {
     async function loadSettings() {
       const data = await fetchSettings();
       setSettings(data);
+      if (isAdmin) {
+        const closures = await fetchDayClosures();
+        setDayClosures(closures);
+      }
     }
     loadSettings();
-  }, []);
+  }, [isAdmin]);
+
+  const loadDayClosures = async () => {
+    if (!isAdmin) {
+      return;
+    }
+
+    const closures = await fetchDayClosures();
+    setDayClosures(closures);
+  };
 
   const checkPrinterStatus = async () => {
     try {
@@ -293,14 +308,20 @@ export default function Settings() {
     }
   };
 
-  const handleResetRevenue = async () => {
-    if (window.confirm('⚠️ WARNING: This will permanently delete ALL sales and revenue data. This action cannot be undone. Are you sure?')) {
-      try {
-        await resetRevenue();
-        setStatus('All revenue and sales data has been reset successfully.');
-      } catch (error) {
-        setStatus(error.message);
-      }
+  const handleCloseBusinessDay = async () => {
+    if (!window.confirm('Close the current business day and save today\'s totals as a snapshot? Sales history will remain available.')) {
+      return;
+    }
+
+    try {
+      setClosingDay(true);
+      const response = await closeBusinessDay();
+      setStatus(response.message);
+      await loadDayClosures();
+    } catch (error) {
+      setStatus(error.message);
+    } finally {
+      setClosingDay(false);
     }
   };
 
@@ -549,22 +570,48 @@ export default function Settings() {
       {/* Admin Controls */}
       {isAdmin && (
       <div className="rounded-[2rem] bg-white p-6 shadow-sm border-2 border-red-100">
-        <h2 className="text-xl font-semibold text-red-900">⚠️ Admin Controls</h2>
-        <p className="mt-2 text-slate-500">Dangerous operations that should be used with caution.</p>
+        <h2 className="text-xl font-semibold text-red-900">Admin Day Close</h2>
+        <p className="mt-2 text-slate-500">Close the trading day with a saved snapshot while keeping all raw sales history intact.</p>
 
         <div className="mt-6 space-y-4">
           <div className="rounded-lg bg-red-50 p-4">
-            <h3 className="font-semibold text-red-900 mb-2">Reset All Revenue & Sales Data</h3>
+            <h3 className="font-semibold text-red-900 mb-2">Close Current Business Day</h3>
             <p className="text-sm text-red-700 mb-4">
-              This will permanently delete all sales records, receipts, and revenue data. This action cannot be undone.
+              This saves today&apos;s net sales, gross sales, gross profit, discounts, orders, and items sold as a closure record. No sales are deleted.
             </p>
             <button
               type="button"
-              onClick={handleResetRevenue}
-              className="rounded-3xl bg-red-600 px-6 py-3 text-white hover:bg-red-700 font-medium"
+              onClick={handleCloseBusinessDay}
+              disabled={closingDay}
+              className="rounded-3xl bg-red-600 px-6 py-3 text-white hover:bg-red-700 font-medium disabled:opacity-60"
             >
-              Reset Revenue Data
+              {closingDay ? 'Closing Day...' : 'Close Business Day'}
             </button>
+          </div>
+
+          <div className="rounded-lg bg-slate-50 p-4">
+            <h3 className="mb-3 font-semibold text-slate-900">Recent Day Closures</h3>
+            {dayClosures.length === 0 ? (
+              <p className="text-sm text-slate-500">No business days have been closed yet.</p>
+            ) : (
+              <div className="space-y-3">
+                {dayClosures.map((closure) => (
+                  <div key={closure.id} className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <p className="font-semibold text-slate-900">{closure.closedForDate}</p>
+                        <p className="text-xs text-slate-500">Closed by {closure.closedBy?.name || 'Unknown'} on {new Date(closure.createdAt).toLocaleString()}</p>
+                      </div>
+                      <div className="grid gap-1 text-right text-xs text-slate-600">
+                        <span>Net sales: {settings.currency} {Number(closure.netSales || 0).toFixed(2)}</span>
+                        <span>Gross profit: {settings.currency} {Number(closure.grossProfit || 0).toFixed(2)}</span>
+                        <span>Items sold: {Number(closure.itemsSold || 0)}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
