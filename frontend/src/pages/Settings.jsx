@@ -167,7 +167,7 @@ const currencies = [
 
 function SectionCard({ title, subtitle, children, danger = false }) {
   return (
-    <section className={`app-panel rounded-lg border p-5 sm:p-6 ${danger ? 'border-[var(--danger-border)]' : ''}`}>
+    <section className={`app-panel rounded-[1.5rem] border p-5 sm:p-6 ${danger ? 'border-[var(--danger-border)]' : ''}`}>
       <div className={`border-b pb-4 ${danger ? 'border-[var(--danger-border)]' : 'border-[var(--border-default)]'}`}>
         <h3 className={`text-lg font-semibold ${danger ? 'text-[var(--danger)]' : 'text-[var(--text-primary)]'}`}>{title}</h3>
         <p className="mt-1 text-sm text-[var(--text-muted)]">{subtitle}</p>
@@ -299,13 +299,19 @@ export default function Settings() {
 
   return (
     <div className="space-y-6">
-      <section className="app-panel rounded-lg border p-5 sm:p-6">
-        <h2 className="text-2xl font-semibold text-[var(--text-primary)]">Settings</h2>
-        <p className="mt-2 text-sm text-[var(--text-muted)]">
-          {isAdmin
-            ? 'Manage shop details, receipt preferences, printer setup, and end-of-day operations.'
-            : 'Review shop details and receipt settings. Only admins can make changes.'}
-        </p>
+      <section className="app-panel relative overflow-hidden rounded-[1.7rem] border p-5 sm:p-6">
+        <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/3 bg-[radial-gradient(circle_at_top_right,rgba(30,167,189,0.14),transparent_58%)] lg:block" />
+        <div className="relative">
+          <div className="mb-3 inline-flex items-center rounded-full border border-[var(--border-default)] bg-[var(--surface-secondary)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--accent-strong)]">
+            Control Room
+          </div>
+          <h2 className="text-2xl font-semibold text-[var(--text-primary)]">Settings</h2>
+          <p className="mt-2 text-sm text-[var(--text-muted)]">
+            {isAdmin
+              ? 'Manage shop details, receipt preferences, printer setup, and end-of-day operations.'
+              : 'Review shop details and receipt settings. Only admins can make changes.'}
+          </p>
+        </div>
 
         {!isAdmin ? (
           <div className="app-alert-info mt-5 rounded-lg border border-[var(--border-default)] px-4 py-3 text-sm">
@@ -313,7 +319,7 @@ export default function Settings() {
           </div>
         ) : null}
 
-        {status ? <div className={`mt-5 rounded-lg px-4 py-3 text-sm ${statusClasses(status)}`}>{status}</div> : null}
+        {status ? <div className={`mt-5 rounded-2xl px-4 py-3 text-sm ${statusClasses(status)}`}>{status}</div> : null}
       </section>
 
       {loading ? (
@@ -424,7 +430,7 @@ export default function Settings() {
 
           {isAdmin ? (
             <SectionCard title="Thermal Printer Setup" subtitle="Connect a local USB or network printer for direct receipt printing.">
-              <div className={`mb-5 rounded-lg px-4 py-3 text-sm ${statusClasses(printerStatus)}`}>
+              <div className={`mb-5 rounded-2xl px-4 py-3 text-sm ${statusClasses(printerStatus)}`}>
                 <span className="font-medium">Printer status:</span> {printerStatus}
               </div>
 
@@ -525,11 +531,11 @@ export default function Settings() {
               subtitle="Save a daily snapshot of performance while keeping all sales history available."
               danger
             >
-              <div className="app-alert-danger rounded-lg p-4 text-sm">
+              <div className="app-alert-danger rounded-2xl p-4 text-sm">
                 Closing the day stores totals for net sales, gross sales, gross profit, discounts, orders, and items sold. No raw sales records are deleted.
               </div>
 
-              <div className="mt-5 flex flex-wrap items-center justify-between gap-4 rounded-lg border border-[var(--danger-border)] bg-[var(--surface-primary)] p-4">
+              <div className="mt-5 flex flex-wrap items-center justify-between gap-4 rounded-[1.35rem] border border-[var(--danger-border)] bg-[var(--surface-primary)] p-4">
                 <div>
                   <p className="text-base font-semibold text-[var(--danger)]">Close current business day</p>
                   <p className="mt-1 text-sm text-[var(--text-muted)]">Use this at the end of the day to lock in a clean historical snapshot.</p>
@@ -556,7 +562,7 @@ export default function Settings() {
                 ) : (
                   <div className="mt-4 space-y-3">
                     {dayClosures.map((closure) => (
-                      <div key={closure.id} className="app-panel rounded-lg border p-4">
+                      <div key={closure.id} className="app-panel rounded-[1.35rem] border p-4">
                         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                           <div>
                             <p className="font-semibold text-[var(--text-primary)]">{closure.closedForDate}</p>

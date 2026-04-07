@@ -12,12 +12,16 @@ const initialForm = {
   isActive: true,
 };
 
-function StatCard({ label, value, helper }) {
+function StatCard({ label, value, helper, eyebrow = 'Customers' }) {
   return (
-    <div className="app-panel rounded-lg border p-4">
-      <p className="text-sm text-[var(--text-muted)]">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-[var(--text-primary)]">{value}</p>
-      <p className="mt-2 text-sm text-[var(--text-muted)]">{helper}</p>
+    <div className="app-panel relative overflow-hidden rounded-[1.4rem] border p-4">
+      <div className="absolute inset-x-0 top-0 h-14 bg-[linear-gradient(180deg,rgba(30,167,189,0.10),transparent)]" />
+      <div className="relative">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">{eyebrow}</p>
+        <p className="mt-3 text-sm text-[var(--text-muted)]">{label}</p>
+        <p className="mt-2 text-2xl font-semibold text-[var(--text-primary)] tracking-tight">{value}</p>
+        <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">{helper}</p>
+      </div>
     </div>
   );
 }
@@ -104,24 +108,28 @@ export default function Customers() {
 
   return (
     <div className="space-y-6">
-      <section className="app-panel rounded-lg border p-5 sm:p-6">
+      <section className="app-panel relative overflow-hidden rounded-[1.7rem] border p-5 sm:p-6">
+        <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/3 bg-[radial-gradient(circle_at_top_right,rgba(30,167,189,0.14),transparent_58%)] lg:block" />
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div>
+          <div className="relative">
+            <div className="mb-3 inline-flex items-center rounded-full border border-[var(--border-default)] bg-[var(--surface-secondary)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--accent-strong)]">
+              Relationship Desk
+            </div>
             <h2 className="text-2xl font-semibold text-[var(--text-primary)]">Customers</h2>
             <p className="mt-2 max-w-2xl text-sm text-[var(--text-muted)]">
               Keep customer details organized so sales, follow-up, and repeat visits are easier to manage.
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[460px]">
-            <StatCard label="Total Customers" value={customers.length.toLocaleString()} helper="Profiles saved in your shop." />
-            <StatCard label="Active" value={activeCustomers.toLocaleString()} helper="Customers available for new sales." />
-            <StatCard label="Repeat Buyers" value={repeatCustomers.toLocaleString()} helper="Customers with more than one sale." />
+            <StatCard label="Total Customers" value={customers.length.toLocaleString()} helper="Profiles saved in your shop." eyebrow="Directory" />
+            <StatCard label="Active" value={activeCustomers.toLocaleString()} helper="Customers available for new sales." eyebrow="Availability" />
+            <StatCard label="Repeat Buyers" value={repeatCustomers.toLocaleString()} helper="Customers with more than one sale." eyebrow="Loyalty" />
           </div>
         </div>
       </section>
 
       <div className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
-        <section className="app-panel rounded-lg border p-5 sm:p-6">
+        <section className="app-panel rounded-[1.5rem] border p-5 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h3 className="text-lg font-semibold text-[var(--text-primary)]">Customer Directory</h3>
@@ -136,7 +144,7 @@ export default function Customers() {
             />
           </div>
 
-          <div className="mt-6 overflow-x-auto rounded-lg border border-[var(--border-default)]">
+          <div className="mt-6 overflow-x-auto rounded-[1.35rem] border border-[var(--border-default)]">
             <table className="min-w-full divide-y divide-[var(--border-default)] text-left text-sm">
               <thead className="app-table-head">
                 <tr>
@@ -165,9 +173,14 @@ export default function Customers() {
                   filteredCustomers.map((customer) => (
                     <tr key={customer.id} className="app-row-hover transition">
                       <td className="px-4 py-4">
-                        <div>
+                        <div className="flex items-center gap-3">
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--surface-secondary)] text-xs font-semibold text-[var(--accent-strong)]">
+                            {String(customer.name || 'C').slice(0, 1).toUpperCase()}
+                          </span>
+                          <div>
                           <p className="font-semibold text-[var(--text-primary)]">{customer.name}</p>
                           <p className="text-xs text-[var(--text-muted)]">Added {new Date(customer.createdAt).toLocaleDateString()}</p>
+                          </div>
                         </div>
                       </td>
                       <td className="px-4 py-4">
@@ -215,7 +228,7 @@ export default function Customers() {
           </div>
         </section>
 
-        <section className="app-panel rounded-lg border p-5 sm:p-6">
+        <section className="app-panel rounded-[1.5rem] border p-5 sm:p-6">
           <div className="flex items-center justify-between gap-3">
             <div>
               <h3 className="text-lg font-semibold text-[var(--text-primary)]">{form.id ? 'Edit Customer' : 'Add Customer'}</h3>
@@ -278,7 +291,7 @@ export default function Customers() {
           </form>
 
           {message ? (
-            <div className={`mt-4 rounded-lg px-4 py-3 text-sm ${message.includes('successfully') ? 'app-alert-success' : 'app-alert-danger'}`}>
+            <div className={`mt-4 rounded-2xl px-4 py-3 text-sm ${message.includes('successfully') ? 'app-alert-success' : 'app-alert-danger'}`}>
               {message}
             </div>
           ) : null}
