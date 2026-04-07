@@ -151,7 +151,7 @@ export default function Products() {
             <label className="space-y-2 text-sm text-[var(--text-secondary)]">
               Product name
               <input
-                placeholder="e.g. Premium Rice"
+                placeholder="Product name"
                 value={form.name}
                 onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
                 className="app-input w-full rounded-lg border px-4 py-3"
@@ -160,7 +160,7 @@ export default function Products() {
             <label className="space-y-2 text-sm text-[var(--text-secondary)]">
               Category
               <input
-                placeholder="e.g. Grocery"
+                placeholder="Category"
                 value={form.category}
                 onChange={(e) => setForm((prev) => ({ ...prev, category: e.target.value }))}
                 className="app-input w-full rounded-lg border px-4 py-3"

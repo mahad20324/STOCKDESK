@@ -385,7 +385,7 @@ export default function POS() {
                   step="0.01"
                   value={discount}
                   onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
-                  placeholder={discountType === 'percentage' ? 'e.g., 10' : 'Amount'}
+                  placeholder={discountType === 'percentage' ? 'Discount' : 'Amount'}
                   className="app-btn-secondary flex-1 rounded-lg border px-4 py-3"
                 />
                 <span className="flex items-center px-2 text-sm text-[var(--text-muted)]">{discountType === 'percentage' ? '%' : currency}</span>
