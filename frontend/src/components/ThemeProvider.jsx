@@ -57,19 +57,11 @@ export function ThemeProvider({ children }) {
     window.localStorage.setItem(THEME_STORAGE_KEY, themeMode);
   }, [resolvedTheme, themeMode]);
 
-  const cycleTheme = () => {
-    setThemeMode((currentMode) => {
-      const currentIndex = VALID_THEME_MODES.indexOf(currentMode);
-      return VALID_THEME_MODES[(currentIndex + 1) % VALID_THEME_MODES.length];
-    });
-  };
-
   const value = useMemo(
     () => ({
       themeMode,
       resolvedTheme,
       setThemeMode,
-      cycleTheme,
     }),
     [resolvedTheme, themeMode]
   );

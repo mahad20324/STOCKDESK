@@ -72,8 +72,8 @@ export default function Login() {
 
   return (
     <div className="min-h-screen px-4 py-12" style={{ background: 'var(--bg-auth)' }}>
-      <div className="mx-auto mb-5 flex w-full max-w-2xl justify-end">
-        <ThemeToggleButton />
+      <div className="mx-auto mb-5 flex w-full max-w-2xl justify-center sm:justify-end">
+        <ThemeToggleButton stretch className="max-w-[20rem] sm:max-w-none" />
       </div>
       <div className="app-modal mx-auto w-full max-w-2xl rounded-[2rem] border p-8 backdrop-blur">
         <div className="mb-6 text-center">

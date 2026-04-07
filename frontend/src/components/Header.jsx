@@ -35,8 +35,8 @@ export default function Header({ user, onLogout, onOpenSidebar }) {
           <h1 className="truncate text-[1.65rem] font-semibold leading-tight tracking-tight text-[var(--text-primary)] sm:text-2xl">{pageTitle}</h1>
         </div>
       </div>
-      <div className="flex items-center gap-2.5 sm:gap-3">
-        <ThemeToggleButton />
+      <div className="flex w-full items-center justify-between gap-2.5 sm:w-auto sm:justify-end sm:gap-3">
+        <ThemeToggleButton compact className="shrink-0" />
         <div className="hidden text-right sm:block">
           <p className="text-sm font-medium text-[var(--text-primary)]">{user?.name || 'Cashier'}</p>
           <p className="text-xs text-[var(--text-muted)]">{user?.role || 'User'}</p>
