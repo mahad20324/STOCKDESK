@@ -106,6 +106,14 @@ Recommended production values:
 - `CORS_ORIGIN_PATTERNS=https://*.vercel.app`
 - `VERIFY_EMAIL_BASE_URL=https://<your-railway-domain>/api/auth/verify-email`
 
+Recommended email configuration on Railway:
+
+- `SMTP_FROM_EMAIL=<your verified sender email>`
+- `SMTP_FROM_NAME=StockDesk`
+- `BREVO_API_KEY=<your Brevo API key>`
+
+If `BREVO_API_KEY` is present, the backend sends verification emails through Brevo's HTTP API instead of SMTP. This is recommended on Railway if SMTP connections time out.
+
 Optional for temporary hosting with existing profiles only:
 
 - `VERIFY_EMAIL_BASE_URL`
