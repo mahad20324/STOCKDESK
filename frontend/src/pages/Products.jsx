@@ -8,18 +8,19 @@ function formatMoney(currency, value) {
   return `${currency} ${Number(value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-function StatTile({ label, value, tone = 'default' }) {
+function StatTile({ label, value, tone = 'default', eyebrow = 'Inventory' }) {
   const tones = {
-    default: 'text-[var(--text-primary)] bg-[var(--surface-primary)]',
-    success: 'text-[var(--success)] bg-[var(--success-soft)]',
-    danger: 'text-[var(--danger)] bg-[var(--danger-soft)]',
-    warning: 'text-[var(--warning)] bg-[var(--warning-soft)]',
+    default: 'text-[var(--text-primary)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(249,251,254,0.94))]',
+    success: 'text-[var(--success)] bg-[linear-gradient(180deg,rgba(236,250,244,0.98),rgba(255,255,255,0.96))]',
+    danger: 'text-[var(--danger)] bg-[linear-gradient(180deg,rgba(255,242,239,0.98),rgba(255,255,255,0.96))]',
+    warning: 'text-[var(--warning)] bg-[linear-gradient(180deg,rgba(255,247,236,0.98),rgba(255,255,255,0.96))]',
   };
 
   return (
-    <div className={`rounded-lg border border-[var(--border-default)] p-4 ${tones[tone]}`}>
-      <p className="text-sm text-[var(--text-muted)]">{label}</p>
-      <p className="mt-2 text-2xl font-semibold">{value}</p>
+    <div className={`rounded-[1.35rem] border border-[var(--border-default)] p-4 shadow-sm ${tones[tone]}`}>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">{eyebrow}</p>
+      <p className="mt-3 text-sm text-[var(--text-muted)]">{label}</p>
+      <p className="mt-2 text-2xl font-semibold tracking-tight">{value}</p>
     </div>
   );
 }
@@ -101,9 +102,13 @@ export default function Products() {
 
   return (
     <div className="space-y-6">
-      <section className="app-panel rounded-lg border p-5 sm:p-6">
+      <section className="app-panel relative overflow-hidden rounded-[1.7rem] border p-5 sm:p-6">
+        <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/3 bg-[radial-gradient(circle_at_top_right,rgba(30,167,189,0.14),transparent_58%)] lg:block" />
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div>
+          <div className="relative">
+            <div className="mb-3 inline-flex items-center rounded-full border border-[var(--border-default)] bg-[var(--surface-secondary)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--accent-strong)]">
+              Inventory Studio
+            </div>
             <h2 className="text-2xl font-semibold text-[var(--text-primary)]">Products</h2>
             <p className="mt-2 text-sm text-[var(--text-muted)]">
               {isAdmin
@@ -112,9 +117,9 @@ export default function Products() {
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[460px]">
-            <StatTile label="Products" value={products.length.toLocaleString()} />
-            <StatTile label="Units In Stock" value={totalUnits.toLocaleString()} tone="success" />
-            <StatTile label="Low Stock" value={lowStockCount.toLocaleString()} tone={lowStockCount ? 'danger' : 'warning'} />
+            <StatTile label="Products" value={products.length.toLocaleString()} eyebrow="Catalog" />
+            <StatTile label="Units In Stock" value={totalUnits.toLocaleString()} tone="success" eyebrow="Availability" />
+            <StatTile label="Low Stock" value={lowStockCount.toLocaleString()} tone={lowStockCount ? 'danger' : 'warning'} eyebrow="Attention" />
           </div>
         </div>
 
@@ -138,13 +143,13 @@ export default function Products() {
       </section>
 
       {isAdmin ? (
-        <section className="app-panel rounded-lg border p-5 sm:p-6">
+        <section className="app-panel rounded-[1.5rem] border p-5 sm:p-6">
           <div className="flex items-start justify-between gap-4 border-b border-[var(--border-default)] pb-4">
             <div>
               <h3 className="text-lg font-semibold text-[var(--text-primary)]">{editingId ? 'Update Product' : 'Add Product'}</h3>
               <p className="mt-1 text-sm text-[var(--text-muted)]">Keep stock counts and pricing accurate for smooth sales and reporting.</p>
             </div>
-            <div className="app-panel-soft rounded-lg border px-3 py-2 text-sm text-[var(--text-muted)]">Stock value: {formatMoney(currency, stockValue)}</div>
+            <div className="app-panel-accent rounded-2xl px-3 py-2 text-sm font-medium">Stock value: {formatMoney(currency, stockValue)}</div>
           </div>
 
           <form className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3" onSubmit={saveProduct}>
@@ -229,13 +234,13 @@ export default function Products() {
         </section>
       ) : null}
 
-      <section className="app-panel rounded-lg border p-5 sm:p-6">
+      <section className="app-panel rounded-[1.5rem] border p-5 sm:p-6">
         <div className="flex flex-col gap-3 border-b border-[var(--border-default)] pb-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h3 className="text-lg font-semibold text-[var(--text-primary)]">Inventory List</h3>
             <p className="mt-1 text-sm text-[var(--text-muted)]">Current stock, pricing, and reorder thresholds.</p>
           </div>
-          <div className="app-panel-soft rounded-lg border px-3 py-2 text-sm text-[var(--text-muted)]">{currency} pricing shown per item</div>
+          <div className="app-panel-soft rounded-2xl border px-3 py-2 text-sm text-[var(--text-muted)]">{currency} pricing shown per item</div>
         </div>
 
         {loading ? (
@@ -250,7 +255,7 @@ export default function Products() {
             <p className="mt-2 text-sm text-[var(--text-muted)]">Add your first product to begin tracking inventory and sales.</p>
           </div>
         ) : (
-          <div className="mt-5 overflow-x-auto rounded-lg border border-[var(--border-default)]">
+          <div className="mt-5 overflow-x-auto rounded-[1.35rem] border border-[var(--border-default)]">
             <table className="min-w-full text-left text-sm">
               <thead className="app-table-head">
                 <tr>
@@ -268,7 +273,14 @@ export default function Products() {
                   const isLow = Number(product.quantity || 0) <= Math.max(5, Number(product.lowStock || 0));
                   return (
                     <tr key={product.id} className="app-row-hover transition">
-                      <td className="px-4 py-3 font-medium text-[var(--text-primary)]">{product.name}</td>
+                      <td className="px-4 py-3 font-medium text-[var(--text-primary)]">
+                        <div className="flex items-center gap-3">
+                          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--surface-secondary)] text-xs font-semibold text-[var(--accent-strong)]">
+                            {String(product.name || 'P').slice(0, 1).toUpperCase()}
+                          </span>
+                          <span>{product.name}</span>
+                        </div>
+                      </td>
                       <td className="px-4 py-3 text-[var(--text-muted)]">{product.category || 'Uncategorized'}</td>
                       <td className="px-4 py-3 text-[var(--text-muted)]">{formatMoney(currency, product.buyPrice)}</td>
                       <td className="px-4 py-3 text-[var(--text-primary)]">{formatMoney(currency, product.sellPrice)}</td>

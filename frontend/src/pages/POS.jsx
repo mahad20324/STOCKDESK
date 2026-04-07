@@ -11,10 +11,14 @@ function formatMoney(currency, value) {
 
 function SummaryStat({ label, value, helper }) {
   return (
-    <div className="app-panel rounded-lg border p-4">
-      <p className="text-sm text-[var(--text-muted)]">{label}</p>
-      <p className="mt-2 text-2xl font-semibold tracking-tight text-[var(--text-primary)]">{value}</p>
-      <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">{helper}</p>
+    <div className="app-panel relative overflow-hidden rounded-[1.4rem] border p-4">
+      <div className="absolute inset-x-0 top-0 h-14 bg-[linear-gradient(180deg,rgba(30,167,189,0.10),transparent)]" />
+      <div className="relative">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">POS</p>
+        <p className="mt-3 text-sm text-[var(--text-muted)]">{label}</p>
+        <p className="mt-2 text-2xl font-semibold tracking-tight text-[var(--text-primary)]">{value}</p>
+        <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">{helper}</p>
+      </div>
     </div>
   );
 }
@@ -185,9 +189,13 @@ export default function POS() {
 
   return (
     <div className="space-y-6">
-      <section className="app-panel rounded-lg border p-5 sm:p-6">
+      <section className="app-panel relative overflow-hidden rounded-[1.7rem] border p-5 sm:p-6">
+        <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/3 bg-[radial-gradient(circle_at_top_right,rgba(30,167,189,0.14),transparent_58%)] lg:block" />
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div>
+          <div className="relative">
+            <div className="mb-3 inline-flex items-center rounded-full border border-[var(--border-default)] bg-[var(--surface-secondary)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--accent-strong)]">
+              Checkout Flow
+            </div>
             <h2 className="text-2xl font-semibold tracking-tight text-[var(--text-primary)]">Point of Sale</h2>
             <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">Search products, add items to cart, apply discounts, and complete sales quickly.</p>
           </div>
@@ -200,7 +208,7 @@ export default function POS() {
       </section>
 
       <div className="grid gap-6 xl:grid-cols-[1.45fr_0.95fr]">
-        <section className="app-panel rounded-lg border p-5 sm:p-6">
+        <section className="app-panel rounded-[1.5rem] border p-5 sm:p-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h3 className="text-lg font-semibold tracking-tight text-[var(--text-primary)]">Product Search</h3>
@@ -232,11 +240,16 @@ export default function POS() {
               </div>
             ) : (
               filteredProducts.map((product) => (
-                <div key={product.id} className="app-panel flex items-center justify-between rounded-lg border p-4 transition hover:-translate-y-0.5 hover:shadow-md sm:p-5">
-                  <div>
-                    <p className="font-semibold text-[var(--text-primary)]">{product.name}</p>
+                <div key={product.id} className="app-panel flex items-center justify-between rounded-[1.35rem] border p-4 transition hover:-translate-y-1 hover:shadow-lg sm:p-5">
+                  <div className="flex items-start gap-4">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--surface-secondary)] text-sm font-semibold text-[var(--accent-strong)]">
+                      {String(product.name || 'P').slice(0, 1).toUpperCase()}
+                    </span>
+                    <div>
+                      <p className="font-semibold text-[var(--text-primary)]">{product.name}</p>
                     <p className="mt-0.5 text-sm text-[var(--text-muted)]">{product.category || 'Uncategorized'}</p>
                     <p className="mt-1 text-xs text-[var(--text-muted)]">{product.quantity} units in stock</p>
+                    </div>
                   </div>
                   <div className="text-right">
                     <p className="font-semibold text-[var(--text-primary)]">{formatMoney(currency, product.sellPrice)}</p>
@@ -254,7 +267,7 @@ export default function POS() {
           </div>
         </section>
 
-        <section className="app-panel rounded-lg border p-5 sm:p-6">
+        <section className="app-panel rounded-[1.5rem] border p-5 sm:p-6">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h3 className="text-lg font-semibold tracking-tight text-[var(--text-primary)]">Current Sale</h3>
@@ -279,9 +292,10 @@ export default function POS() {
               ) : (
                 <>
                   {cart.map((item) => (
-                    <div key={item.productId} className="app-panel-soft rounded-lg border p-4 sm:p-5">
+                    <div key={item.productId} className="app-panel-soft rounded-[1.35rem] border p-4 sm:p-5">
                       <div className="flex items-start justify-between gap-4">
                         <div>
+                          <p className="mb-2 inline-flex rounded-full bg-[var(--surface-primary)] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--accent-strong)]">Cart Item</p>
                           <p className="font-semibold text-[var(--text-primary)]">{item.name}</p>
                           <p className="mt-0.5 text-sm text-[var(--text-muted)]">{formatMoney(currency, item.price)} each</p>
                           <p className="mt-1 text-xs font-medium text-[var(--text-muted)]">Line total: {formatMoney(currency, item.price * item.quantity)}</p>
@@ -355,7 +369,7 @@ export default function POS() {
                 </>
               )}
             </div>
-            <div className="app-panel-soft mt-6 rounded-lg border p-4 sm:p-5">
+            <div className="app-panel-soft mt-6 rounded-[1.35rem] border p-4 sm:p-5">
               <p className="text-sm text-[var(--text-muted)]">Payment method</p>
               <select
                 value={paymentMethod}
@@ -368,7 +382,7 @@ export default function POS() {
               </select>
             </div>
 
-            <div className="app-panel-soft mt-6 rounded-lg border p-4 sm:p-5">
+            <div className="app-panel-soft mt-6 rounded-[1.35rem] border p-4 sm:p-5">
               <p className="text-sm text-[var(--text-muted)]">Discount</p>
               <div className="mt-3 flex gap-2">
                 <select
@@ -392,7 +406,7 @@ export default function POS() {
               </div>
             </div>
 
-            <div className="app-panel mt-6 rounded-lg border p-4 sm:p-5">
+            <div className="app-panel mt-6 rounded-[1.45rem] border p-4 sm:p-5">
               <div className="flex items-center justify-between text-sm text-[var(--text-muted)]">
                 <span>Subtotal</span>
                 <span>{formatMoney(currency, subtotal)}</span>
