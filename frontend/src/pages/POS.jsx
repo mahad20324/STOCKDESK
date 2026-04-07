@@ -11,10 +11,10 @@ function formatMoney(currency, value) {
 
 function SummaryStat({ label, value, helper }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-      <p className="text-sm text-[#6B7280]">{label}</p>
-      <p className="mt-2 text-2xl font-semibold tracking-tight text-[#111827]">{value}</p>
-      <p className="mt-2 text-sm leading-6 text-[#6B7280]">{helper}</p>
+    <div className="app-panel rounded-lg border p-4">
+      <p className="text-sm text-[var(--text-muted)]">{label}</p>
+      <p className="mt-2 text-2xl font-semibold tracking-tight text-[var(--text-primary)]">{value}</p>
+      <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">{helper}</p>
     </div>
   );
 }
@@ -185,11 +185,11 @@ export default function POS() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+      <section className="app-panel rounded-lg border p-5 sm:p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <h2 className="text-2xl font-semibold tracking-tight text-[#111827]">Point of Sale</h2>
-            <p className="mt-2 text-sm leading-6 text-[#6B7280]">Search products, add items to cart, apply discounts, and complete sales quickly.</p>
+            <h2 className="text-2xl font-semibold tracking-tight text-[var(--text-primary)]">Point of Sale</h2>
+            <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">Search products, add items to cart, apply discounts, and complete sales quickly.</p>
           </div>
           <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[460px]">
             <SummaryStat label="Available Products" value={products.length.toLocaleString()} helper="Items ready to sell." />
@@ -200,11 +200,11 @@ export default function POS() {
       </section>
 
       <div className="grid gap-6 xl:grid-cols-[1.45fr_0.95fr]">
-        <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <section className="app-panel rounded-lg border p-5 sm:p-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h3 className="text-lg font-semibold tracking-tight text-[#111827]">Product Search</h3>
-              <p className="mt-1 text-sm leading-6 text-[#6B7280]">Find products quickly and add them to the current sale.</p>
+              <h3 className="text-lg font-semibold tracking-tight text-[var(--text-primary)]">Product Search</h3>
+              <p className="mt-1 text-sm leading-6 text-[var(--text-muted)]">Find products quickly and add them to the current sale.</p>
             </div>
             <div className="flex items-center gap-3">
               <input
@@ -212,12 +212,12 @@ export default function POS() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search product"
-                className="w-full min-w-0 rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white"
+                className="app-input w-full min-w-0 rounded-lg border px-4 py-3"
               />
               <button
                 type="button"
                 onClick={loadProducts}
-                className="rounded-lg bg-[#2FA8C6] px-4 py-3 text-white transition hover:bg-[#258EA8]"
+                className="app-btn-primary rounded-lg px-4 py-3 transition"
               >
                 Search
               </button>
@@ -226,24 +226,24 @@ export default function POS() {
 
           <div className="mt-6 grid gap-4">
             {filteredProducts.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-slate-200 bg-[#F5FAFD] px-4 py-12 text-center">
-                <p className="text-sm font-medium text-[#111827]">No matching products</p>
-                <p className="mt-2 text-sm text-[#6B7280]">Try another search term or refresh the product list.</p>
+              <div className="app-panel-soft rounded-lg border border-dashed px-4 py-12 text-center">
+                <p className="text-sm font-medium text-[var(--text-primary)]">No matching products</p>
+                <p className="mt-2 text-sm text-[var(--text-muted)]">Try another search term or refresh the product list.</p>
               </div>
             ) : (
               filteredProducts.map((product) => (
-                <div key={product.id} className="flex items-center justify-between rounded-lg border border-slate-200 p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:p-5">
+                <div key={product.id} className="app-panel flex items-center justify-between rounded-lg border p-4 transition hover:-translate-y-0.5 hover:shadow-md sm:p-5">
                   <div>
-                    <p className="font-semibold text-[#111827]">{product.name}</p>
-                    <p className="mt-0.5 text-sm text-[#6B7280]">{product.category || 'Uncategorized'}</p>
-                    <p className="mt-1 text-xs text-[#6B7280]">{product.quantity} units in stock</p>
+                    <p className="font-semibold text-[var(--text-primary)]">{product.name}</p>
+                    <p className="mt-0.5 text-sm text-[var(--text-muted)]">{product.category || 'Uncategorized'}</p>
+                    <p className="mt-1 text-xs text-[var(--text-muted)]">{product.quantity} units in stock</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold text-[#111827]">{formatMoney(currency, product.sellPrice)}</p>
+                    <p className="font-semibold text-[var(--text-primary)]">{formatMoney(currency, product.sellPrice)}</p>
                     <button
                       type="button"
                       onClick={() => addToCart(product)}
-                      className="mt-2 rounded-lg bg-[#2FA8C6] px-4 py-2 text-sm text-white transition hover:bg-[#258EA8]"
+                      className="app-btn-primary mt-2 rounded-lg px-4 py-2 text-sm transition"
                     >
                       Add
                     </button>
@@ -254,17 +254,17 @@ export default function POS() {
           </div>
         </section>
 
-        <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <section className="app-panel rounded-lg border p-5 sm:p-6">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h3 className="text-lg font-semibold tracking-tight text-[#111827]">Current Sale</h3>
-                <p className="mt-1 text-sm leading-6 text-[#6B7280]">Review cart items, customer, and payment before checkout.</p>
+                <h3 className="text-lg font-semibold tracking-tight text-[var(--text-primary)]">Current Sale</h3>
+                <p className="mt-1 text-sm leading-6 text-[var(--text-muted)]">Review cart items, customer, and payment before checkout.</p>
               </div>
               {cart.length > 0 && (
                 <button
                   type="button"
                   onClick={clearCart}
-                  className="rounded-lg border border-rose-200 bg-white px-4 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-50"
+                  className="app-btn-danger rounded-lg px-4 py-2 text-sm font-medium transition"
                 >
                   Clear Cart
                 </button>
@@ -272,25 +272,25 @@ export default function POS() {
             </div>
             <div className="mt-4 space-y-4">
               {cart.length === 0 ? (
-                  <div className="rounded-lg border border-dashed border-slate-200 bg-[#F5FAFD] px-4 py-10 text-center">
-                  <p className="text-sm font-medium text-[#111827]">No items in the cart yet</p>
-                  <p className="mt-2 text-sm text-[#6B7280]">Add products from the list to start a sale.</p>
+                  <div className="app-panel-soft rounded-lg border border-dashed px-4 py-10 text-center">
+                  <p className="text-sm font-medium text-[var(--text-primary)]">No items in the cart yet</p>
+                  <p className="mt-2 text-sm text-[var(--text-muted)]">Add products from the list to start a sale.</p>
                 </div>
               ) : (
                 <>
                   {cart.map((item) => (
-                    <div key={item.productId} className="rounded-lg border border-slate-200 bg-[#F5FAFD] p-4 sm:p-5">
+                    <div key={item.productId} className="app-panel-soft rounded-lg border p-4 sm:p-5">
                       <div className="flex items-start justify-between gap-4">
                         <div>
-                          <p className="font-semibold text-[#111827]">{item.name}</p>
-                          <p className="mt-0.5 text-sm text-[#6B7280]">{formatMoney(currency, item.price)} each</p>
-                          <p className="mt-1 text-xs font-medium text-[#6B7280]">Line total: {formatMoney(currency, item.price * item.quantity)}</p>
+                          <p className="font-semibold text-[var(--text-primary)]">{item.name}</p>
+                          <p className="mt-0.5 text-sm text-[var(--text-muted)]">{formatMoney(currency, item.price)} each</p>
+                          <p className="mt-1 text-xs font-medium text-[var(--text-muted)]">Line total: {formatMoney(currency, item.price * item.quantity)}</p>
                         </div>
                         <div className="flex flex-col items-end gap-3">
                           <button
                             type="button"
                             onClick={() => removeFromCart(item.productId)}
-                            className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-rose-50 text-rose-700 transition hover:bg-rose-100"
+                            className="app-btn-danger inline-flex h-9 w-9 items-center justify-center rounded-full transition"
                             aria-label={`Remove ${item.name} from cart`}
                           >
                             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -305,7 +305,7 @@ export default function POS() {
                             <button
                               type="button"
                               onClick={() => updateQuantity(item.productId, -1)}
-                              className="rounded-full bg-white px-3 py-1 transition hover:bg-slate-100"
+                              className="app-btn-secondary rounded-full border px-3 py-1 transition"
                               aria-label={`Decrease quantity of ${item.name}`}
                             >
                               -
@@ -314,7 +314,7 @@ export default function POS() {
                             <button
                               type="button"
                               onClick={() => updateQuantity(item.productId, 1)}
-                              className="rounded-full bg-white px-3 py-1 transition hover:bg-slate-100"
+                              className="app-btn-secondary rounded-full border px-3 py-1 transition"
                               aria-label={`Increase quantity of ${item.name}`}
                             >
                               +
@@ -323,7 +323,7 @@ export default function POS() {
                           <button
                             type="button"
                             onClick={() => removeFromCart(item.productId)}
-                            className="rounded-full bg-rose-100 px-3 py-1 text-sm font-medium text-rose-700 transition hover:bg-rose-200"
+                            className="app-btn-danger rounded-full px-3 py-1 text-sm font-medium transition"
                             aria-label={`Remove ${item.name} from cart`}
                           >
                             Remove
@@ -333,11 +333,11 @@ export default function POS() {
                     </div>
                   ))}
                   <div>
-                    <label className="mb-2 block text-sm font-medium text-[#374151]">Customer</label>
+                    <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">Customer</label>
                     <select
                       value={customerId}
                       onChange={(event) => setCustomerId(event.target.value)}
-                      className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white"
+                      className="app-input w-full rounded-lg border px-4 py-3"
                     >
                       <option value="">Walk-in / no customer</option>
                       {customers.map((customer) => (
@@ -347,7 +347,7 @@ export default function POS() {
                       ))}
                     </select>
                     {selectedCustomer ? (
-                      <p className="mt-2 text-xs text-[#6B7280]">
+                      <p className="mt-2 text-xs text-[var(--text-muted)]">
                         Selected: {selectedCustomer.name}{selectedCustomer.phone ? ` • ${selectedCustomer.phone}` : ''}
                       </p>
                     ) : null}
@@ -355,12 +355,12 @@ export default function POS() {
                 </>
               )}
             </div>
-            <div className="mt-6 rounded-lg border border-slate-200 bg-[#F5FAFD] p-4 sm:p-5">
-              <p className="text-sm text-[#6B7280]">Payment method</p>
+            <div className="app-panel-soft mt-6 rounded-lg border p-4 sm:p-5">
+              <p className="text-sm text-[var(--text-muted)]">Payment method</p>
               <select
                 value={paymentMethod}
                 onChange={(event) => setPaymentMethod(event.target.value)}
-                className="mt-3 w-full rounded-lg border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-[#2FA8C6]"
+                className="app-btn-secondary mt-3 w-full rounded-lg border px-4 py-3"
               >
                 {paymentMethods.map((method) => (
                   <option key={method} value={method}>{method}</option>
@@ -368,13 +368,13 @@ export default function POS() {
               </select>
             </div>
 
-            <div className="mt-6 rounded-lg border border-slate-200 bg-[#F5FAFD] p-4 sm:p-5">
-              <p className="text-sm text-[#6B7280]">Discount</p>
+            <div className="app-panel-soft mt-6 rounded-lg border p-4 sm:p-5">
+              <p className="text-sm text-[var(--text-muted)]">Discount</p>
               <div className="mt-3 flex gap-2">
                 <select
                   value={discountType}
                   onChange={(event) => setDiscountType(event.target.value)}
-                  className="w-24 rounded-lg border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-[#2FA8C6]"
+                  className="app-btn-secondary w-24 rounded-lg border px-4 py-3"
                 >
                   <option value="fixed">Fixed</option>
                   <option value="percentage">Percent</option>
@@ -386,28 +386,28 @@ export default function POS() {
                   value={discount}
                   onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
                   placeholder={discountType === 'percentage' ? 'e.g., 10' : 'Amount'}
-                  className="flex-1 rounded-lg border border-slate-200 bg-white px-4 py-3 outline-none transition focus:border-[#2FA8C6]"
+                  className="app-btn-secondary flex-1 rounded-lg border px-4 py-3"
                 />
-                <span className="flex items-center px-2 text-sm text-[#6B7280]">{discountType === 'percentage' ? '%' : currency}</span>
+                <span className="flex items-center px-2 text-sm text-[var(--text-muted)]">{discountType === 'percentage' ? '%' : currency}</span>
               </div>
             </div>
 
-            <div className="mt-6 rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-              <div className="flex items-center justify-between text-sm text-[#6B7280]">
+            <div className="app-panel mt-6 rounded-lg border p-4 sm:p-5">
+              <div className="flex items-center justify-between text-sm text-[var(--text-muted)]">
                 <span>Subtotal</span>
                 <span>{formatMoney(currency, subtotal)}</span>
               </div>
               {discountAmount > 0 && (
-                <div className="mt-2 flex items-center justify-between text-sm text-[#6B7280]">
+                <div className="mt-2 flex items-center justify-between text-sm text-[var(--text-muted)]">
                   <span>Discount</span>
                   <span>-{formatMoney(currency, discountAmount)}</span>
                 </div>
               )}
-              <div className="mt-2 flex items-center justify-between border-t border-slate-200 pt-2 text-[#111827]">
+              <div className="mt-2 flex items-center justify-between border-t border-[var(--border-default)] pt-2 text-[var(--text-primary)]">
                 <span>Total</span>
                 <strong>{formatMoney(currency, total)}</strong>
               </div>
-              <label className="mt-4 flex items-center gap-3 rounded-lg bg-[#F5FAFD] px-4 py-3 text-sm text-[#374151]">
+              <label className="app-panel-soft mt-4 flex items-center gap-3 rounded-lg border px-4 py-3 text-sm text-[var(--text-secondary)]">
                 <input type="checkbox" checked={autoPrint} onChange={(event) => setAutoPrint(event.target.checked)} />
                 Print receipt automatically after checkout
               </label>
@@ -416,14 +416,14 @@ export default function POS() {
                 onClick={handleCheckout}
                 disabled={loading}
                 className={`mt-4 w-full rounded-3xl px-4 py-3 text-white transition ${
-                  loading ? 'cursor-not-allowed bg-gray-400' : 'bg-[#2FA8C6] hover:bg-[#258EA8]'
+                  loading ? 'cursor-not-allowed bg-gray-400' : 'app-btn-primary'
                 }`}
               >
                 {loading ? 'Processing...' : 'Complete Sale'}
               </button>
             </div>
             {message && (
-              <div className={`mt-4 rounded-lg px-4 py-3 text-sm ${message.includes('successfully') ? 'bg-[#E9FBF4] text-[#1E8E65]' : 'bg-[#FFF1F0] text-[#C84E47]'}`}>
+              <div className={`mt-4 rounded-lg px-4 py-3 text-sm ${message.includes('successfully') ? 'app-alert-success' : 'app-alert-danger'}`}>
                 <div className="flex items-center justify-between gap-2">
                   <span>{message}</span>
                   {message.includes('successfully') && lastSaleId && (
@@ -431,7 +431,7 @@ export default function POS() {
                       <button
                         type="button"
                         onClick={() => downloadReceipt(lastSaleId)}
-                        className="whitespace-nowrap rounded-lg bg-[#26B07C] px-3 py-1 text-xs text-white transition hover:bg-[#1E8E65]"
+                        className="whitespace-nowrap rounded-lg bg-[var(--success)] px-3 py-1 text-xs text-white transition hover:bg-[var(--success-hover)]"
                       >
                         Download Receipt
                       </button>
@@ -439,7 +439,7 @@ export default function POS() {
                         type="button"
                         onClick={() => printToThermalPrinter(lastSaleId)}
                         disabled={printing}
-                        className="whitespace-nowrap rounded-lg bg-[#2FA8C6] px-3 py-1 text-xs text-white transition hover:bg-[#258EA8] disabled:opacity-50"
+                        className="app-btn-primary whitespace-nowrap rounded-lg px-3 py-1 text-xs transition disabled:opacity-50"
                       >
                         {printing ? 'Printing...' : 'Print Receipt'}
                       </button>

@@ -15,7 +15,7 @@ export default function Layout() {
   };
 
   return (
-    <div className="min-h-screen bg-[#EEF6FB] text-[#111827]">
+    <div className="app-shell min-h-screen">
       <div className="flex min-h-screen">
         <Sidebar user={user} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <div className="flex-1 px-4 py-4 sm:px-6 sm:py-5 lg:px-8 lg:py-6">

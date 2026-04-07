@@ -9,25 +9,25 @@ function formatMoney(currency, value) {
 
 function DashboardIcon({ children, tone = 'default' }) {
   const toneClasses = {
-    default: 'bg-[#E8F8FB] text-[#57C8D8]',
-    success: 'bg-[#ECFAF4] text-[#63C7A0]',
-    danger: 'bg-[#FFF2EF] text-[#FF8F7C]',
-    warning: 'bg-[#FFF7EC] text-[#F3B676]',
+    default: 'bg-[var(--accent-soft)] text-[var(--accent-strong)]',
+    success: 'bg-[var(--success-soft)] text-[var(--success)]',
+    danger: 'bg-[var(--danger-soft)] text-[var(--danger)]',
+    warning: 'bg-[var(--warning-soft)] text-[var(--warning)]',
   };
 
   return <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${toneClasses[tone]}`}>{children}</div>;
 }
 
 function StatCard({ title, value, helper, tone = 'default', icon }) {
-  const valueClass = tone === 'success' ? 'text-[#63C7A0]' : tone === 'danger' ? 'text-[#FF8F7C]' : 'text-[#111827]';
+  const valueClass = tone === 'success' ? 'text-[var(--success)]' : tone === 'danger' ? 'text-[var(--danger)]' : 'text-[var(--text-primary)]';
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md">
+    <div className="app-panel rounded-lg border p-5 transition duration-200 hover:-translate-y-0.5 hover:shadow-md">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-medium text-[#6B7280]">{title}</p>
+          <p className="text-sm font-medium text-[var(--text-muted)]">{title}</p>
           <p className={`mt-4 text-3xl font-semibold ${valueClass}`}>{value}</p>
-          <p className="mt-2 text-sm text-[#6B7280]">{helper}</p>
+          <p className="mt-2 text-sm text-[var(--text-muted)]">{helper}</p>
         </div>
         <DashboardIcon tone={tone}>{icon}</DashboardIcon>
       </div>
@@ -37,11 +37,11 @@ function StatCard({ title, value, helper, tone = 'default', icon }) {
 
 function SectionCard({ title, subtitle, children, action }) {
   return (
-    <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-      <div className="flex items-start justify-between gap-4 border-b border-slate-100 pb-4">
+    <section className="app-panel rounded-lg border p-5 sm:p-6">
+      <div className="flex items-start justify-between gap-4 border-b border-[var(--border-default)] pb-4">
         <div>
-          <h2 className="text-lg font-semibold tracking-tight text-[#111827]">{title}</h2>
-          <p className="mt-1 text-sm leading-6 text-[#6B7280]">{subtitle}</p>
+          <h2 className="text-lg font-semibold tracking-tight text-[var(--text-primary)]">{title}</h2>
+          <p className="mt-1 text-sm leading-6 text-[var(--text-muted)]">{subtitle}</p>
         </div>
         {action}
       </div>
@@ -51,14 +51,14 @@ function SectionCard({ title, subtitle, children, action }) {
 }
 
 function SkeletonCard() {
-  return <div className="h-36 animate-pulse rounded-lg border border-slate-200 bg-white p-5 shadow-sm" />;
+  return <div className="app-panel-soft h-36 animate-pulse rounded-lg border p-5" />;
 }
 
 function EmptyState({ title, message }) {
   return (
-    <div className="rounded-lg border border-dashed border-slate-200 bg-[#F5FAFD] px-4 py-10 text-center">
-      <p className="text-sm font-medium text-[#111827]">{title}</p>
-      <p className="mt-2 text-sm leading-6 text-[#6B7280]">{message}</p>
+    <div className="app-panel-soft rounded-lg border border-dashed px-4 py-10 text-center">
+      <p className="text-sm font-medium text-[var(--text-primary)]">{title}</p>
+      <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">{message}</p>
     </div>
   );
 }
@@ -149,16 +149,16 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+      <section className="app-panel rounded-lg border p-5 sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-sm font-medium text-[#6B7280]">Welcome back</p>
-            <h2 className="mt-1 text-2xl font-semibold tracking-tight text-[#111827]">{shopName} at a glance</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6B7280]">Track stock movement, daily sales, and products that need attention from one simple dashboard.</p>
+            <p className="text-sm font-medium text-[var(--text-muted)]">Welcome back</p>
+            <h2 className="mt-1 text-2xl font-semibold tracking-tight text-[var(--text-primary)]">{shopName} at a glance</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--text-muted)]">Track stock movement, daily sales, and products that need attention from one simple dashboard.</p>
           </div>
-          <div className="rounded-lg bg-[#E8F8FB] px-4 py-3 text-sm text-[#4A9FB1] sm:min-w-[180px]">
+          <div className="app-panel-accent rounded-lg px-4 py-3 text-sm sm:min-w-[180px]">
             <p className="font-medium">Last updated</p>
-            <p className="mt-1 text-[#57C8D8]">{new Date().toLocaleString()}</p>
+            <p className="mt-1 text-[var(--accent)]">{new Date().toLocaleString()}</p>
           </div>
         </div>
       </section>
@@ -171,8 +171,8 @@ export default function Dashboard() {
             ))}
           </div>
           <div className="grid gap-6 xl:grid-cols-[1.65fr_1fr]">
-            <div className="h-96 animate-pulse rounded-lg border border-slate-200 bg-white shadow-sm" />
-            <div className="h-96 animate-pulse rounded-lg border border-slate-200 bg-white shadow-sm" />
+            <div className="app-panel-soft h-96 animate-pulse rounded-lg border" />
+            <div className="app-panel-soft h-96 animate-pulse rounded-lg border" />
           </div>
         </>
       ) : (
@@ -245,16 +245,16 @@ export default function Dashboard() {
             <SectionCard
               title="Sales Overview"
               subtitle="Net sales across the last 7 days."
-              action={<div className="rounded-lg bg-[#E8F8FB] px-3 py-2 text-sm font-medium text-[#57C8D8]">Today: {formatMoney(currency, todayRevenue)}</div>}
+              action={<div className="app-panel-accent rounded-lg px-3 py-2 text-sm font-medium">Today: {formatMoney(currency, todayRevenue)}</div>}
             >
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={salesTrend} barCategoryGap="28%">
-                    <CartesianGrid vertical={false} stroke="#E5E7EB" />
-                    <XAxis dataKey="label" tickLine={false} axisLine={false} stroke="#6B7280" />
-                    <YAxis tickLine={false} axisLine={false} stroke="#6B7280" tickFormatter={(value) => Number(value).toLocaleString()} />
-                    <Tooltip cursor={{ fill: '#E8F8FB' }} formatter={(value) => formatMoney(currency, value)} />
-                    <Bar dataKey="sales" fill="#57C8D8" radius={[8, 8, 0, 0]} />
+                    <CartesianGrid vertical={false} stroke="var(--chart-grid)" />
+                    <XAxis dataKey="label" tickLine={false} axisLine={false} stroke="var(--text-muted)" />
+                    <YAxis tickLine={false} axisLine={false} stroke="var(--text-muted)" tickFormatter={(value) => Number(value).toLocaleString()} />
+                    <Tooltip cursor={{ fill: 'var(--surface-secondary)' }} formatter={(value) => formatMoney(currency, value)} />
+                    <Bar dataKey="sales" fill="var(--chart-1)" radius={[8, 8, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -269,7 +269,7 @@ export default function Dashboard() {
               {lowStockItems.length ? (
                 <div className="space-y-3">
                   {lowStockItems.map((product) => (
-                    <div key={product.id} className="flex items-start gap-3 rounded-lg border border-[#F8D8D0] bg-[#FFF2EF] px-4 py-3 transition hover:border-[#F4B7AA]">
+                    <div key={product.id} className="flex items-start gap-3 rounded-lg border border-[var(--danger-border)] bg-[var(--danger-soft)] px-4 py-3 transition hover:border-[var(--danger)]">
                       <DashboardIcon tone={Number(product.quantity || 0) === 0 ? 'danger' : 'warning'}>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
                           <path d="M12 9v4" />
@@ -278,12 +278,12 @@ export default function Dashboard() {
                         </svg>
                       </DashboardIcon>
                       <div className="min-w-0 flex-1">
-                        <p className="font-medium text-[#111827]">{product.name}</p>
-                        <p className="mt-1 text-sm text-[#6B7280]">{product.category || 'Uncategorized'}</p>
+                        <p className="font-medium text-[var(--text-primary)]">{product.name}</p>
+                        <p className="mt-1 text-sm text-[var(--text-muted)]">{product.category || 'Uncategorized'}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-semibold text-[#FF8F7C]">{product.quantity} left</p>
-                        <p className="mt-1 text-xs text-[#6B7280]">Threshold {Math.max(5, Number(product.lowStock || 0))}</p>
+                        <p className="text-sm font-semibold text-[var(--danger)]">{product.quantity} left</p>
+                        <p className="mt-1 text-xs text-[var(--text-muted)]">Threshold {Math.max(5, Number(product.lowStock || 0))}</p>
                       </div>
                     </div>
                   ))}
@@ -297,15 +297,15 @@ export default function Dashboard() {
           <section className="grid gap-6 lg:grid-cols-2">
             <SectionCard title="Top Products" subtitle="Best performing items by quantity sold.">
               {bestProductData.length ? (
-                <div className="overflow-hidden rounded-lg border border-slate-200">
-                  <div className="grid grid-cols-[minmax(0,1fr)_120px] bg-[#F5FAFD] px-4 py-3 text-sm font-medium text-[#6B7280]">
+                <div className="overflow-hidden rounded-lg border border-[var(--border-default)]">
+                  <div className="app-table-head grid grid-cols-[minmax(0,1fr)_120px] px-4 py-3 text-sm font-medium">
                     <span>Product</span>
                     <span className="text-right">Quantity Sold</span>
                   </div>
                   {bestProductData.map((item) => (
-                    <div key={item.name} className="grid grid-cols-[minmax(0,1fr)_120px] border-t border-slate-200 px-4 py-3.5 text-sm transition hover:bg-[#F5FAFD]">
-                      <span className="truncate font-medium text-[#111827]">{item.name}</span>
-                      <span className="text-right text-[#6B7280]">{item.value}</span>
+                    <div key={item.name} className="app-row-hover grid grid-cols-[minmax(0,1fr)_120px] border-t border-[var(--border-default)] px-4 py-3.5 text-sm transition">
+                      <span className="truncate font-medium text-[var(--text-primary)]">{item.name}</span>
+                      <span className="text-right text-[var(--text-muted)]">{item.value}</span>
                     </div>
                   ))}
                 </div>
@@ -317,28 +317,28 @@ export default function Dashboard() {
             <SectionCard
               title="Stock Summary"
               subtitle="Quick health check for inventory and sales activity."
-              action={<div className="rounded-lg bg-[#F5FAFD] px-3 py-2 text-sm text-[#6B7280]">{sales.length} total sales</div>}
+              action={<div className="app-panel-soft rounded-lg border px-3 py-2 text-sm text-[var(--text-muted)]">{sales.length} total sales</div>}
             >
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-lg border border-slate-200 bg-[#F5FAFD] p-4">
-                  <p className="text-sm font-medium text-[#6B7280]">Products In Stock</p>
-                  <p className="mt-2 text-2xl font-semibold text-[#111827]">{totalStock.toLocaleString()}</p>
-                  <p className="mt-2 text-sm text-[#6B7280]">Across {totalProducts.toLocaleString()} products.</p>
+                <div className="app-panel-soft rounded-lg border p-4">
+                  <p className="text-sm font-medium text-[var(--text-muted)]">Products In Stock</p>
+                  <p className="mt-2 text-2xl font-semibold text-[var(--text-primary)]">{totalStock.toLocaleString()}</p>
+                  <p className="mt-2 text-sm text-[var(--text-muted)]">Across {totalProducts.toLocaleString()} products.</p>
                 </div>
-                <div className="rounded-lg border border-slate-200 bg-[#F5FAFD] p-4">
-                  <p className="text-sm font-medium text-[#6B7280]">Low Stock Alerts</p>
-                  <p className="mt-2 text-2xl font-semibold text-[#FF8F7C]">{lowStockCount.toLocaleString()}</p>
-                  <p className="mt-2 text-sm text-[#6B7280]">Items that need restocking now.</p>
+                <div className="app-panel-soft rounded-lg border p-4">
+                  <p className="text-sm font-medium text-[var(--text-muted)]">Low Stock Alerts</p>
+                  <p className="mt-2 text-2xl font-semibold text-[var(--danger)]">{lowStockCount.toLocaleString()}</p>
+                  <p className="mt-2 text-sm text-[var(--text-muted)]">Items that need restocking now.</p>
                 </div>
-                <div className="rounded-lg border border-slate-200 bg-[#F5FAFD] p-4">
-                  <p className="text-sm font-medium text-[#6B7280]">Today's Revenue</p>
-                  <p className="mt-2 text-2xl font-semibold text-[#63C7A0]">{formatMoney(currency, todayRevenue)}</p>
-                  <p className="mt-2 text-sm text-[#6B7280]">From {todaysSales.toLocaleString()} completed sales.</p>
+                <div className="app-panel-soft rounded-lg border p-4">
+                  <p className="text-sm font-medium text-[var(--text-muted)]">Today's Revenue</p>
+                  <p className="mt-2 text-2xl font-semibold text-[var(--success)]">{formatMoney(currency, todayRevenue)}</p>
+                  <p className="mt-2 text-sm text-[var(--text-muted)]">From {todaysSales.toLocaleString()} completed sales.</p>
                 </div>
-                <div className="rounded-lg border border-slate-200 bg-[#F5FAFD] p-4">
-                  <p className="text-sm font-medium text-[#6B7280]">This Week Units Sold</p>
-                  <p className="mt-2 text-2xl font-semibold text-[#111827]">{Number(summary?.periods?.thisWeek?.itemsSold || 0).toLocaleString()}</p>
-                  <p className="mt-2 text-sm text-[#6B7280]">Useful for reorder planning.</p>
+                <div className="app-panel-soft rounded-lg border p-4">
+                  <p className="text-sm font-medium text-[var(--text-muted)]">This Week Units Sold</p>
+                  <p className="mt-2 text-2xl font-semibold text-[var(--text-primary)]">{Number(summary?.periods?.thisWeek?.itemsSold || 0).toLocaleString()}</p>
+                  <p className="mt-2 text-sm text-[var(--text-muted)]">Useful for reorder planning.</p>
                 </div>
               </div>
             </SectionCard>

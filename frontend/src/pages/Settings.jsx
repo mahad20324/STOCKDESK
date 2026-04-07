@@ -167,10 +167,10 @@ const currencies = [
 
 function SectionCard({ title, subtitle, children, danger = false }) {
   return (
-    <section className={`rounded-lg border bg-white p-5 shadow-sm sm:p-6 ${danger ? 'border-red-200' : 'border-slate-200'}`}>
-      <div className={`border-b pb-4 ${danger ? 'border-red-100' : 'border-slate-100'}`}>
-        <h3 className={`text-lg font-semibold ${danger ? 'text-red-900' : 'text-[#111827]'}`}>{title}</h3>
-        <p className="mt-1 text-sm text-[#6B7280]">{subtitle}</p>
+    <section className={`app-panel rounded-lg border p-5 sm:p-6 ${danger ? 'border-[var(--danger-border)]' : ''}`}>
+      <div className={`border-b pb-4 ${danger ? 'border-[var(--danger-border)]' : 'border-[var(--border-default)]'}`}>
+        <h3 className={`text-lg font-semibold ${danger ? 'text-[var(--danger)]' : 'text-[var(--text-primary)]'}`}>{title}</h3>
+        <p className="mt-1 text-sm text-[var(--text-muted)]">{subtitle}</p>
       </div>
       <div className="mt-5">{children}</div>
     </section>
@@ -178,17 +178,17 @@ function SectionCard({ title, subtitle, children, danger = false }) {
 }
 
 function statusClasses(message) {
-  if (!message) return 'bg-[#F5FAFD] text-[#374151]';
+  if (!message) return 'app-alert-info';
 
   const lowered = message.toLowerCase();
   if (lowered.includes('success') || lowered.includes('saved') || lowered.includes('configured') || lowered.includes('sent')) {
-    return 'bg-[#ECFAF4] text-[#4AA884]';
+    return 'app-alert-success';
   }
   if (lowered.includes('error') || lowered.includes('failed')) {
-    return 'bg-[#FFF2EF] text-[#DA6A5A]';
+    return 'app-alert-danger';
   }
 
-  return 'bg-[#F5FAFD] text-[#374151]';
+  return 'app-alert-info';
 }
 
 export default function Settings() {
@@ -299,16 +299,16 @@ export default function Settings() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-        <h2 className="text-2xl font-semibold text-[#111827]">Settings</h2>
-        <p className="mt-2 text-sm text-[#6B7280]">
+      <section className="app-panel rounded-lg border p-5 sm:p-6">
+        <h2 className="text-2xl font-semibold text-[var(--text-primary)]">Settings</h2>
+        <p className="mt-2 text-sm text-[var(--text-muted)]">
           {isAdmin
             ? 'Manage shop details, receipt preferences, printer setup, and end-of-day operations.'
             : 'Review shop details and receipt settings. Only admins can make changes.'}
         </p>
 
         {!isAdmin ? (
-          <div className="mt-5 rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 text-sm text-[#6B7280]">
+          <div className="app-alert-info mt-5 rounded-lg border border-[var(--border-default)] px-4 py-3 text-sm">
             You have read-only access to this page.
           </div>
         ) : null}
@@ -319,48 +319,48 @@ export default function Settings() {
       {loading ? (
         <div className="grid gap-6">
           {Array.from({ length: isAdmin ? 3 : 1 }).map((_, index) => (
-            <div key={index} className="h-72 animate-pulse rounded-lg border border-slate-200 bg-white shadow-sm" />
+            <div key={index} className="app-panel-soft h-72 animate-pulse rounded-lg border" />
           ))}
         </div>
       ) : (
         <>
           <SectionCard title="Shop Details" subtitle="Keep your store information and receipt branding accurate.">
             <form className="grid gap-4 md:grid-cols-2" onSubmit={handleSubmit}>
-              <label className="space-y-2 text-sm text-[#374151]">
+              <label className="space-y-2 text-sm text-[var(--text-secondary)]">
                 Shop name
                 <input
                   value={settings.shopName}
                   onChange={(e) => setSettings((prev) => ({ ...prev, shopName: e.target.value }))}
                   disabled={!isAdmin}
-                  className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white disabled:cursor-not-allowed"
+                  className="app-input w-full rounded-lg border px-4 py-3 disabled:cursor-not-allowed"
                 />
               </label>
-              <label className="space-y-2 text-sm text-[#374151]">
+              <label className="space-y-2 text-sm text-[var(--text-secondary)]">
                 Phone number
                 <input
                   value={settings.phone}
                   onChange={(e) => setSettings((prev) => ({ ...prev, phone: e.target.value }))}
                   disabled={!isAdmin}
-                  className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white disabled:cursor-not-allowed"
+                  className="app-input w-full rounded-lg border px-4 py-3 disabled:cursor-not-allowed"
                 />
               </label>
-              <label className="md:col-span-2 space-y-2 text-sm text-[#374151]">
+              <label className="md:col-span-2 space-y-2 text-sm text-[var(--text-secondary)]">
                 Address
                 <textarea
                   value={settings.address}
                   onChange={(e) => setSettings((prev) => ({ ...prev, address: e.target.value }))}
                   disabled={!isAdmin}
-                  className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white disabled:cursor-not-allowed"
+                  className="app-input w-full rounded-lg border px-4 py-3 disabled:cursor-not-allowed"
                   rows="4"
                 />
               </label>
-              <label className="space-y-2 text-sm text-[#374151]">
+              <label className="space-y-2 text-sm text-[var(--text-secondary)]">
                 Currency
                 <select
                   value={settings.currency}
                   onChange={(e) => setSettings((prev) => ({ ...prev, currency: e.target.value }))}
                   disabled={!isAdmin}
-                  className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white disabled:cursor-not-allowed"
+                  className="app-input w-full rounded-lg border px-4 py-3 disabled:cursor-not-allowed"
                 >
                   {currencies.map((curr) => (
                     <option key={curr.code} value={curr.code}>
@@ -369,7 +369,7 @@ export default function Settings() {
                   ))}
                 </select>
               </label>
-              <label className="space-y-2 text-sm text-[#374151]">
+              <label className="space-y-2 text-sm text-[var(--text-secondary)]">
                 VAT Percentage (%)
                 <input
                   type="number"
@@ -379,44 +379,44 @@ export default function Settings() {
                   value={settings.vat || 0}
                   onChange={(e) => setSettings((prev) => ({ ...prev, vat: parseFloat(e.target.value) || 0 }))}
                   disabled={!isAdmin}
-                  className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white disabled:cursor-not-allowed"
+                  className="app-input w-full rounded-lg border px-4 py-3 disabled:cursor-not-allowed"
                 />
               </label>
-              <label className="space-y-2 text-sm text-[#374151]">
+              <label className="space-y-2 text-sm text-[var(--text-secondary)]">
                 Shop Logo URL
                 <input
                   value={settings.shopLogoUrl || ''}
                   onChange={(e) => setSettings((prev) => ({ ...prev, shopLogoUrl: e.target.value }))}
                   disabled={!isAdmin}
                   placeholder="https://example.com/logo.png"
-                  className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white disabled:cursor-not-allowed"
+                  className="app-input w-full rounded-lg border px-4 py-3 disabled:cursor-not-allowed"
                 />
               </label>
-              <label className="md:col-span-2 space-y-2 text-sm text-[#374151]">
+              <label className="md:col-span-2 space-y-2 text-sm text-[var(--text-secondary)]">
                 Receipt Header
                 <textarea
                   value={settings.receiptHeader || ''}
                   onChange={(e) => setSettings((prev) => ({ ...prev, receiptHeader: e.target.value }))}
                   disabled={!isAdmin}
                   placeholder="Welcome to our store"
-                  className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white disabled:cursor-not-allowed"
+                  className="app-input w-full rounded-lg border px-4 py-3 disabled:cursor-not-allowed"
                   rows="2"
                 />
               </label>
-              <label className="md:col-span-2 space-y-2 text-sm text-[#374151]">
+              <label className="md:col-span-2 space-y-2 text-sm text-[var(--text-secondary)]">
                 Receipt Footer
                 <textarea
                   value={settings.receiptFooter || ''}
                   onChange={(e) => setSettings((prev) => ({ ...prev, receiptFooter: e.target.value }))}
                   disabled={!isAdmin}
                   placeholder="Thank you for shopping with us!"
-                  className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white disabled:cursor-not-allowed"
+                  className="app-input w-full rounded-lg border px-4 py-3 disabled:cursor-not-allowed"
                   rows="2"
                 />
               </label>
               {isAdmin ? (
                 <div className="md:col-span-2 pt-2">
-                  <button className="rounded-lg bg-[#2FA8C6] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#258EA8]">Save Settings</button>
+                  <button className="app-btn-primary rounded-lg px-5 py-3 text-sm font-medium transition">Save Settings</button>
                 </div>
               ) : null}
             </form>
@@ -429,12 +429,12 @@ export default function Settings() {
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
-                <label className="space-y-2 text-sm text-[#374151]">
+                <label className="space-y-2 text-sm text-[var(--text-secondary)]">
                   Printer Type
                   <select
                     value={printerSettings.type}
                     onChange={(e) => setPrinterSettings((prev) => ({ ...prev, type: e.target.value }))}
-                    className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white"
+                    className="app-input w-full rounded-lg border px-4 py-3"
                   >
                     <option value="usb">USB Printer</option>
                     <option value="network">Network Printer (IP)</option>
@@ -443,49 +443,49 @@ export default function Settings() {
 
                 {printerSettings.type === 'usb' ? (
                   <>
-                    <label className="space-y-2 text-sm text-[#374151]">
+                    <label className="space-y-2 text-sm text-[var(--text-secondary)]">
                       Vendor ID (hex)
                       <input
                         value={printerSettings.vendorId}
                         onChange={(e) => setPrinterSettings((prev) => ({ ...prev, vendorId: e.target.value }))}
                         placeholder="0x04b8"
-                        className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white"
+                        className="app-input w-full rounded-lg border px-4 py-3"
                       />
                     </label>
-                    <label className="space-y-2 text-sm text-[#374151]">
+                    <label className="space-y-2 text-sm text-[var(--text-secondary)]">
                       Product ID (hex)
                       <input
                         value={printerSettings.productId}
                         onChange={(e) => setPrinterSettings((prev) => ({ ...prev, productId: e.target.value }))}
                         placeholder="0x0202"
-                        className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white"
+                        className="app-input w-full rounded-lg border px-4 py-3"
                       />
                     </label>
                   </>
                 ) : (
                   <>
-                    <label className="space-y-2 text-sm text-[#374151]">
+                    <label className="space-y-2 text-sm text-[var(--text-secondary)]">
                       IP Address
                       <input
                         value={printerSettings.ip}
                         onChange={(e) => setPrinterSettings((prev) => ({ ...prev, ip: e.target.value }))}
                         placeholder="192.168.1.100"
-                        className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white"
+                        className="app-input w-full rounded-lg border px-4 py-3"
                       />
                     </label>
-                    <label className="space-y-2 text-sm text-[#374151]">
+                    <label className="space-y-2 text-sm text-[var(--text-secondary)]">
                       Port
                       <input
                         value={printerSettings.port}
                         onChange={(e) => setPrinterSettings((prev) => ({ ...prev, port: e.target.value }))}
                         placeholder="9100"
-                        className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white"
+                        className="app-input w-full rounded-lg border px-4 py-3"
                       />
                     </label>
                   </>
                 )}
 
-                <label className="md:col-span-2 flex items-center gap-3 rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 text-sm text-[#374151]">
+                <label className="app-panel-soft md:col-span-2 flex items-center gap-3 rounded-lg border px-4 py-3 text-sm text-[var(--text-secondary)]">
                   <input
                     type="checkbox"
                     checked={printerSettings.autoPrint}
@@ -497,21 +497,21 @@ export default function Settings() {
               </div>
 
               <div className="mt-5 flex flex-wrap gap-3">
-                <button type="button" onClick={handlePrinterConfigure} className="rounded-lg bg-[#2FA8C6] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#258EA8]">
+                <button type="button" onClick={handlePrinterConfigure} className="app-btn-primary rounded-lg px-5 py-3 text-sm font-medium transition">
                   Connect Printer
                 </button>
                 <button
                   type="button"
                   onClick={handleTestPrint}
                   disabled={testingPrinter}
-                  className="rounded-lg border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-[#374151] transition hover:bg-[#F5FAFD] disabled:opacity-60"
+                  className="app-btn-secondary rounded-lg border px-5 py-3 text-sm font-medium transition disabled:opacity-60"
                 >
                   {testingPrinter ? 'Testing...' : 'Test Print'}
                 </button>
                 <button
                   type="button"
                   onClick={handleDisconnect}
-                  className="rounded-lg bg-[#F3F4F6] px-5 py-3 text-sm font-medium text-[#374151] transition hover:bg-[#E5E7EB]"
+                  className="app-btn-subtle rounded-lg px-5 py-3 text-sm font-medium transition"
                 >
                   Disconnect
                 </button>
@@ -525,44 +525,44 @@ export default function Settings() {
               subtitle="Save a daily snapshot of performance while keeping all sales history available."
               danger
             >
-              <div className="rounded-lg bg-[#FEF2F2] p-4 text-sm text-red-800">
+              <div className="app-alert-danger rounded-lg p-4 text-sm">
                 Closing the day stores totals for net sales, gross sales, gross profit, discounts, orders, and items sold. No raw sales records are deleted.
               </div>
 
-              <div className="mt-5 flex flex-wrap items-center justify-between gap-4 rounded-lg border border-red-100 bg-white p-4">
+              <div className="mt-5 flex flex-wrap items-center justify-between gap-4 rounded-lg border border-[var(--danger-border)] bg-[var(--surface-primary)] p-4">
                 <div>
-                  <p className="text-base font-semibold text-red-900">Close current business day</p>
-                  <p className="mt-1 text-sm text-[#6B7280]">Use this at the end of the day to lock in a clean historical snapshot.</p>
+                  <p className="text-base font-semibold text-[var(--danger)]">Close current business day</p>
+                  <p className="mt-1 text-sm text-[var(--text-muted)]">Use this at the end of the day to lock in a clean historical snapshot.</p>
                 </div>
                 <button
                   type="button"
                   onClick={handleCloseBusinessDay}
                   disabled={closingDay}
-                  className="rounded-lg bg-[#FF8F7C] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#E07765] disabled:opacity-60"
+                  className="app-btn-danger-solid rounded-lg px-5 py-3 text-sm font-medium transition disabled:opacity-60"
                 >
                   {closingDay ? 'Closing Day...' : 'Close Business Day'}
                 </button>
               </div>
 
               <div className="mt-6">
-                <h4 className="text-base font-semibold text-[#111827]">Recent Day Closures</h4>
-                <p className="mt-1 text-sm text-[#6B7280]">Review the latest saved daily summaries.</p>
+                <h4 className="text-base font-semibold text-[var(--text-primary)]">Recent Day Closures</h4>
+                <p className="mt-1 text-sm text-[var(--text-muted)]">Review the latest saved daily summaries.</p>
 
                 {dayClosures.length === 0 ? (
-                  <div className="mt-4 rounded-lg border border-dashed border-slate-200 bg-[#F5FAFD] px-4 py-8 text-center">
-                    <p className="text-sm font-medium text-[#111827]">No day closures yet</p>
-                    <p className="mt-2 text-sm text-[#6B7280]">Your saved day summaries will appear here after the first close.</p>
+                  <div className="app-panel-soft mt-4 rounded-lg border border-dashed px-4 py-8 text-center">
+                    <p className="text-sm font-medium text-[var(--text-primary)]">No day closures yet</p>
+                    <p className="mt-2 text-sm text-[var(--text-muted)]">Your saved day summaries will appear here after the first close.</p>
                   </div>
                 ) : (
                   <div className="mt-4 space-y-3">
                     {dayClosures.map((closure) => (
-                      <div key={closure.id} className="rounded-lg border border-slate-200 bg-white p-4">
+                      <div key={closure.id} className="app-panel rounded-lg border p-4">
                         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                           <div>
-                            <p className="font-semibold text-[#111827]">{closure.closedForDate}</p>
-                            <p className="mt-1 text-xs text-[#6B7280]">Closed by {closure.closedBy?.name || 'Unknown'} on {new Date(closure.createdAt).toLocaleString()}</p>
+                            <p className="font-semibold text-[var(--text-primary)]">{closure.closedForDate}</p>
+                            <p className="mt-1 text-xs text-[var(--text-muted)]">Closed by {closure.closedBy?.name || 'Unknown'} on {new Date(closure.createdAt).toLocaleString()}</p>
                           </div>
-                          <div className="grid gap-2 text-sm text-[#6B7280] sm:grid-cols-3 lg:text-right">
+                          <div className="grid gap-2 text-sm text-[var(--text-muted)] sm:grid-cols-3 lg:text-right">
                             <span>Net sales: {settings.currency} {Number(closure.netSales || 0).toFixed(2)}</span>
                             <span>Gross profit: {settings.currency} {Number(closure.grossProfit || 0).toFixed(2)}</span>
                             <span>Items sold: {Number(closure.itemsSold || 0)}</span>

@@ -4,15 +4,234 @@
 
 :root {
   color-scheme: light;
+  --bg-app: #eef6fb;
+  --bg-auth: radial-gradient(circle at top left, rgba(87, 200, 216, 0.18), transparent 32%), linear-gradient(135deg, #eef6fb 0%, #f8fcfe 55%, #edf9f5 100%);
+  --surface-primary: #ffffff;
+  --surface-secondary: #f5fafd;
+  --surface-tertiary: #e8f8fb;
+  --surface-overlay: rgba(255, 255, 255, 0.94);
+  --surface-inverse: #0f172a;
+  --text-primary: #111827;
+  --text-secondary: #374151;
+  --text-muted: #6b7280;
+  --text-soft: #5f7280;
+  --border-default: #d9edf3;
+  --border-strong: #c4dde8;
+  --focus-ring: rgba(87, 200, 216, 0.24);
+  --accent: #57c8d8;
+  --accent-hover: #3fb6c8;
+  --accent-strong: #21778d;
+  --accent-soft: #e8f8fb;
+  --success: #4aa884;
+  --success-hover: #38876a;
+  --success-soft: #ecfaf4;
+  --warning: #d89b49;
+  --warning-soft: #fff7ec;
+  --danger: #da6a5a;
+  --danger-hover: #c25849;
+  --danger-soft: #fff2ef;
+  --danger-soft-strong: #fde4de;
+  --danger-border: #f1c3bb;
+  --info-soft: #f5fafd;
+  --table-hover: #f8fcfe;
+  --overlay: rgba(15, 23, 42, 0.42);
+  --shadow-card: 0 18px 48px rgba(31, 100, 118, 0.10);
+  --chart-1: #57c8d8;
+  --chart-2: #7bd9c8;
+  --chart-3: #beeaf4;
+  --chart-4: #f3b676;
+  --chart-5: #ff8f7c;
+  --chart-grid: #d7e6ec;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+  --bg-app: #04080d;
+  --bg-auth: radial-gradient(circle at top left, rgba(81, 213, 233, 0.14), transparent 24%), radial-gradient(circle at bottom right, rgba(255, 123, 97, 0.12), transparent 22%), linear-gradient(145deg, #04080d 0%, #09131b 38%, #0a1713 100%);
+  --surface-primary: #0b141c;
+  --surface-secondary: #111d27;
+  --surface-tertiary: #152733;
+  --surface-overlay: rgba(8, 15, 22, 0.96);
+  --surface-inverse: #f7fbff;
+  --text-primary: #eef7fb;
+  --text-secondary: #d4e3eb;
+  --text-muted: #8ea8b5;
+  --text-soft: #abc0ca;
+  --border-default: #1d3340;
+  --border-strong: #295061;
+  --focus-ring: rgba(81, 213, 233, 0.34);
+  --accent: #51d5e9;
+  --accent-hover: #7ce7f1;
+  --accent-strong: #b7f5fb;
+  --accent-soft: #0f2935;
+  --success: #7be0b6;
+  --success-hover: #98ebc6;
+  --success-soft: #102a22;
+  --warning: #ffc57f;
+  --warning-soft: #362611;
+  --danger: #ff7b61;
+  --danger-hover: #ff9b87;
+  --danger-soft: #331815;
+  --danger-soft-strong: #45211d;
+  --danger-border: #6b352e;
+  --info-soft: #102331;
+  --table-hover: #112330;
+  --overlay: rgba(1, 4, 9, 0.76);
+  --shadow-card: 0 28px 90px rgba(0, 0, 0, 0.46);
+  --chart-1: #51d5e9;
+  --chart-2: #7be0b6;
+  --chart-3: #31738b;
+  --chart-4: #ffc57f;
+  --chart-5: #ff7b61;
+  --chart-grid: #1a3340;
+}
+
+html {
+  background: var(--bg-app);
 }
 
 body {
-  @apply bg-[#eef6fb] text-slate-800 antialiased;
+  @apply antialiased;
+  min-height: 100vh;
+  background: var(--bg-app);
+  color: var(--text-primary);
+  transition: background-color 180ms ease, color 180ms ease;
 }
 
 button,
 input,
 select,
 textarea {
-  @apply outline-none focus:ring-2 focus:ring-[#bfe7f1] focus:border-[#2fa8c6];
+  @apply outline-none;
+  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+button:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  box-shadow: 0 0 0 2px var(--focus-ring);
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--text-primary);
+}
+
+@layer components {
+  .app-shell {
+    background: var(--bg-app);
+    color: var(--text-primary);
+  }
+
+  .app-panel {
+    background: var(--surface-primary);
+    border-color: var(--border-default);
+    box-shadow: var(--shadow-card);
+  }
+
+  .app-panel-soft {
+    background: var(--surface-secondary);
+    border-color: var(--border-default);
+  }
+
+  .app-panel-accent {
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+  }
+
+  .app-input {
+    background: var(--surface-secondary);
+    border-color: var(--border-default);
+    color: var(--text-primary);
+  }
+
+  .app-input::placeholder {
+    color: var(--text-muted);
+  }
+
+  .app-btn-primary {
+    background: var(--accent);
+    color: #ffffff;
+  }
+
+  .app-btn-primary:hover {
+    background: var(--accent-hover);
+  }
+
+  .app-btn-secondary {
+    background: var(--surface-primary);
+    border-color: var(--border-default);
+    color: var(--text-secondary);
+  }
+
+  .app-btn-secondary:hover {
+    background: var(--surface-secondary);
+  }
+
+  .app-btn-subtle {
+    background: var(--surface-secondary);
+    color: var(--text-secondary);
+  }
+
+  .app-btn-subtle:hover {
+    background: var(--surface-tertiary);
+  }
+
+  .app-btn-danger {
+    background: var(--danger-soft);
+    color: var(--danger);
+  }
+
+  .app-btn-danger:hover {
+    background: var(--danger-soft-strong);
+  }
+
+  .app-btn-danger-solid {
+    background: var(--danger);
+    color: #ffffff;
+  }
+
+  .app-btn-danger-solid:hover {
+    background: var(--danger-hover);
+  }
+
+  .app-alert-info {
+    background: var(--info-soft);
+    color: var(--text-secondary);
+  }
+
+  .app-alert-success {
+    background: var(--success-soft);
+    color: var(--success);
+  }
+
+  .app-alert-danger {
+    background: var(--danger-soft);
+    color: var(--danger);
+  }
+
+  .app-alert-warning {
+    background: var(--warning-soft);
+    color: var(--warning);
+  }
+
+  .app-table-head {
+    background: var(--surface-secondary);
+    color: var(--text-muted);
+  }
+
+  .app-row-hover:hover {
+    background: var(--table-hover);
+  }
+
+  .app-overlay {
+    background: var(--overlay);
+  }
+
+  .app-modal {
+    background: var(--surface-overlay);
+    border-color: var(--border-default);
+    box-shadow: var(--shadow-card);
+  }
 }
