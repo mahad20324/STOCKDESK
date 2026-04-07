@@ -16,7 +16,7 @@ export default function Header({ user, onLogout, onOpenSidebar }) {
   const pageTitle = pageTitles[location.pathname] || 'StockDesk';
 
   return (
-    <div className="app-panel flex flex-wrap items-center justify-between gap-4 rounded-xl border px-4 py-3.5 sm:px-5 sm:py-4">
+    <div className="app-topbar flex flex-wrap items-center justify-between gap-4 rounded-[1.5rem] border px-4 py-3.5 sm:px-6 sm:py-4.5">
       <div className="flex min-w-0 items-center gap-3">
         <button
           type="button"
@@ -37,7 +37,7 @@ export default function Header({ user, onLogout, onOpenSidebar }) {
       </div>
       <div className="flex w-full items-center justify-between gap-2.5 sm:w-auto sm:justify-end sm:gap-3">
         <ThemeToggleButton compact className="shrink-0" />
-        <div className="hidden text-right sm:block">
+        <div className="hidden rounded-xl border border-[var(--border-default)] bg-[var(--surface-secondary)] px-3 py-2 text-right sm:block">
           <p className="text-sm font-medium text-[var(--text-primary)]">{user?.name || 'Cashier'}</p>
           <p className="text-xs text-[var(--text-muted)]">{user?.role || 'User'}</p>
         </div>

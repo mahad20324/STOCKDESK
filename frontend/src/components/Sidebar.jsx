@@ -86,24 +86,24 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
         onClick={onClose}
       />
       <aside
-        className={`app-panel fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r px-5 py-5 transition-transform duration-300 lg:static lg:translate-x-0 lg:px-6 lg:py-6 lg:shadow-none ${
+        className={`app-sidebar-shell fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r px-5 py-5 transition-transform duration-300 lg:static lg:translate-x-0 lg:px-6 lg:py-6 lg:shadow-none ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="flex items-center justify-between lg:block">
           <div>
             <div className="flex items-center gap-3">
-              <div className="app-btn-primary flex h-11 w-11 items-center justify-center rounded-xl text-base font-semibold">S</div>
+              <div className="app-brand-mark flex h-11 w-11 items-center justify-center rounded-xl text-base font-semibold">S</div>
               <div>
-                <p className="text-lg font-semibold text-[var(--text-primary)]">StockDesk</p>
-                <p className="text-sm text-[var(--text-muted)]">Business dashboard</p>
+                <p className="text-lg font-semibold text-[var(--sidebar-text)]">StockDesk</p>
+                <p className="text-sm text-[var(--sidebar-muted)]">Business dashboard</p>
               </div>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="app-btn-secondary rounded-lg border p-2 lg:hidden"
+            className="rounded-lg border border-[var(--sidebar-border)] bg-white/5 p-2 text-[var(--sidebar-text)] transition hover:bg-white/10 lg:hidden"
             aria-label="Close navigation"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
@@ -113,10 +113,10 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
           </button>
         </div>
 
-        <div className="app-panel-soft mt-7 rounded-2xl border p-4">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">Active Shop</p>
-          <p className="mt-2 text-base font-semibold text-[var(--text-primary)]">{shopName}</p>
-          <p className="mt-1 text-sm text-[var(--text-muted)]">{shopSlug}</p>
+        <div className="app-sidebar-card mt-7 rounded-2xl border p-4">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sidebar-muted)]">Active Shop</p>
+          <p className="mt-2 text-base font-semibold text-[var(--sidebar-text)]">{shopName}</p>
+          <p className="mt-1 text-sm text-[var(--sidebar-muted)]">{shopSlug}</p>
         </div>
 
         <nav className="mt-7 space-y-1.5">
@@ -126,10 +126,10 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
               to={item.to}
               onClick={onClose}
               className={({ isActive }) =>
-                `flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition ${
+                `app-sidebar-link flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition ${
                   isActive
-                    ? 'app-btn-primary shadow-sm'
-                    : 'text-[var(--text-secondary)] hover:bg-[var(--surface-secondary)] hover:text-[var(--text-primary)]'
+                    ? 'app-sidebar-link-active'
+                    : ''
                 }`
               }
             >
@@ -142,10 +142,10 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
               to="/app/users"
               onClick={onClose}
               className={({ isActive }) =>
-                `flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition ${
+                `app-sidebar-link flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition ${
                   isActive
-                    ? 'app-btn-primary shadow-sm'
-                    : 'text-[var(--text-secondary)] hover:bg-[var(--surface-secondary)] hover:text-[var(--text-primary)]'
+                    ? 'app-sidebar-link-active'
+                    : ''
                 }`
               }
             >
@@ -155,9 +155,9 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
           )}
         </nav>
 
-        <div className="app-panel-soft mt-auto rounded-2xl border p-4">
-          <p className="text-sm font-medium text-[var(--text-primary)]">Keep stock and sales in sync.</p>
-          <p className="mt-1.5 text-sm leading-6 text-[var(--text-muted)]">Use the dashboard to spot slow sales and low inventory quickly.</p>
+        <div className="app-sidebar-card mt-auto rounded-2xl border p-4">
+          <p className="text-sm font-medium text-[var(--sidebar-text)]">Keep stock and sales in sync.</p>
+          <p className="mt-1.5 text-sm leading-6 text-[var(--sidebar-muted)]">Use the dashboard to spot slow sales and low inventory quickly.</p>
         </div>
       </aside>
     </>
