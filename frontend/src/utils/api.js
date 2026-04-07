@@ -1,6 +1,7 @@
 import { getToken, logout } from './auth';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+const PRINTER_API_BASE = import.meta.env.VITE_PRINTER_API_URL || 'http://localhost:4000/api';
 
 async function request(path, options = {}) {
   const token = getToken();
@@ -30,6 +31,32 @@ async function request(path, options = {}) {
   if (!response.ok) {
     throw new Error(data?.message || 'Request failed');
   }
+  return data;
+}
+
+async function printerRequest(path, options = {}) {
+  const token = getToken();
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(options.headers || {}),
+  };
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`${PRINTER_API_BASE}${path}`, { ...options, headers });
+  const text = await response.text();
+  const data = text ? JSON.parse(text) : null;
+
+  if (!response.ok) {
+    const error = new Error(data?.message || data?.error || 'Printer request failed');
+    error.status = response.status;
+    error.fallback = Boolean(data?.fallback);
+    error.data = data;
+    throw error;
+  }
+
   return data;
 }
 
@@ -82,3 +109,8 @@ export const fetchDayClosures = () => request('/sales/day-closures');
 export const fetchBestSelling = () => request('/reports/best-selling');
 export const fetchCashierReport = () => request('/reports/by-cashier');
 export const fetchDashboardSummary = () => request('/reports/summary');
+export const fetchPrinterStatus = () => printerRequest('/printer/status');
+export const configurePrinter = (body) => printerRequest('/printer/configure', { method: 'POST', body: JSON.stringify(body) });
+export const testPrinter = () => printerRequest('/printer/test', { method: 'POST' });
+export const disconnectPrinter = () => printerRequest('/printer/disconnect', { method: 'POST' });
+export const printReceiptToPrinter = (saleId) => printerRequest('/printer/print-receipt', { method: 'POST', body: JSON.stringify({ saleId }) });
