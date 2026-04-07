@@ -9,11 +9,14 @@ import POS from './pages/POS';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 import Users from './pages/Users';
+import Shops from './pages/Shops';
 import ProtectedRoute from './components/ProtectedRoute';
-import { getToken } from './utils/auth';
+import { getToken, getUser } from './utils/auth';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(!!getToken());
+  const currentUser = getUser();
+  const isSuperAdmin = currentUser?.role === 'SuperAdmin';
 
   useEffect(() => {
     const checkAuth = () => {
@@ -33,13 +36,14 @@ function App() {
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<Login />} />
       <Route path="/app" element={isAuthenticated ? <Layout /> : <Navigate to="/login" replace />}>
-        <Route index element={<Dashboard />} />
-        <Route path="products" element={<Products />} />
-        <Route path="customers" element={<Customers />} />
-        <Route path="pos" element={<POS />} />
-        <Route path="reports" element={<Reports />} />
-        <Route path="settings" element={<Settings />} />
-        <Route path="users" element={<Users />} />
+        <Route index element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : <Dashboard />} />
+        <Route path="shops" element={isSuperAdmin ? <Shops /> : <Navigate to="/app" replace />} />
+        <Route path="products" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : <Products />} />
+        <Route path="customers" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : <Customers />} />
+        <Route path="pos" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : <POS />} />
+        <Route path="reports" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : <Reports />} />
+        <Route path="settings" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : <Settings />} />
+        <Route path="users" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : <Users />} />
       </Route>
       <Route path="*" element={<Navigate to={isAuthenticated ? '/app' : '/login'} replace />} />
     </Routes>

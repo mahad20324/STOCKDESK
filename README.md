@@ -111,6 +111,13 @@ Optional for temporary hosting with existing profiles only:
 - `VERIFY_EMAIL_BASE_URL`
 - all `SMTP_*` variables
 
+Optional for platform management:
+
+- `SUPERADMIN_NAME`
+- `SUPERADMIN_USERNAME`
+- `SUPERADMIN_EMAIL`
+- `SUPERADMIN_PASSWORD`
+
 If the frontend is deployed with `VITE_ENABLE_SIGNUP=false`, existing users can sign in without SMTP being configured.
 
 Railway start command:
@@ -155,3 +162,14 @@ The file `frontend/vercel.json` already rewrites all routes to `index.html` so R
 4. Deploy `frontend/` to Vercel.
 5. Update Railway `CORS_ORIGINS` with your main Vercel domain.
 6. Keep `CORS_ORIGIN_PATTERNS=https://*.vercel.app` if you want Vercel preview deployments to work without changing backend config.
+
+### Super Admin
+
+If you want platform-wide access to all registered shops, set these Railway environment variables and redeploy the backend:
+
+- `SUPERADMIN_EMAIL`
+- `SUPERADMIN_PASSWORD`
+- optional `SUPERADMIN_NAME`
+- optional `SUPERADMIN_USERNAME`
+
+On boot, StockDesk will create or normalize that account as a `SuperAdmin`. Super admins are not attached to a specific shop and can access the platform-wide shops screen.

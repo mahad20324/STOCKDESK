@@ -65,6 +65,7 @@ export const signup = (body) => request('/auth/signup', { method: 'POST', body: 
 export const fetchUsers = () => request('/users');
 export const createUser = (body) => request('/users', { method: 'POST', body: JSON.stringify(body) });
 export const deleteUser = (id) => request(`/users/${id}`, { method: 'DELETE' });
+export const fetchPlatformShops = () => request('/admin/shops');
 export const fetchCustomers = (query = '') => request(`/customers${query}`);
 export const createCustomer = (body) => request('/customers', { method: 'POST', body: JSON.stringify(body) });
 export const updateCustomer = (id, body) => request(`/customers/${id}`, { method: 'PUT', body: JSON.stringify(body) });

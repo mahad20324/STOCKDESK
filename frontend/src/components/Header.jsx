@@ -3,6 +3,7 @@ import ThemeToggleButton from './ThemeToggleButton';
 
 const pageTitles = {
   '/app': 'Dashboard',
+  '/app/shops': 'Shops',
   '/app/products': 'Products',
   '/app/customers': 'Customers',
   '/app/pos': 'Sales',

@@ -73,11 +73,33 @@ function UsersIcon() {
   );
 }
 
+function ShopsIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+      <path d="M3 21h18" />
+      <path d="M5 21V8l7-4 7 4v13" />
+      <path d="M9 10h6" />
+      <path d="M9 14h6" />
+      <path d="M10 21v-3h4v3" />
+    </svg>
+  );
+}
+
 export default function Sidebar({ isOpen = false, onClose = () => {} }) {
   const user = getUser();
   const isAdmin = user?.role === 'Admin';
-  const shopName = user?.shop?.name || 'Default Shop';
-  const shopSlug = user?.shop?.slug || 'legacy-shop';
+  const isSuperAdmin = user?.role === 'SuperAdmin';
+  const shopName = isSuperAdmin ? 'Platform Console' : user?.shop?.name || 'Default Shop';
+  const shopSlug = isSuperAdmin ? 'all-registered-shops' : user?.shop?.slug || 'legacy-shop';
+  const visibleLinks = isSuperAdmin
+    ? [
+        {
+          to: '/app/shops',
+          label: 'Shops',
+          icon: <ShopsIcon />,
+        },
+      ]
+    : links;
 
   return (
     <>
@@ -114,13 +136,13 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
         </div>
 
         <div className="app-sidebar-card mt-7 rounded-2xl border p-4">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sidebar-muted)]">Active Shop</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sidebar-muted)]">{isSuperAdmin ? 'Platform Scope' : 'Active Shop'}</p>
           <p className="mt-2 text-base font-semibold text-[var(--sidebar-text)]">{shopName}</p>
           <p className="mt-1 text-sm text-[var(--sidebar-muted)]">{shopSlug}</p>
         </div>
 
         <nav className="mt-7 space-y-1.5">
-          {links.map((item) => (
+          {visibleLinks.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
@@ -137,7 +159,7 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
               <span>{item.label}</span>
             </NavLink>
           ))}
-          {isAdmin && (
+          {!isSuperAdmin && isAdmin && (
             <NavLink
               to="/app/users"
               onClick={onClose}
@@ -156,8 +178,8 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
         </nav>
 
         <div className="app-sidebar-card mt-auto rounded-2xl border p-4">
-          <p className="text-sm font-medium text-[var(--sidebar-text)]">Keep stock and sales in sync.</p>
-          <p className="mt-1.5 text-sm leading-6 text-[var(--sidebar-muted)]">Use the dashboard to spot slow sales and low inventory quickly.</p>
+          <p className="text-sm font-medium text-[var(--sidebar-text)]">{isSuperAdmin ? 'Monitor every tenant from one place.' : 'Keep stock and sales in sync.'}</p>
+          <p className="mt-1.5 text-sm leading-6 text-[var(--sidebar-muted)]">{isSuperAdmin ? 'Track shop creation, owner verification, and platform adoption across all registered businesses.' : 'Use the dashboard to spot slow sales and low inventory quickly.'}</p>
         </div>
       </aside>
     </>
