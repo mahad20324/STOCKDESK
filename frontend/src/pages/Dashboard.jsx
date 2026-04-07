@@ -9,17 +9,17 @@ function formatMoney(currency, value) {
 
 function DashboardIcon({ children, tone = 'default' }) {
   const toneClasses = {
-    default: 'bg-[#E6F7FB] text-[#2FA8C6]',
-    success: 'bg-[#E9FBF4] text-[#26B07C]',
-    danger: 'bg-[#FFF1F0] text-[#F97066]',
-    warning: 'bg-[#FFF8EC] text-[#E8A34E]',
+    default: 'bg-[#E8F8FB] text-[#57C8D8]',
+    success: 'bg-[#ECFAF4] text-[#63C7A0]',
+    danger: 'bg-[#FFF2EF] text-[#FF8F7C]',
+    warning: 'bg-[#FFF7EC] text-[#F3B676]',
   };
 
   return <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${toneClasses[tone]}`}>{children}</div>;
 }
 
 function StatCard({ title, value, helper, tone = 'default', icon }) {
-  const valueClass = tone === 'success' ? 'text-[#26B07C]' : tone === 'danger' ? 'text-[#F97066]' : 'text-[#111827]';
+  const valueClass = tone === 'success' ? 'text-[#63C7A0]' : tone === 'danger' ? 'text-[#FF8F7C]' : 'text-[#111827]';
 
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md">
@@ -156,9 +156,9 @@ export default function Dashboard() {
             <h2 className="mt-1 text-2xl font-semibold tracking-tight text-[#111827]">{shopName} at a glance</h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6B7280]">Track stock movement, daily sales, and products that need attention from one simple dashboard.</p>
           </div>
-          <div className="rounded-lg bg-[#E6F7FB] px-4 py-3 text-sm text-[#21778D] sm:min-w-[180px]">
+          <div className="rounded-lg bg-[#E8F8FB] px-4 py-3 text-sm text-[#4A9FB1] sm:min-w-[180px]">
             <p className="font-medium">Last updated</p>
-            <p className="mt-1 text-[#2FA8C6]">{new Date().toLocaleString()}</p>
+            <p className="mt-1 text-[#57C8D8]">{new Date().toLocaleString()}</p>
           </div>
         </div>
       </section>
@@ -245,7 +245,7 @@ export default function Dashboard() {
             <SectionCard
               title="Sales Overview"
               subtitle="Net sales across the last 7 days."
-              action={<div className="rounded-lg bg-[#E6F7FB] px-3 py-2 text-sm font-medium text-[#2FA8C6]">Today: {formatMoney(currency, todayRevenue)}</div>}
+              action={<div className="rounded-lg bg-[#E8F8FB] px-3 py-2 text-sm font-medium text-[#57C8D8]">Today: {formatMoney(currency, todayRevenue)}</div>}
             >
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
@@ -253,8 +253,8 @@ export default function Dashboard() {
                     <CartesianGrid vertical={false} stroke="#E5E7EB" />
                     <XAxis dataKey="label" tickLine={false} axisLine={false} stroke="#6B7280" />
                     <YAxis tickLine={false} axisLine={false} stroke="#6B7280" tickFormatter={(value) => Number(value).toLocaleString()} />
-                    <Tooltip cursor={{ fill: '#E6F7FB' }} formatter={(value) => formatMoney(currency, value)} />
-                    <Bar dataKey="sales" fill="#2FA8C6" radius={[8, 8, 0, 0]} />
+                    <Tooltip cursor={{ fill: '#E8F8FB' }} formatter={(value) => formatMoney(currency, value)} />
+                    <Bar dataKey="sales" fill="#57C8D8" radius={[8, 8, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -269,7 +269,7 @@ export default function Dashboard() {
               {lowStockItems.length ? (
                 <div className="space-y-3">
                   {lowStockItems.map((product) => (
-                    <div key={product.id} className="flex items-start gap-3 rounded-lg border border-[#FAD6D2] bg-[#FFF1F0] px-4 py-3 transition hover:border-[#F7B9B2]">
+                    <div key={product.id} className="flex items-start gap-3 rounded-lg border border-[#F8D8D0] bg-[#FFF2EF] px-4 py-3 transition hover:border-[#F4B7AA]">
                       <DashboardIcon tone={Number(product.quantity || 0) === 0 ? 'danger' : 'warning'}>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
                           <path d="M12 9v4" />
@@ -282,7 +282,7 @@ export default function Dashboard() {
                         <p className="mt-1 text-sm text-[#6B7280]">{product.category || 'Uncategorized'}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-semibold text-[#F97066]">{product.quantity} left</p>
+                        <p className="text-sm font-semibold text-[#FF8F7C]">{product.quantity} left</p>
                         <p className="mt-1 text-xs text-[#6B7280]">Threshold {Math.max(5, Number(product.lowStock || 0))}</p>
                       </div>
                     </div>
@@ -327,12 +327,12 @@ export default function Dashboard() {
                 </div>
                 <div className="rounded-lg border border-slate-200 bg-[#F5FAFD] p-4">
                   <p className="text-sm font-medium text-[#6B7280]">Low Stock Alerts</p>
-                  <p className="mt-2 text-2xl font-semibold text-[#F97066]">{lowStockCount.toLocaleString()}</p>
+                  <p className="mt-2 text-2xl font-semibold text-[#FF8F7C]">{lowStockCount.toLocaleString()}</p>
                   <p className="mt-2 text-sm text-[#6B7280]">Items that need restocking now.</p>
                 </div>
                 <div className="rounded-lg border border-slate-200 bg-[#F5FAFD] p-4">
                   <p className="text-sm font-medium text-[#6B7280]">Today's Revenue</p>
-                  <p className="mt-2 text-2xl font-semibold text-[#26B07C]">{formatMoney(currency, todayRevenue)}</p>
+                  <p className="mt-2 text-2xl font-semibold text-[#63C7A0]">{formatMoney(currency, todayRevenue)}</p>
                   <p className="mt-2 text-sm text-[#6B7280]">From {todaysSales.toLocaleString()} completed sales.</p>
                 </div>
                 <div className="rounded-lg border border-slate-200 bg-[#F5FAFD] p-4">

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { fetchReports, fetchBestSelling, fetchCashierReport, fetchSettings } from '../utils/api';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, CartesianGrid } from 'recharts';
 
-const colors = ['#2FA8C6', '#7DD3E6', '#BEEAF4', '#26B07C', '#A7E7CB'];
+const colors = ['#57C8D8', '#7BD9C8', '#BEEAF4', '#F3B676', '#FF8F7C'];
 
 function formatMoney(currency, value) {
   return `${currency} ${Number(value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -121,7 +121,7 @@ export default function Reports() {
                     <XAxis dataKey="name" stroke="#6B7280" tickLine={false} axisLine={false} />
                     <YAxis stroke="#6B7280" tickLine={false} axisLine={false} />
                     <Tooltip formatter={(value) => formatMoney(currency, value)} />
-                    <Bar dataKey="total" fill="#2FA8C6" radius={[8, 8, 0, 0]} />
+                    <Bar dataKey="total" fill="#57C8D8" radius={[8, 8, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -172,7 +172,7 @@ export default function Reports() {
                       <XAxis type="number" stroke="#6B7280" tickLine={false} axisLine={false} />
                       <YAxis type="category" dataKey="name" stroke="#6B7280" tickLine={false} axisLine={false} width={90} />
                       <Tooltip formatter={(value) => formatMoney(currency, value)} />
-                      <Bar dataKey="revenue" fill="#2FA8C6" radius={[8, 8, 8, 8]} />
+                      <Bar dataKey="revenue" fill="#7BD9C8" radius={[8, 8, 8, 8]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>

@@ -182,10 +182,10 @@ function statusClasses(message) {
 
   const lowered = message.toLowerCase();
   if (lowered.includes('success') || lowered.includes('saved') || lowered.includes('configured') || lowered.includes('sent')) {
-    return 'bg-[#E9FBF4] text-[#1E8E65]';
+    return 'bg-[#ECFAF4] text-[#4AA884]';
   }
   if (lowered.includes('error') || lowered.includes('failed')) {
-    return 'bg-[#FFF1F0] text-[#C84E47]';
+    return 'bg-[#FFF2EF] text-[#DA6A5A]';
   }
 
   return 'bg-[#F5FAFD] text-[#374151]';
@@ -410,7 +410,7 @@ export default function Settings() {
                   onChange={(e) => setSettings((prev) => ({ ...prev, receiptFooter: e.target.value }))}
                   disabled={!isAdmin}
                   placeholder="Thank you for shopping with us!"
-                  className="w-full rounded-lg border border-slate-200 bg-[#F9FAFB] px-4 py-3 outline-none transition focus:border-[#2563EB] focus:bg-white disabled:cursor-not-allowed"
+                  className="w-full rounded-lg border border-slate-200 bg-[#F5FAFD] px-4 py-3 outline-none transition focus:border-[#2FA8C6] focus:bg-white disabled:cursor-not-allowed"
                   rows="2"
                 />
               </label>
@@ -538,7 +538,7 @@ export default function Settings() {
                   type="button"
                   onClick={handleCloseBusinessDay}
                   disabled={closingDay}
-                  className="rounded-lg bg-[#F97066] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#D95C54] disabled:opacity-60"
+                  className="rounded-lg bg-[#FF8F7C] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#E07765] disabled:opacity-60"
                 >
                   {closingDay ? 'Closing Day...' : 'Close Business Day'}
                 </button>
