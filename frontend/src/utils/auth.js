@@ -14,8 +14,9 @@ export const getUser = () => {
 };
 
 export const logout = () => {
+  const user = getUser();
   localStorage.removeItem(STORAGE_KEY);
   localStorage.removeItem(USER_KEY);
   window.dispatchEvent(new Event('auth-changed'));
-  window.location.href = '/login';
+  window.location.href = user?.role === 'SuperAdmin' ? '/owner-login' : '/login';
 };

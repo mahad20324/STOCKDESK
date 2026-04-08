@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import Layout from './components/Layout';
 import Login from './pages/Login';
+import OwnerLogin from './pages/OwnerLogin';
 import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
 import Customers from './pages/Customers';
@@ -35,6 +36,7 @@ function App() {
     <Routes>
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/owner-login" element={isAuthenticated ? <Navigate to={isSuperAdmin ? '/app/shops' : '/app'} replace /> : <OwnerLogin />} />
       <Route path="/app" element={isAuthenticated ? <Layout /> : <Navigate to="/login" replace />}>
         <Route index element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : <Dashboard />} />
         <Route path="shops" element={isSuperAdmin ? <Shops /> : <Navigate to="/app" replace />} />

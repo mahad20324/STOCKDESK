@@ -95,7 +95,7 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
     ? [
         {
           to: '/app/shops',
-          label: 'Shops',
+          label: 'Platform',
           icon: <ShopsIcon />,
         },
       ]
