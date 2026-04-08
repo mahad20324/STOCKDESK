@@ -5,13 +5,11 @@ import Header from './Header';
 import { logout, getUser } from '../utils/auth';
 
 export default function Layout() {
-  const navigate = useNavigate();
   const user = getUser();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
   };
 
   return (

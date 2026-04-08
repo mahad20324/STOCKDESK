@@ -15,13 +15,19 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { getToken, getUser } from './utils/auth';
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(!!getToken());
-  const currentUser = getUser();
+  const [session, setSession] = useState({
+    isAuthenticated: !!getToken(),
+    user: getUser(),
+  });
+  const currentUser = session.user;
   const isSuperAdmin = currentUser?.role === 'SuperAdmin';
 
   useEffect(() => {
     const checkAuth = () => {
-      setIsAuthenticated(!!getToken());
+      setSession({
+        isAuthenticated: !!getToken(),
+        user: getUser(),
+      });
     };
 
     window.addEventListener('auth-changed', checkAuth);
@@ -36,8 +42,8 @@ function App() {
     <Routes>
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/owner-login" element={isAuthenticated ? <Navigate to={isSuperAdmin ? '/app/shops' : '/app'} replace /> : <OwnerLogin />} />
-      <Route path="/app" element={isAuthenticated ? <Layout /> : <Navigate to="/login" replace />}>
+      <Route path="/owner-login" element={session.isAuthenticated ? <Navigate to={isSuperAdmin ? '/app/shops' : '/app'} replace /> : <OwnerLogin />} />
+      <Route path="/app" element={session.isAuthenticated ? <Layout /> : <Navigate to="/login" replace />}>
         <Route index element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : <Dashboard />} />
         <Route path="shops" element={isSuperAdmin ? <Shops /> : <Navigate to="/app" replace />} />
         <Route path="products" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : <Products />} />
@@ -47,7 +53,7 @@ function App() {
         <Route path="settings" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : <Settings />} />
         <Route path="users" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : <Users />} />
       </Route>
-      <Route path="*" element={<Navigate to={isAuthenticated ? '/app' : '/login'} replace />} />
+      <Route path="*" element={<Navigate to={session.isAuthenticated ? '/app' : '/login'} replace />} />
     </Routes>
   );
 }

@@ -17,17 +17,9 @@ function StatCard({ label, value, helper, eyebrow = 'Platform' }) {
   );
 }
 
-function formatCurrency(amount) {
-  return new Intl.NumberFormat(undefined, {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  }).format(Number(amount || 0));
-}
-
 function formatRelativeTime(value) {
   if (!value) {
-    return 'No sales yet';
+    return 'No login activity yet';
   }
 
   const date = new Date(value);
@@ -88,26 +80,25 @@ export default function Shops() {
   }, []);
 
   const shops = overview?.shops || [];
-  const recentSales = overview?.recentSales || [];
   const summary = overview?.summary || {
     totalShops: 0,
     activeShops: 0,
-    liveShops: 0,
+    recentlyActiveShops: 0,
     newShopsToday: 0,
     totalUsers: 0,
-    totalSalesToday: 0,
-    revenueToday: 0,
   };
 
   const metrics = useMemo(() => {
     const adminAccounts = shops.filter((shop) => shop.owner?.username).length;
-    const liveShopRows = shops.filter((shop) => shop.activity?.isLive);
+    const activeWindowHours = overview?.activityWindowHours || 24;
+    const activityThreshold = new Date(Date.now() - activeWindowHours * 60 * 60 * 1000);
+    const recentlyActiveShops = shops.filter((shop) => shop.activity?.lastLoginAt && new Date(shop.activity.lastLoginAt) >= activityThreshold);
 
     return {
       adminAccounts,
-      liveShopRows,
+      recentlyActiveShops,
     };
-  }, [shops]);
+  }, [overview?.activityWindowHours, shops]);
 
   if (currentUser?.role !== 'SuperAdmin') {
     return <Navigate to="/app" replace />;
@@ -124,7 +115,7 @@ export default function Shops() {
             </div>
             <h2 className="text-2xl font-semibold text-[var(--text-primary)]">Registered Shops</h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--text-muted)]">
-              Monitor tenant growth, see which shops are live right now, and follow recent sales activity from one private console.
+              Manage the platform safely with tenant counts, shop status, and login activity without exposing any shop sales or business revenue.
             </p>
           </div>
           <div className="space-y-2 text-right">
@@ -139,9 +130,9 @@ export default function Shops() {
 
         <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <StatCard label="Registered Shops" value={summary.totalShops.toLocaleString()} helper="Total tenant shops on the platform." eyebrow="Tenant Base" />
-          <StatCard label="Live Right Now" value={summary.liveShops.toLocaleString()} helper={`Shops with sales in the last ${overview?.liveWindowMinutes || 15} minutes.`} eyebrow="Realtime" />
-          <StatCard label="Sales Today" value={summary.totalSalesToday.toLocaleString()} helper="Completed sales across all shops since midnight." eyebrow="Flow" />
-          <StatCard label="Revenue Today" value={formatCurrency(summary.revenueToday)} helper="Cross-platform sales total for the current day." eyebrow="Revenue" />
+          <StatCard label="Active Shops" value={summary.activeShops.toLocaleString()} helper="Shops currently enabled on the platform." eyebrow="Status" />
+          <StatCard label="Recently Active" value={summary.recentlyActiveShops.toLocaleString()} helper={`Shops with a login in the last ${overview?.activityWindowHours || 24} hours.`} eyebrow="Activity" />
+          <StatCard label="Platform Users" value={summary.totalUsers.toLocaleString()} helper="Users across all registered shops." eyebrow="Accounts" />
         </div>
 
         <div className="mt-4 grid gap-4 md:grid-cols-3">
@@ -156,9 +147,9 @@ export default function Shops() {
             <p className="mt-2 text-sm text-[var(--text-muted)]">Shops with an assigned admin username.</p>
           </div>
           <div className="app-panel-soft rounded-[1.3rem] border px-4 py-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">Accounts</p>
-            <p className="mt-3 text-2xl font-semibold text-[var(--text-primary)]">{summary.totalUsers.toLocaleString()}</p>
-            <p className="mt-2 text-sm text-[var(--text-muted)]">Users across all registered shops.</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">Privacy</p>
+            <p className="mt-3 text-2xl font-semibold text-[var(--text-primary)]">Strict</p>
+            <p className="mt-2 text-sm text-[var(--text-muted)]">Sales, transactions, reports, and revenue stay inside each shop.</p>
           </div>
         </div>
       </section>
@@ -169,10 +160,10 @@ export default function Shops() {
         <div className="app-panel rounded-[1.5rem] border p-5 sm:p-6">
           <div className="flex items-center justify-between border-b border-[var(--border-default)] pb-4">
             <div>
-              <h3 className="text-lg font-semibold text-[var(--text-primary)]">Live Shops</h3>
-              <p className="mt-1 text-sm text-[var(--text-muted)]">Businesses with recorded sales inside the live activity window.</p>
+              <h3 className="text-lg font-semibold text-[var(--text-primary)]">Recently Active Shops</h3>
+              <p className="mt-1 text-sm text-[var(--text-muted)]">Businesses with at least one user login inside the activity window.</p>
             </div>
-            <div className="app-panel-soft rounded-2xl border px-3 py-2 text-sm text-[var(--text-muted)]">{summary.liveShops} live</div>
+            <div className="app-panel-soft rounded-2xl border px-3 py-2 text-sm text-[var(--text-muted)]">{summary.recentlyActiveShops} active</div>
           </div>
 
           {loading ? (
@@ -188,30 +179,30 @@ export default function Shops() {
             </div>
           ) : (
             <div className="mt-5 grid gap-3">
-              {metrics.liveShopRows.map((shop) => (
+              {metrics.recentlyActiveShops.map((shop) => (
                 <div key={shop.id} className="app-panel-soft rounded-2xl border p-4">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <div className="flex items-center gap-2">
                         <p className="font-semibold text-[var(--text-primary)]">{shop.name}</p>
-                        <span className="rounded-full bg-emerald-500/15 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-600">Live</span>
+                        <span className="rounded-full bg-emerald-500/15 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-600">Recently Active</span>
                       </div>
                       <p className="mt-1 text-sm text-[var(--text-muted)]">{shop.owner?.username || 'No admin username'} • {shop.currency}</p>
                     </div>
-                    <div className="text-sm text-[var(--text-muted)]">Last sale {formatRelativeTime(shop.activity?.lastSaleAt)}</div>
+                    <div className="text-sm text-[var(--text-muted)]">Last login {formatRelativeTime(shop.activity?.lastLoginAt)}</div>
                   </div>
                   <div className="mt-4 grid gap-3 sm:grid-cols-3">
                     <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">Last Hour</p>
-                      <p className="mt-2 text-lg font-semibold text-[var(--text-primary)]">{Number(shop.activity?.salesLastHour || 0)}</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">Shop Status</p>
+                      <p className="mt-2 text-lg font-semibold text-[var(--text-primary)]">{shop.isActive ? 'Enabled' : 'Paused'}</p>
                     </div>
                     <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">Today</p>
-                      <p className="mt-2 text-lg font-semibold text-[var(--text-primary)]">{Number(shop.activity?.salesToday || 0)} sales</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">Last User</p>
+                      <p className="mt-2 text-lg font-semibold text-[var(--text-primary)]">{shop.activity?.lastActiveUser?.username || 'Unknown'}</p>
                     </div>
                     <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">Revenue Today</p>
-                      <p className="mt-2 text-lg font-semibold text-[var(--text-primary)]">{formatCurrency(shop.activity?.revenueToday)}</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">Role</p>
+                      <p className="mt-2 text-lg font-semibold text-[var(--text-primary)]">{shop.activity?.lastActiveUser?.role || 'N/A'}</p>
                     </div>
                   </div>
                 </div>
@@ -223,10 +214,10 @@ export default function Shops() {
         <div className="app-panel rounded-[1.5rem] border p-5 sm:p-6">
           <div className="flex items-center justify-between border-b border-[var(--border-default)] pb-4">
             <div>
-              <h3 className="text-lg font-semibold text-[var(--text-primary)]">Recent Platform Activity</h3>
-              <p className="mt-1 text-sm text-[var(--text-muted)]">Latest recorded sales across every tenant.</p>
+              <h3 className="text-lg font-semibold text-[var(--text-primary)]">Latest Shop Signups</h3>
+              <p className="mt-1 text-sm text-[var(--text-muted)]">Newest tenants added to the platform.</p>
             </div>
-            <div className="app-panel-soft rounded-2xl border px-3 py-2 text-sm text-[var(--text-muted)]">{recentSales.length} events</div>
+            <div className="app-panel-soft rounded-2xl border px-3 py-2 text-sm text-[var(--text-muted)]">{shops.slice(0, 8).length} shown</div>
           </div>
 
           {loading ? (
@@ -235,23 +226,23 @@ export default function Shops() {
                 <div key={index} className="app-panel-soft h-16 animate-pulse rounded-2xl border" />
               ))}
             </div>
-          ) : recentSales.length === 0 ? (
+          ) : shops.length === 0 ? (
             <div className="app-panel-soft mt-5 rounded-2xl border border-dashed px-4 py-10 text-center">
-              <p className="text-sm font-medium text-[var(--text-primary)]">No recent activity yet</p>
-              <p className="mt-2 text-sm text-[var(--text-muted)]">Sales events will stream into this panel as shops start transacting.</p>
+              <p className="text-sm font-medium text-[var(--text-primary)]">No shop signups yet</p>
+              <p className="mt-2 text-sm text-[var(--text-muted)]">Newly registered shops will appear here as they join the platform.</p>
             </div>
           ) : (
             <div className="mt-5 space-y-3">
-              {recentSales.map((sale) => (
-                <div key={sale.id} className="app-panel-soft rounded-2xl border p-4">
+              {shops.slice(0, 8).map((shop) => (
+                <div key={shop.id} className="app-panel-soft rounded-2xl border p-4">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <p className="font-semibold text-[var(--text-primary)]">{sale.shop?.name || 'Unknown shop'}</p>
-                      <p className="mt-1 text-sm text-[var(--text-muted)]">{sale.cashier?.username || sale.cashier?.name || 'Unknown cashier'} • {sale.paymentMethod}</p>
+                      <p className="font-semibold text-[var(--text-primary)]">{shop.name}</p>
+                      <p className="mt-1 text-sm text-[var(--text-muted)]">{shop.owner?.username || 'No admin username'} • {shop.slug}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-[var(--text-primary)]">{formatCurrency(sale.total)}</p>
-                      <p className="mt-1 text-xs text-[var(--text-muted)]">{formatRelativeTime(sale.date)}</p>
+                      <p className="font-semibold text-[var(--text-primary)]">{shop.isActive ? 'Enabled' : 'Paused'}</p>
+                      <p className="mt-1 text-xs text-[var(--text-muted)]">Created {formatRelativeTime(shop.createdAt)}</p>
                     </div>
                   </div>
                 </div>
@@ -290,7 +281,7 @@ export default function Shops() {
                   <th className="px-4 py-3 font-medium">Owner</th>
                   <th className="px-4 py-3 font-medium">Username</th>
                   <th className="px-4 py-3 font-medium">Users</th>
-                  <th className="px-4 py-3 font-medium">Realtime</th>
+                  <th className="px-4 py-3 font-medium">Activity</th>
                   <th className="px-4 py-3 font-medium">Created</th>
                 </tr>
               </thead>
@@ -325,13 +316,13 @@ export default function Shops() {
                     <td className="px-4 py-4 text-[var(--text-muted)]">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <span className={`inline-flex rounded-full px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] ${shop.activity?.isLive ? 'bg-emerald-500/15 text-emerald-600' : 'bg-[var(--surface-secondary)] text-[var(--text-muted)]'}`}>
-                            {shop.activity?.isLive ? 'Live' : shop.isActive ? 'Open' : 'Paused'}
+                          <span className={`inline-flex rounded-full px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] ${shop.activity?.lastLoginAt ? 'bg-emerald-500/15 text-emerald-600' : 'bg-[var(--surface-secondary)] text-[var(--text-muted)]'}`}>
+                            {shop.activity?.lastLoginAt ? 'Seen' : shop.isActive ? 'No login yet' : 'Paused'}
                           </span>
-                          <span>{Number(shop.activity?.salesLastHour || 0)} last hour</span>
+                          <span>{shop.activity?.lastActiveUser?.username || 'No recent user'}</span>
                         </div>
-                        <div>{Number(shop.metrics?.productCount || 0)} products • {Number(shop.metrics?.saleCount || 0)} total sales</div>
-                        <div>Last sale {formatRelativeTime(shop.activity?.lastSaleAt)}</div>
+                        <div>Last login {formatRelativeTime(shop.activity?.lastLoginAt)}</div>
+                        <div>Status: {shop.isActive ? 'Enabled' : 'Paused'}</div>
                       </div>
                     </td>
                     <td className="px-4 py-4 text-[var(--text-muted)]">{new Date(shop.createdAt).toLocaleDateString()}</td>
