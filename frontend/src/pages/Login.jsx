@@ -66,7 +66,6 @@ export default function Login() {
         <div className="mb-6 text-center">
           <div className="text-4xl font-bold text-[var(--accent-strong)]">StockDesk</div>
           <p className="mt-2 text-[var(--text-soft)]">Simple shop-based sign in for multi-tenant inventory and POS teams</p>
-          <p className="mt-2 text-sm text-[var(--text-muted)]">Super admin sign-in uses username and password only. Leave shop name blank for the platform dashboard.</p>
         </div>
 
         <div className="mb-6 grid grid-cols-2 rounded-3xl bg-[var(--surface-secondary)] p-1">
@@ -106,7 +105,7 @@ export default function Login() {
               type="text"
               value={loginForm.shopName}
               onChange={(event) => setLoginForm((prev) => ({ ...prev, shopName: event.target.value }))}
-              placeholder="Enter shop name or leave blank for super admin"
+              placeholder="Enter shop name"
               className="app-input w-full rounded-3xl border px-4 py-3 shadow-sm"
             />
 
