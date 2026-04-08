@@ -42,10 +42,10 @@ export default function Shops() {
   const metrics = useMemo(() => {
     const totalShops = shops.length;
     const activeShops = shops.filter((shop) => shop.isActive).length;
-    const verifiedOwners = shops.filter((shop) => shop.owner?.isVerified).length;
+    const adminAccounts = shops.filter((shop) => shop.owner?.username).length;
     const totalUsers = shops.reduce((sum, shop) => sum + Number(shop.metrics?.userCount || 0), 0);
 
-    return { totalShops, activeShops, verifiedOwners, totalUsers };
+    return { totalShops, activeShops, adminAccounts, totalUsers };
   }, [shops]);
 
   if (currentUser?.role !== 'SuperAdmin') {
@@ -63,7 +63,7 @@ export default function Shops() {
             </div>
             <h2 className="text-2xl font-semibold text-[var(--text-primary)]">Registered Shops</h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--text-muted)]">
-              Review every tenant created through public signup, along with owner verification and usage indicators.
+              Review every tenant created through direct signup, along with admin usernames and usage indicators.
             </p>
           </div>
           <div className="app-panel-accent rounded-2xl px-4 py-3 text-sm font-medium">
@@ -74,7 +74,7 @@ export default function Shops() {
         <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <StatCard label="Registered Shops" value={metrics.totalShops.toLocaleString()} helper="Total tenant shops on the platform." eyebrow="Tenant Base" />
           <StatCard label="Active Shops" value={metrics.activeShops.toLocaleString()} helper="Shops currently marked active." eyebrow="Status" />
-          <StatCard label="Verified Owners" value={metrics.verifiedOwners.toLocaleString()} helper="Shop admins who verified email." eyebrow="Verification" />
+          <StatCard label="Admin Accounts" value={metrics.adminAccounts.toLocaleString()} helper="Shops with an assigned admin username." eyebrow="Access" />
           <StatCard label="Platform Users" value={metrics.totalUsers.toLocaleString()} helper="Users across all registered shops." eyebrow="Accounts" />
         </div>
       </section>
@@ -108,7 +108,7 @@ export default function Shops() {
                 <tr>
                   <th className="px-4 py-3 font-medium">Shop</th>
                   <th className="px-4 py-3 font-medium">Owner</th>
-                  <th className="px-4 py-3 font-medium">Verification</th>
+                  <th className="px-4 py-3 font-medium">Username</th>
                   <th className="px-4 py-3 font-medium">Users</th>
                   <th className="px-4 py-3 font-medium">Activity</th>
                   <th className="px-4 py-3 font-medium">Created</th>
@@ -132,16 +132,14 @@ export default function Shops() {
                       {shop.owner ? (
                         <div>
                           <p className="font-medium text-[var(--text-primary)]">{shop.owner.name}</p>
-                          <p className="text-xs text-[var(--text-muted)]">{shop.owner.email}</p>
+                          <p className="text-xs text-[var(--text-muted)]">Primary admin</p>
                         </div>
                       ) : (
                         <span className="text-[var(--text-muted)]">No admin found</span>
                       )}
                     </td>
                     <td className="px-4 py-4">
-                      <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${shop.owner?.isVerified ? 'app-alert-success' : 'app-alert-warning'}`}>
-                        {shop.owner?.isVerified ? 'Verified' : 'Pending'}
-                      </span>
+                      <span className="text-[var(--text-primary)]">{shop.owner?.username || 'Not set'}</span>
                     </td>
                     <td className="px-4 py-4 text-[var(--text-primary)]">{Number(shop.metrics?.userCount || 0)}</td>
                     <td className="px-4 py-4 text-[var(--text-muted)]">

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { closeBusinessDay, configurePrinter, disconnectPrinter, fetchDayClosures, fetchPrinterStatus, fetchSettings, saveSettings, testPrinter } from '../utils/api';
+import { closeBusinessDay, configurePrinter, disconnectPrinter, fetchDayClosures, fetchPrinterStatus, fetchSettings, fetchUsers, resetUserPassword, saveSettings, testPrinter } from '../utils/api';
 import { getUser } from '../utils/auth';
 import ThemeToggleButton from '../components/ThemeToggleButton';
 
@@ -195,9 +195,13 @@ function statusClasses(message) {
 export default function Settings() {
   const isAdmin = getUser()?.role === 'Admin';
   const [settings, setSettings] = useState({ shopName: '', address: '', phone: '', currency: 'USD' });
+  const [teamUsers, setTeamUsers] = useState([]);
   const [dayClosures, setDayClosures] = useState([]);
   const [printerSettings, setPrinterSettings] = useState({ type: 'usb', vendorId: '0x04b8', productId: '0x0202', ip: '192.168.1.100', port: '9100', autoPrint: false });
   const [status, setStatus] = useState('');
+  const [credentialStatus, setCredentialStatus] = useState('');
+  const [passwordReset, setPasswordReset] = useState({ userId: null, password: '', confirmPassword: '' });
+  const [revealedCredentials, setRevealedCredentials] = useState(null);
   const [printerStatus, setPrinterStatus] = useState('Not connected');
   const [testingPrinter, setTestingPrinter] = useState(false);
   const [closingDay, setClosingDay] = useState(false);
@@ -210,8 +214,9 @@ export default function Settings() {
         const data = await fetchSettings();
         setSettings(data);
         if (isAdmin) {
-          const closures = await fetchDayClosures();
+          const [closures, users] = await Promise.all([fetchDayClosures(), fetchUsers()]);
           setDayClosures(closures);
+          setTeamUsers(users);
           await checkPrinterStatus();
         }
       } finally {
@@ -228,6 +233,15 @@ export default function Settings() {
 
     const closures = await fetchDayClosures();
     setDayClosures(closures);
+  };
+
+  const loadUsers = async () => {
+    if (!isAdmin) {
+      return;
+    }
+
+    const users = await fetchUsers();
+    setTeamUsers(users);
   };
 
   const checkPrinterStatus = async () => {
@@ -298,6 +312,23 @@ export default function Settings() {
     }
   };
 
+  const handleResetPassword = async (event) => {
+    event.preventDefault();
+
+    try {
+      const response = await resetUserPassword(passwordReset.userId, {
+        password: passwordReset.password,
+        confirmPassword: passwordReset.confirmPassword,
+      });
+      setCredentialStatus(response.message || 'Password reset successfully.');
+      setRevealedCredentials({ username: response.username, password: response.plainPassword });
+      setPasswordReset({ userId: null, password: '', confirmPassword: '' });
+      await loadUsers();
+    } catch (error) {
+      setCredentialStatus(error.message);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <section className="app-panel relative overflow-hidden rounded-[1.7rem] border p-5 sm:p-6">
@@ -340,6 +371,87 @@ export default function Settings() {
               <ThemeToggleButton stretch className="w-full lg:w-auto lg:min-w-[20rem]" />
             </div>
           </SectionCard>
+
+          {isAdmin ? (
+            <SectionCard title="Team Access" subtitle="List shop users and reset passwords when someone loses access.">
+              {credentialStatus ? <div className={`mb-4 rounded-2xl px-4 py-3 text-sm ${statusClasses(credentialStatus)}`}>{credentialStatus}</div> : null}
+
+              {revealedCredentials ? (
+                <div className="app-alert-warning mb-4 rounded-2xl px-4 py-4 text-sm">
+                  <p className="font-semibold text-[var(--text-primary)]">Save these updated credentials now.</p>
+                  <p className="mt-2">Username: <span className="font-mono">{revealedCredentials.username}</span></p>
+                  <p className="mt-1">Password: <span className="font-mono">{revealedCredentials.password}</span></p>
+                </div>
+              ) : null}
+
+              <div className="overflow-x-auto rounded-2xl border border-[var(--border-default)]">
+                <table className="min-w-full text-left text-sm">
+                  <thead className="app-table-head">
+                    <tr>
+                      <th className="px-4 py-3">Username</th>
+                      <th className="px-4 py-3">Role</th>
+                      <th className="px-4 py-3">Created</th>
+                      <th className="px-4 py-3">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--border-default)] bg-[var(--surface-primary)]">
+                    {teamUsers.map((user) => (
+                      <tr key={user.id} className="app-row-hover transition">
+                        <td className="px-4 py-3 font-medium text-[var(--text-primary)]">{user.username}</td>
+                        <td className="px-4 py-3 text-[var(--text-muted)]">{user.role}</td>
+                        <td className="px-4 py-3 text-[var(--text-muted)]">{new Date(user.createdAt).toLocaleDateString()}</td>
+                        <td className="px-4 py-3">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPasswordReset({ userId: user.id, password: '', confirmPassword: '' });
+                              setCredentialStatus('');
+                            }}
+                            className="app-btn-secondary rounded-xl px-3 py-2 text-sm transition"
+                          >
+                            Reset Password
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {passwordReset.userId ? (
+                <form className="mt-5 grid gap-4 md:grid-cols-2" onSubmit={handleResetPassword}>
+                  <label className="space-y-2 text-sm text-[var(--text-secondary)]">
+                    New password
+                    <input
+                      type="password"
+                      value={passwordReset.password}
+                      onChange={(event) => setPasswordReset((prev) => ({ ...prev, password: event.target.value }))}
+                      className="app-input w-full rounded-lg border px-4 py-3"
+                    />
+                  </label>
+                  <label className="space-y-2 text-sm text-[var(--text-secondary)]">
+                    Confirm password
+                    <input
+                      type="password"
+                      value={passwordReset.confirmPassword}
+                      onChange={(event) => setPasswordReset((prev) => ({ ...prev, confirmPassword: event.target.value }))}
+                      className="app-input w-full rounded-lg border px-4 py-3"
+                    />
+                  </label>
+                  <div className="md:col-span-2 flex flex-col gap-3 sm:flex-row">
+                    <button type="submit" className="app-btn-primary rounded-2xl px-4 py-3 text-white transition">Save New Password</button>
+                    <button
+                      type="button"
+                      onClick={() => setPasswordReset({ userId: null, password: '', confirmPassword: '' })}
+                      className="app-btn-subtle rounded-2xl px-4 py-3 transition"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              ) : null}
+            </SectionCard>
+          ) : null}
 
           <SectionCard title="Shop Details" subtitle="Keep your store information and receipt branding accurate.">
             <form className="grid gap-4 md:grid-cols-2" onSubmit={handleSubmit}>

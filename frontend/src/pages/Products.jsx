@@ -125,7 +125,7 @@ export default function Products() {
 
         {!isAdmin ? (
           <div className="app-alert-info mt-5 rounded-lg border border-[var(--border-default)] px-4 py-3 text-sm">
-            Cashiers have read-only access here. Admins can add, edit, and delete products.
+            Staff have read-only access here. Admins can add, edit, and delete products.
           </div>
         ) : null}
 

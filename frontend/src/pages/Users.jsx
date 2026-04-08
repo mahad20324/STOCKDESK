@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { fetchUsers, createUser, deleteUser } from '../utils/api';
 import { getUser } from '../utils/auth';
 
-const initialForm = { name: '', username: '', email: '', password: '', role: 'Cashier' };
+const initialForm = { username: '', password: '', confirmPassword: '', role: 'Staff' };
 
 function StatCard({ label, value, helper }) {
   return (
@@ -20,12 +20,10 @@ export default function Users() {
   const [message, setMessage] = useState('');
   const [newUserPassword, setNewUserPassword] = useState('');
   const [newUserUsername, setNewUserUsername] = useState('');
-  const [newUserEmail, setNewUserEmail] = useState('');
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const currentUser = getUser();
   const adminCount = users.filter((user) => user.role === 'Admin').length;
-  const managerCount = users.filter((user) => user.role === 'Manager').length;
-  const cashierCount = users.filter((user) => user.role === 'Cashier').length;
+  const staffCount = users.filter((user) => user.role === 'Staff').length;
 
   useEffect(() => {
     loadUsers();
@@ -46,7 +44,6 @@ export default function Users() {
       const response = await createUser(form);
       setNewUserPassword(response.plainPassword);
       setNewUserUsername(response.username || '');
-      setNewUserEmail(response.email || '');
       setShowPasswordModal(true);
       setMessage('User created successfully.');
       setForm(initialForm);
@@ -78,12 +75,12 @@ export default function Users() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <h2 className="text-2xl font-semibold text-[var(--accent-strong)]">User Management</h2>
-            <p className="mt-2 max-w-2xl text-sm text-[var(--text-muted)]">Administrators can manage POS and system accounts here.</p>
+            <p className="mt-2 max-w-2xl text-sm text-[var(--text-muted)]">Administrators can create and manage shop staff accounts here.</p>
           </div>
           <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[460px]">
             <StatCard label="Total Users" value={users.length.toLocaleString()} helper="All shop accounts." />
             <StatCard label="Admins" value={adminCount.toLocaleString()} helper="Full-access accounts." />
-            <StatCard label="Cashiers" value={(cashierCount + managerCount).toLocaleString()} helper="Frontline and managed staff." />
+            <StatCard label="Staff" value={staffCount.toLocaleString()} helper="Shop users with daily access." />
           </div>
         </div>
       </section>
@@ -91,15 +88,13 @@ export default function Users() {
       <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
         <div className="app-panel rounded-[2rem] border p-6">
           <div className="app-alert-info mb-4 rounded-2xl px-4 py-3 text-sm">
-            Keep permissions tight. Admins can create users and remove accounts they do not own.
+            Passwords are shown once after account creation. Store them safely before closing the confirmation screen.
           </div>
           <div className="overflow-x-auto rounded-2xl border border-[var(--border-default)]">
             <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
               <thead className="app-table-head">
                 <tr>
-                  <th className="px-4 py-3">Name</th>
                   <th className="px-4 py-3">Username</th>
-                  <th className="px-4 py-3">Email</th>
                   <th className="px-4 py-3">Role</th>
                   <th className="px-4 py-3">Created</th>
                   <th className="px-4 py-3">Action</th>
@@ -108,16 +103,10 @@ export default function Users() {
               <tbody className="divide-y divide-slate-200">
                 {users.map((user) => (
                   <tr key={user.id} className="app-row-hover transition">
-                    <td className="px-4 py-3">{user.name}</td>
                     <td className="px-4 py-3">{user.username || '-'}</td>
-                    <td className="px-4 py-3">{user.email}</td>
                     <td className="px-4 py-3">
                       <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-                        user.role === 'Admin'
-                            ? 'app-panel-accent'
-                            : user.role === 'Manager'
-                            ? 'app-alert-warning'
-                            : 'app-alert-success'
+                        user.role === 'Admin' ? 'app-panel-accent' : 'app-alert-success'
                       }`}>
                         {user.role}
                       </span>
@@ -140,26 +129,13 @@ export default function Users() {
         </div>
 
         <div className="app-panel rounded-[2rem] border p-6">
-          <h3 className="text-lg font-semibold text-[var(--accent-strong)]">Add User</h3>
-          <p className="mt-1 text-sm text-[var(--text-muted)]">Create a new team account with the right access level.</p>
+          <h3 className="text-lg font-semibold text-[var(--accent-strong)]">Create Staff Account</h3>
+          <p className="mt-1 text-sm text-[var(--text-muted)]">Create a simple username/password account for a team member.</p>
           <form className="mt-4 space-y-4" onSubmit={handleCreate}>
-            <label className="block text-sm text-[var(--text-secondary)]">Name</label>
-            <input
-              value={form.name}
-              onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
-              className="app-input w-full rounded-3xl border px-4 py-3"
-            />
             <label className="block text-sm text-[var(--text-secondary)]">Username</label>
             <input
               value={form.username}
               onChange={(e) => setForm((prev) => ({ ...prev, username: e.target.value }))}
-              placeholder="Optional. If empty, one is generated automatically"
-              className="app-input w-full rounded-3xl border px-4 py-3"
-            />
-            <label className="block text-sm text-[var(--text-secondary)]">Email</label>
-            <input
-              value={form.email}
-              onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
               className="app-input w-full rounded-3xl border px-4 py-3"
             />
             <label className="block text-sm text-[var(--text-secondary)]">Password</label>
@@ -169,16 +145,13 @@ export default function Users() {
               onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
               className="app-input w-full rounded-3xl border px-4 py-3"
             />
-            <label className="block text-sm text-[var(--text-secondary)]">Role</label>
-            <select
-              value={form.role}
-              onChange={(e) => setForm((prev) => ({ ...prev, role: e.target.value }))}
+            <label className="block text-sm text-[var(--text-secondary)]">Confirm Password</label>
+            <input
+              type="password"
+              value={form.confirmPassword}
+              onChange={(e) => setForm((prev) => ({ ...prev, confirmPassword: e.target.value }))}
               className="app-input w-full rounded-3xl border px-4 py-3"
-            >
-              <option value="Cashier">Cashier</option>
-              <option value="Manager">Manager</option>
-              <option value="Admin">Admin</option>
-            </select>
+            />
             <button className="app-btn-primary w-full rounded-3xl px-4 py-3 transition">Create User</button>
           </form>
 
@@ -212,16 +185,6 @@ export default function Users() {
                 className="app-btn-secondary w-full rounded-lg border px-3 py-2 text-sm font-mono"
               />
             </div>
-
-            <div className="app-panel-soft mb-4 rounded-xl border p-4">
-              <p className="mb-1 text-xs text-[var(--text-muted)]">Login Email:</p>
-              <input
-                type="text"
-                readOnly
-                value={newUserEmail}
-                className="app-btn-secondary w-full rounded-lg border px-3 py-2 text-sm font-mono"
-              />
-            </div>
             
             <div className="app-panel-soft mb-4 rounded-xl border p-4">
               <p className="mb-1 text-xs text-[var(--text-muted)]">Login Password:</p>
@@ -242,6 +205,10 @@ export default function Users() {
                   Copy
                 </button>
               </div>
+            </div>
+
+            <div className="app-alert-warning mb-4 rounded-xl px-4 py-3 text-sm">
+              Save this password now. StockDesk stores hashed passwords and cannot reveal them later.
             </div>
 
             <button

@@ -33,7 +33,7 @@ export default function Customers() {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const currentUser = getUser();
-  const canDelete = ['Admin', 'Manager'].includes(currentUser?.role);
+  const canDelete = currentUser?.role === 'Admin';
 
   const activeCustomers = useMemo(() => customers.filter((customer) => customer.isActive !== false).length, [customers]);
   const repeatCustomers = useMemo(() => customers.filter((customer) => Number(customer.salesCount || 0) > 1).length, [customers]);

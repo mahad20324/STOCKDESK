@@ -39,7 +39,7 @@ export default function Header({ user, onLogout, onOpenSidebar }) {
       <div className="flex w-full items-center justify-between gap-2.5 sm:w-auto sm:justify-end sm:gap-3">
         <ThemeToggleButton compact className="shrink-0" />
         <div className="hidden rounded-xl border border-[var(--border-default)] bg-[var(--surface-secondary)] px-3 py-2 text-right sm:block">
-          <p className="text-sm font-medium text-[var(--text-primary)]">{user?.name || 'Cashier'}</p>
+          <p className="text-sm font-medium text-[var(--text-primary)]">{user?.name || 'Staff'}</p>
           <p className="text-xs text-[var(--text-muted)]">{user?.role || 'User'}</p>
         </div>
         <button onClick={onLogout} className="app-btn-primary rounded-lg px-4 py-2 text-sm font-medium transition">
