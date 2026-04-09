@@ -398,7 +398,7 @@ export default function Settings() {
                     {teamUsers.map((user) => (
                       <tr key={user.id} className="app-row-hover transition">
                         <td className="px-4 py-3 font-medium text-[var(--text-primary)]">{user.username}</td>
-                        <td className="px-4 py-3 text-[var(--text-muted)]">{user.role}</td>
+                        <td className="px-4 py-3 text-[var(--text-muted)]">{user.displayRole || user.role}</td>
                         <td className="px-4 py-3 text-[var(--text-muted)]">{new Date(user.createdAt).toLocaleDateString()}</td>
                         <td className="px-4 py-3">
                           <button

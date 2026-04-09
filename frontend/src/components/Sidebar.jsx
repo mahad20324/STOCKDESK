@@ -187,7 +187,7 @@ export default function Sidebar({ user: providedUser, isOpen = false, onClose = 
             </div>
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-[var(--sidebar-text)]">{user?.name || 'Staff'}</p>
-              <p className="truncate text-xs text-[var(--sidebar-muted)]">{user?.role || 'User'}</p>
+              <p className="truncate text-xs text-[var(--sidebar-muted)]">{user?.displayRole || user?.role || 'User'}</p>
             </div>
           </div>
           <button
