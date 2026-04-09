@@ -44,16 +44,16 @@ export default function ThemeToggleButton({ className = '', compact = false, str
   const { themeMode, resolvedTheme, setThemeMode } = useTheme();
 
   const containerClassName = compact
-    ? 'inline-flex items-center gap-0.5 rounded-lg p-0.5'
-    : 'inline-flex items-center gap-1 rounded-xl p-1';
+    ? 'inline-flex items-center gap-1 rounded-full p-1'
+    : 'inline-flex items-center gap-1.5 rounded-full p-1.5';
 
   const buttonClassName = compact
-    ? 'min-w-0 rounded-md px-2 py-2 sm:px-2.5'
-    : 'rounded-lg px-3 py-2';
+    ? 'min-w-0 rounded-full px-3 py-2 sm:px-3.5'
+    : 'rounded-full px-4 py-2.5';
 
   return (
     <div
-      className={`app-panel-soft ${containerClassName} ${stretch ? 'w-full' : ''} border ${className}`.trim()}
+      className={`theme-toggle-shell ${containerClassName} ${stretch ? 'w-full' : ''} ${className}`.trim()}
       role="group"
       aria-label="Theme selector"
     >
@@ -69,17 +69,17 @@ export default function ThemeToggleButton({ className = '', compact = false, str
             onClick={() => setThemeMode(value)}
             aria-pressed={isActive}
             title={title}
-            className={`inline-flex items-center gap-2 text-sm font-medium transition ${stretch ? 'flex-1 justify-center' : ''} ${buttonClassName} ${
+            className={`theme-toggle-option inline-flex items-center gap-2 text-sm font-medium transition ${stretch ? 'flex-1 justify-center' : ''} ${buttonClassName} ${
               isActive
-                ? 'app-panel text-[var(--accent-strong)] shadow-sm'
-                : 'text-[var(--text-muted)] hover:bg-[var(--surface-tertiary)] hover:text-[var(--text-primary)]'
+                ? 'theme-toggle-option-active'
+                : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
             }`}
           >
             <Icon />
             <span className={compact ? 'hidden md:inline' : 'hidden sm:inline'}>{label}</span>
             <span className={compact ? 'inline md:hidden' : 'sm:hidden'}>{shortLabel}</span>
             {isSystem ? (
-              <span className={`${compact ? 'hidden lg:inline' : 'hidden md:inline'} text-xs text-[var(--text-muted)]`}>
+              <span className={`${compact ? 'hidden lg:inline' : 'hidden md:inline'} text-xs ${isActive ? 'text-current/75' : 'text-[var(--text-muted)]'}`}>
                 {resolvedTheme === 'dark' ? 'Dark' : 'Light'}
               </span>
             ) : null}
