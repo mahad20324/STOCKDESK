@@ -85,8 +85,8 @@ function ShopsIcon() {
   );
 }
 
-export default function Sidebar({ isOpen = false, onClose = () => {} }) {
-  const user = getUser();
+export default function Sidebar({ user: providedUser, isOpen = false, onClose = () => {}, onLogout = () => {} }) {
+  const user = providedUser || getUser();
   const isAdmin = user?.role === 'Admin';
   const isSuperAdmin = user?.role === 'SuperAdmin';
   const shopName = isSuperAdmin ? 'Platform Console' : user?.shop?.name || 'Default Shop';
@@ -178,8 +178,25 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
         </nav>
 
         <div className="app-sidebar-card mt-auto rounded-2xl border p-4">
-          <p className="text-sm font-medium text-[var(--sidebar-text)]">{isSuperAdmin ? 'Monitor every tenant from one place.' : 'Keep stock and sales in sync.'}</p>
-          <p className="mt-1.5 text-sm leading-6 text-[var(--sidebar-muted)]">{isSuperAdmin ? 'Track shop creation, owner verification, and platform adoption across all registered businesses.' : 'Use the dashboard to spot slow sales and low inventory quickly.'}</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sidebar-muted)]">
+            {isSuperAdmin ? 'Platform User' : 'Current User'}
+          </p>
+          <div className="mt-3 flex items-center gap-3 rounded-2xl bg-[var(--sidebar-hover)] px-3 py-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--sidebar-active-bg)] text-sm font-semibold text-[var(--sidebar-active-text)] shadow-[var(--sidebar-active-shadow)]">
+              {String(user?.name || 'S').slice(0, 1).toUpperCase()}
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-[var(--sidebar-text)]">{user?.name || 'Staff'}</p>
+              <p className="truncate text-xs text-[var(--sidebar-muted)]">{user?.role || 'User'}</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onLogout}
+            className="app-btn-secondary mt-4 w-full rounded-xl border px-4 py-3 text-sm font-medium transition"
+          >
+            Logout
+          </button>
         </div>
       </aside>
     </>

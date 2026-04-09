@@ -3,7 +3,6 @@ import { useTheme } from './ThemeProvider';
 const THEME_OPTIONS = [
   { value: 'light', label: 'Light', shortLabel: 'L', Icon: SunIcon },
   { value: 'dark', label: 'Dark', shortLabel: 'D', Icon: MoonIcon },
-  { value: 'system', label: 'System', shortLabel: 'S', Icon: MonitorIcon },
 ];
 
 function SunIcon() {
@@ -30,18 +29,9 @@ function MoonIcon() {
   );
 }
 
-function MonitorIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
-      <rect x="3" y="4" width="18" height="12" rx="2" />
-      <path d="M8 20h8" />
-      <path d="M12 16v4" />
-    </svg>
-  );
-}
-
 export default function ThemeToggleButton({ className = '', compact = false, stretch = false }) {
   const { themeMode, resolvedTheme, setThemeMode } = useTheme();
+  const activeThemeMode = themeMode === 'system' ? resolvedTheme : themeMode;
 
   const containerClassName = compact
     ? 'inline-flex items-center gap-1 rounded-full p-1'
@@ -58,9 +48,7 @@ export default function ThemeToggleButton({ className = '', compact = false, str
       aria-label="Theme selector"
     >
       {THEME_OPTIONS.map(({ value, label, shortLabel, Icon }) => {
-        const isActive = themeMode === value;
-        const isSystem = value === 'system';
-        const title = isSystem ? `System (${resolvedTheme})` : label;
+        const isActive = activeThemeMode === value;
 
         return (
           <button
@@ -68,7 +56,7 @@ export default function ThemeToggleButton({ className = '', compact = false, str
             type="button"
             onClick={() => setThemeMode(value)}
             aria-pressed={isActive}
-            title={title}
+            title={label}
             className={`theme-toggle-option inline-flex items-center gap-2 text-sm font-medium transition ${stretch ? 'flex-1 justify-center' : ''} ${buttonClassName} ${
               isActive
                 ? 'theme-toggle-option-active'
@@ -78,11 +66,6 @@ export default function ThemeToggleButton({ className = '', compact = false, str
             <Icon />
             <span className={compact ? 'hidden md:inline' : 'hidden sm:inline'}>{label}</span>
             <span className={compact ? 'inline md:hidden' : 'sm:hidden'}>{shortLabel}</span>
-            {isSystem ? (
-              <span className={`${compact ? 'hidden lg:inline' : 'hidden md:inline'} text-xs ${isActive ? 'text-current/75' : 'text-[var(--text-muted)]'}`}>
-                {resolvedTheme === 'dark' ? 'Dark' : 'Light'}
-              </span>
-            ) : null}
           </button>
         );
       })}
