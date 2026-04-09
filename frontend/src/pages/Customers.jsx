@@ -117,8 +117,14 @@ export default function Customers() {
             </div>
             <h2 className="text-2xl font-semibold text-[var(--text-primary)]">Customers</h2>
             <p className="mt-2 max-w-2xl text-sm text-[var(--text-muted)]">
-              Keep customer details organized so sales, follow-up, and repeat visits are easier to manage.
+              Keep named customer details organized so repeat visits, delivery follow-up, and account history are easier to manage.
             </p>
+            <div className="mt-4 inline-flex max-w-2xl items-start gap-3 rounded-2xl border border-[var(--border-default)] bg-[var(--surface-secondary)] px-4 py-3 text-sm text-[var(--text-secondary)]">
+              <span className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--accent-soft)] text-[var(--accent-strong)]">i</span>
+              <span>
+                <span className="font-medium text-[var(--text-primary)]">Walk-in Customer already exists by default.</span> Save named customers here when you want to keep phone, email, address, notes, and purchase history for frequent buyers.
+              </span>
+            </div>
           </div>
           <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[460px]">
             <StatCard label="Total Customers" value={customers.length.toLocaleString()} helper="Profiles saved in your shop." eyebrow="Directory" />
@@ -133,15 +139,20 @@ export default function Customers() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h3 className="text-lg font-semibold text-[var(--text-primary)]">Customer Directory</h3>
-              <p className="mt-1 text-sm text-[var(--text-muted)]">Search, review, and manage saved customer profiles.</p>
+              <p className="mt-1 text-sm text-[var(--text-muted)]">Search, review, and manage saved customer profiles for repeat buyers.</p>
             </div>
-            <input
-              type="search"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search customers"
-              className="app-input w-full max-w-xs rounded-lg border px-4 py-3 text-sm"
-            />
+            <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+              <div className="app-panel-soft rounded-xl border px-3 py-2 text-sm text-[var(--text-muted)]">
+                {filteredCustomers.length} visible
+              </div>
+              <input
+                type="search"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Search customers"
+                className="app-input w-full max-w-xs rounded-lg border px-4 py-3 text-sm"
+              />
+            </div>
           </div>
 
           <div className="mt-6 overflow-x-auto rounded-[1.35rem] border border-[var(--border-default)]">
@@ -231,8 +242,8 @@ export default function Customers() {
         <section className="app-panel rounded-[1.5rem] border p-5 sm:p-6">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h3 className="text-lg font-semibold text-[var(--text-primary)]">{form.id ? 'Edit Customer' : 'Add Customer'}</h3>
-              <p className="mt-1 text-sm text-[var(--text-muted)]">Capture the right details to support future sales and follow-up.</p>
+              <h3 className="text-lg font-semibold text-[var(--text-primary)]">{form.id ? 'Edit Customer Profile' : 'Add Frequent Customer'}</h3>
+              <p className="mt-1 text-sm text-[var(--text-muted)]">Only the customer name is required. Add more details when you want better service and follow-up.</p>
             </div>
             {form.id ? (
               <button
@@ -245,38 +256,59 @@ export default function Customers() {
             ) : null}
           </div>
 
+          <div className="app-panel-soft mt-5 rounded-2xl border px-4 py-4 text-sm text-[var(--text-secondary)]">
+            Use this form for named repeat customers. The default walk-in profile remains available automatically for quick counter sales.
+          </div>
+
           <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
-            <input
-              value={form.name}
-              onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
-              placeholder="Customer name"
-              className="app-input w-full rounded-lg border px-4 py-3"
-            />
-            <input
-              value={form.phone}
-              onChange={(event) => setForm((prev) => ({ ...prev, phone: event.target.value }))}
-              placeholder="Phone number"
-              className="app-input w-full rounded-lg border px-4 py-3"
-            />
-            <input
-              value={form.email}
-              onChange={(event) => setForm((prev) => ({ ...prev, email: event.target.value }))}
-              placeholder="Email address"
-              className="app-input w-full rounded-lg border px-4 py-3"
-            />
-            <input
-              value={form.address}
-              onChange={(event) => setForm((prev) => ({ ...prev, address: event.target.value }))}
-              placeholder="Address"
-              className="app-input w-full rounded-lg border px-4 py-3"
-            />
-            <textarea
-              value={form.notes}
-              onChange={(event) => setForm((prev) => ({ ...prev, notes: event.target.value }))}
-              placeholder="Notes about this customer"
-              rows="4"
-              className="app-input w-full rounded-lg border px-4 py-3"
-            />
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="space-y-2 text-sm text-[var(--text-secondary)]">
+                Customer name
+                <input
+                  value={form.name}
+                  onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
+                  placeholder="Enter full customer name"
+                  className="app-input w-full rounded-lg border px-4 py-3"
+                />
+              </label>
+              <label className="space-y-2 text-sm text-[var(--text-secondary)]">
+                Phone number
+                <input
+                  value={form.phone}
+                  onChange={(event) => setForm((prev) => ({ ...prev, phone: event.target.value }))}
+                  placeholder="Add phone number"
+                  className="app-input w-full rounded-lg border px-4 py-3"
+                />
+              </label>
+              <label className="space-y-2 text-sm text-[var(--text-secondary)] md:col-span-2">
+                Email address
+                <input
+                  value={form.email}
+                  onChange={(event) => setForm((prev) => ({ ...prev, email: event.target.value }))}
+                  placeholder="Add email address"
+                  className="app-input w-full rounded-lg border px-4 py-3"
+                />
+              </label>
+              <label className="space-y-2 text-sm text-[var(--text-secondary)] md:col-span-2">
+                Address
+                <input
+                  value={form.address}
+                  onChange={(event) => setForm((prev) => ({ ...prev, address: event.target.value }))}
+                  placeholder="Add address"
+                  className="app-input w-full rounded-lg border px-4 py-3"
+                />
+              </label>
+              <label className="space-y-2 text-sm text-[var(--text-secondary)] md:col-span-2">
+                Notes
+                <textarea
+                  value={form.notes}
+                  onChange={(event) => setForm((prev) => ({ ...prev, notes: event.target.value }))}
+                  placeholder="Add notes about buying habits, delivery details, or preferences"
+                  rows="4"
+                  className="app-input w-full rounded-lg border px-4 py-3"
+                />
+              </label>
+            </div>
             <label className="app-panel-soft flex items-center gap-3 rounded-lg border px-4 py-3 text-sm text-[var(--text-secondary)]">
               <input
                 type="checkbox"
