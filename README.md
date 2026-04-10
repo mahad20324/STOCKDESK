@@ -55,6 +55,7 @@ npm run build:frontend
 - The app stores shop settings and currency in the `settings` table.
 - Sales create receipts and update product stock.
 - Admin users can manage users, products, and system settings.
+- See `docs/sunmi-pos-local-printing.md` for handheld POS rollout and local printer bridge guidance.
 
 ## Deployment
 

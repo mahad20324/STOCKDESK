@@ -2,6 +2,48 @@ import { getToken, logout } from './auth';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 const PRINTER_API_BASE = import.meta.env.VITE_PRINTER_API_URL || 'http://localhost:4000/api';
+const PRINTER_BRIDGE_KEY = import.meta.env.VITE_PRINTER_BRIDGE_KEY || '';
+
+function normalizeBaseUrl(url) {
+  return String(url || '').replace(/\/+$/, '');
+}
+
+const USE_EXTERNAL_PRINTER_BRIDGE = normalizeBaseUrl(PRINTER_API_BASE) !== normalizeBaseUrl(API_BASE);
+
+function buildPrinterPayloadFromSale(sale, settings) {
+  const items = Array.isArray(sale?.items)
+    ? sale.items.map((item) => ({
+        name: item?.Product?.name || item?.name || 'Item',
+        price: Number(item?.price || item?.Product?.sellPrice || 0),
+        quantity: Number(item?.quantity || 0),
+      }))
+    : [];
+
+  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  return {
+    saleData: {
+      id: sale.id,
+      createdAt: sale.createdAt,
+      receiptNumber: sale.receipt?.receiptNumber || `SD-${String(sale.id).padStart(6, '0')}`,
+      items,
+      subtotal,
+      discount: Number(sale.discount || 0),
+      discountType: sale.discountType || 'fixed',
+      total: Number(sale.total || 0),
+      currency: sale.currency || settings?.currency || 'USD',
+      paymentMethod: sale.paymentMethod || 'Cash',
+      cashierName: sale.cashier?.name || 'Unknown',
+    },
+    settings: {
+      shopName: settings?.shop?.name || settings?.shopName || 'StockDesk',
+      address: settings?.address || '',
+      phone: settings?.phone || '',
+      vat: Number(settings?.vat || 0),
+      receiptFooter: settings?.receiptFooter || '',
+    },
+  };
+}
 
 async function request(path, options = {}) {
   const token = getToken();
@@ -38,6 +80,7 @@ async function printerRequest(path, options = {}) {
   const token = getToken();
   const headers = {
     'Content-Type': 'application/json',
+    ...(PRINTER_BRIDGE_KEY ? { 'X-Printer-Bridge-Key': PRINTER_BRIDGE_KEY } : {}),
     ...(options.headers || {}),
   };
 
@@ -116,4 +159,16 @@ export const fetchPrinterStatus = () => printerRequest('/printer/status');
 export const configurePrinter = (body) => printerRequest('/printer/configure', { method: 'POST', body: JSON.stringify(body) });
 export const testPrinter = () => printerRequest('/printer/test', { method: 'POST' });
 export const disconnectPrinter = () => printerRequest('/printer/disconnect', { method: 'POST' });
-export const printReceiptToPrinter = (saleId) => printerRequest('/printer/print-receipt', { method: 'POST', body: JSON.stringify({ saleId }) });
+export const printReceiptToPrinter = async (saleId) => {
+  if (!USE_EXTERNAL_PRINTER_BRIDGE) {
+    return printerRequest('/printer/print-receipt', { method: 'POST', body: JSON.stringify({ saleId }) });
+  }
+
+  const [sale, settings] = await Promise.all([fetchSale(saleId), fetchSettings()]);
+  const payload = buildPrinterPayloadFromSale(sale, settings);
+
+  return printerRequest('/printer/print-receipt', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+};

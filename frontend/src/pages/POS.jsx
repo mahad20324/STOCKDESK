@@ -41,6 +41,7 @@ export default function POS() {
   const [autoPrint, setAutoPrint] = useState(false);
   const [printing, setPrinting] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
+  const [mobileSection, setMobileSection] = useState('browse');
 
   useEffect(() => {
     loadProducts();
@@ -87,6 +88,11 @@ export default function POS() {
     [customers, customerId]
   );
 
+  const cartItemCount = useMemo(
+    () => cart.reduce((sum, item) => sum + item.quantity, 0),
+    [cart]
+  );
+
   const addToCart = (product) => {
     setCart((prev) => {
       const existing = prev.find((item) => item.productId === product.id);
@@ -115,6 +121,7 @@ export default function POS() {
     setCart([]);
     setDiscount(0);
     setDiscountType('fixed');
+    setMobileSection('browse');
   };
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -171,6 +178,7 @@ export default function POS() {
       setCart([]);
       setDiscount(0);
       setDiscountType('fixed');
+      setMobileSection('browse');
       setMessage('Sale recorded successfully.');
       
       // Auto-print if enabled
@@ -207,14 +215,33 @@ export default function POS() {
         </div>
       </section>
 
+      <div className="grid gap-2 xl:hidden">
+        <div className="app-panel-soft grid grid-cols-2 rounded-[1.2rem] border p-2">
+          <button
+            type="button"
+            onClick={() => setMobileSection('browse')}
+            className={`rounded-xl px-4 py-3 text-sm font-medium transition ${mobileSection === 'browse' ? 'app-btn-primary text-white' : 'app-btn-subtle'}`}
+          >
+            Browse Products
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobileSection('cart')}
+            className={`rounded-xl px-4 py-3 text-sm font-medium transition ${mobileSection === 'cart' ? 'app-btn-primary text-white' : 'app-btn-subtle'}`}
+          >
+            Cart {cartItemCount > 0 ? `(${cartItemCount})` : ''}
+          </button>
+        </div>
+      </div>
+
       <div className="grid gap-6 xl:grid-cols-[1.45fr_0.95fr]">
-        <section className="app-panel rounded-[1.5rem] border p-5 sm:p-6">
+        <section className={`app-panel rounded-[1.5rem] border p-5 sm:p-6 ${mobileSection !== 'browse' ? 'hidden xl:block' : ''}`}>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h3 className="text-lg font-semibold tracking-tight text-[var(--text-primary)]">Product Search</h3>
               <p className="mt-1 text-sm leading-6 text-[var(--text-muted)]">Find products quickly and add them to the current sale.</p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
               <input
                 type="search"
                 value={search}
@@ -225,7 +252,7 @@ export default function POS() {
               <button
                 type="button"
                 onClick={loadProducts}
-                className="app-btn-primary rounded-lg px-4 py-3 transition"
+                className="app-btn-primary w-full rounded-lg px-4 py-3 transition sm:w-auto"
               >
                 Search
               </button>
@@ -240,7 +267,7 @@ export default function POS() {
               </div>
             ) : (
               filteredProducts.map((product) => (
-                <div key={product.id} className="app-panel flex items-center justify-between rounded-[1.35rem] border p-4 transition hover:-translate-y-1 hover:shadow-lg sm:p-5">
+                <div key={product.id} className="app-panel flex flex-col gap-4 rounded-[1.35rem] border p-4 transition hover:-translate-y-1 hover:shadow-lg sm:flex-row sm:items-center sm:justify-between sm:p-5">
                   <div className="flex items-start gap-4">
                     <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--surface-secondary)] text-sm font-semibold text-[var(--accent-strong)]">
                       {String(product.name || 'P').slice(0, 1).toUpperCase()}
@@ -251,12 +278,12 @@ export default function POS() {
                     <p className="mt-1 text-xs text-[var(--text-muted)]">{product.quantity} units in stock</p>
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="w-full text-left sm:w-auto sm:text-right">
                     <p className="font-semibold text-[var(--text-primary)]">{formatMoney(currency, product.sellPrice)}</p>
                     <button
                       type="button"
                       onClick={() => addToCart(product)}
-                      className="app-btn-primary mt-2 rounded-lg px-4 py-2 text-sm transition"
+                      className="app-btn-primary mt-2 w-full rounded-lg px-4 py-2 text-sm transition sm:w-auto"
                     >
                       Add
                     </button>
@@ -267,8 +294,8 @@ export default function POS() {
           </div>
         </section>
 
-        <section className="app-panel rounded-[1.5rem] border p-5 sm:p-6">
-            <div className="flex items-center justify-between gap-3">
+        <section className={`app-panel rounded-[1.5rem] border p-5 sm:p-6 ${mobileSection !== 'cart' ? 'hidden xl:block' : ''}`}>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h3 className="text-lg font-semibold tracking-tight text-[var(--text-primary)]">Current Sale</h3>
                 <p className="mt-1 text-sm leading-6 text-[var(--text-muted)]">Review cart items, customer, and payment before checkout.</p>
@@ -293,14 +320,14 @@ export default function POS() {
                 <>
                   {cart.map((item) => (
                     <div key={item.productId} className="app-panel-soft rounded-[1.35rem] border p-4 sm:p-5">
-                      <div className="flex items-start justify-between gap-4">
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                         <div>
                           <p className="mb-2 inline-flex rounded-full bg-[var(--surface-primary)] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--accent-strong)]">Cart Item</p>
                           <p className="font-semibold text-[var(--text-primary)]">{item.name}</p>
                           <p className="mt-0.5 text-sm text-[var(--text-muted)]">{formatMoney(currency, item.price)} each</p>
                           <p className="mt-1 text-xs font-medium text-[var(--text-muted)]">Line total: {formatMoney(currency, item.price * item.quantity)}</p>
                         </div>
-                        <div className="flex flex-col items-end gap-3">
+                        <div className="flex flex-col gap-3 sm:items-end">
                           <button
                             type="button"
                             onClick={() => removeFromCart(item.productId)}
@@ -337,7 +364,7 @@ export default function POS() {
                           <button
                             type="button"
                             onClick={() => removeFromCart(item.productId)}
-                            className="app-btn-danger rounded-full px-3 py-1 text-sm font-medium transition"
+                            className="app-btn-danger hidden rounded-full px-3 py-1 text-sm font-medium transition sm:inline-flex"
                             aria-label={`Remove ${item.name} from cart`}
                           >
                             Remove
@@ -384,11 +411,11 @@ export default function POS() {
 
             <div className="app-panel-soft mt-6 rounded-[1.35rem] border p-4 sm:p-5">
               <p className="text-sm text-[var(--text-muted)]">Discount</p>
-              <div className="mt-3 flex gap-2">
+              <div className="mt-3 flex flex-col gap-2 sm:flex-row">
                 <select
                   value={discountType}
                   onChange={(event) => setDiscountType(event.target.value)}
-                  className="app-btn-secondary w-24 rounded-lg border px-4 py-3"
+                  className="app-btn-secondary w-full rounded-lg border px-4 py-3 sm:w-24"
                 >
                   <option value="fixed">Fixed</option>
                   <option value="percentage">Percent</option>
@@ -441,7 +468,7 @@ export default function POS() {
                 <div className="flex items-center justify-between gap-2">
                   <span>{message}</span>
                   {message.includes('successfully') && lastSaleId && (
-                    <div className="flex gap-2">
+                    <div className="flex flex-col gap-2 sm:flex-row">
                       <button
                         type="button"
                         onClick={() => downloadReceipt(lastSaleId)}
@@ -464,6 +491,20 @@ export default function POS() {
             )}
         </section>
       </div>
+
+      {mobileSection === 'browse' && cartItemCount > 0 ? (
+        <button
+          type="button"
+          onClick={() => setMobileSection('cart')}
+          className="app-btn-primary fixed bottom-4 left-4 right-4 z-30 rounded-2xl px-4 py-4 text-left shadow-xl xl:hidden"
+        >
+          <span className="block text-xs uppercase tracking-[0.16em] text-white/80">Current Sale</span>
+          <span className="mt-1 flex items-center justify-between gap-4 text-sm font-semibold text-white">
+            <span>{cartItemCount} item{cartItemCount === 1 ? '' : 's'} in cart</span>
+            <span>{formatMoney(currency, total)}</span>
+          </span>
+        </button>
+      ) : null}
 
       {/* POS Receipt Modal */}
       {showReceipt && lastSale && settings && (

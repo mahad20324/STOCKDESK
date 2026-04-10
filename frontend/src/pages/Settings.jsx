@@ -553,6 +553,12 @@ export default function Settings() {
 
           {isAdmin ? (
             <SectionCard title="Thermal Printer Setup" subtitle="Connect a local USB or network printer for direct receipt printing.">
+              <div className="app-alert-info mb-5 rounded-2xl px-4 py-4 text-sm">
+                <p className="font-semibold text-[var(--text-primary)]">Device printing works best through a local bridge.</p>
+                <p className="mt-2 text-[var(--text-secondary)]">Your Railway backend cannot access USB printers attached to this terminal. For Sunmi or in-store printers, point <span className="font-mono">VITE_PRINTER_API_URL</span> to a local printer bridge running on the same device or shop network.</p>
+                <p className="mt-2 text-[var(--text-secondary)]">If you need the built-in Sunmi printer specifically, you will still need an Android SDK bridge or native wrapper. The local bridge added in this repo is for ESC/POS USB or network printers.</p>
+              </div>
+
               <div className={`mb-5 rounded-2xl px-4 py-3 text-sm ${statusClasses(printerStatus)}`}>
                 <span className="font-medium">Printer status:</span> {printerStatus}
               </div>
