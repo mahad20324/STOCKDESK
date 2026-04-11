@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login, signup } from '../utils/api';
-import { saveSession } from '../utils/auth';
+import { consumeSessionNotice, saveSession } from '../utils/auth';
 
 export default function Login() {
   const [mode, setMode] = useState('login');
@@ -17,6 +17,14 @@ export default function Login() {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const notice = consumeSessionNotice();
+
+    if (notice) {
+      setSuccess(notice);
+    }
+  }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();

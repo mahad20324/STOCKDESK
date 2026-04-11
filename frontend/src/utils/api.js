@@ -47,6 +47,13 @@ function buildPrinterPayloadFromSale(sale, settings) {
 
 async function request(path, options = {}) {
   const token = getToken();
+  const isAuthPath = path.startsWith('/auth/');
+
+  if (!token && !isAuthPath) {
+    logout({ message: 'Session expired. Please log in again.' });
+    throw new Error('Session expired. Please log in again.');
+  }
+
   const headers = {
     'Content-Type': 'application/json',
     ...(options.headers || {}),
@@ -64,20 +71,27 @@ async function request(path, options = {}) {
   if (response.status === 401) {
     if (path === '/auth/login') {
       // Login failure — show actual error, don't logout
-      throw new Error(data?.message || 'Invalid credentials');
+      throw new Error(data?.error || data?.message || 'Invalid credentials');
     }
-    logout();
-    throw new Error('Session expired. Please log in again.');
+    const sessionMessage = data?.error || data?.message || 'Session expired. Please log in again.';
+    logout({ message: sessionMessage });
+    throw new Error(sessionMessage);
   }
 
   if (!response.ok) {
-    throw new Error(data?.message || 'Request failed');
+    throw new Error(data?.error || data?.message || 'Request failed');
   }
   return data;
 }
 
 async function printerRequest(path, options = {}) {
   const token = getToken();
+
+  if (!token) {
+    logout({ message: 'Session expired. Please log in again.' });
+    throw new Error('Session expired. Please log in again.');
+  }
+
   const headers = {
     'Content-Type': 'application/json',
     ...(PRINTER_BRIDGE_KEY ? { 'X-Printer-Bridge-Key': PRINTER_BRIDGE_KEY } : {}),

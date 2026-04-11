@@ -12,20 +12,23 @@ import Settings from './pages/Settings';
 import Users from './pages/Users';
 import Shops from './pages/Shops';
 import ProtectedRoute from './components/ProtectedRoute';
-import { getToken, getUser } from './utils/auth';
+import { getUser, hasActiveSession } from './utils/auth';
+import useInactivityLogout from './hooks/useInactivityLogout';
 
 function App() {
   const [session, setSession] = useState({
-    isAuthenticated: !!getToken(),
+    isAuthenticated: hasActiveSession(),
     user: getUser(),
   });
   const currentUser = session.user;
   const isSuperAdmin = currentUser?.role === 'SuperAdmin';
 
+  useInactivityLogout(session.isAuthenticated);
+
   useEffect(() => {
     const checkAuth = () => {
       setSession({
-        isAuthenticated: !!getToken(),
+        isAuthenticated: hasActiveSession(),
         user: getUser(),
       });
     };

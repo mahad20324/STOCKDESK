@@ -1,13 +1,22 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { login } from '../utils/api';
-import { getToken, saveSession } from '../utils/auth';
+import { consumeSessionNotice, getToken, saveSession } from '../utils/auth';
 
 export default function OwnerLogin() {
   const [form, setForm] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const nextNotice = consumeSessionNotice();
+
+    if (nextNotice) {
+      setNotice(nextNotice);
+    }
+  }, []);
 
   if (getToken()) {
     return <Navigate to="/app/shops" replace />;
@@ -68,6 +77,7 @@ export default function OwnerLogin() {
             This route is for platform ownership only. Shop admins and staff should use the normal StockDesk login page.
           </div>
 
+          {notice ? <div className="app-alert-success rounded-2xl px-4 py-3 text-sm">{notice}</div> : null}
           {error ? <div className="app-alert-danger rounded-2xl px-4 py-3 text-sm">{error}</div> : null}
 
           <button
