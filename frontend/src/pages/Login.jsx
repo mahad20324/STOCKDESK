@@ -202,7 +202,7 @@ export default function Login() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden px-3 py-3 sm:px-4 sm:py-4 lg:px-6" style={{ background: 'var(--bg-auth)' }}>
+    <div className="relative min-h-screen overflow-hidden px-3 py-2 sm:px-4 sm:py-3 lg:px-5 lg:py-2.5" style={{ background: 'var(--bg-auth)' }}>
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -left-24 top-8 h-64 w-64 rounded-full bg-[var(--accent)]/15 blur-3xl" />
         <div className="absolute right-0 top-1/4 h-72 w-72 rounded-full bg-[var(--success)]/10 blur-3xl" />
@@ -210,23 +210,23 @@ export default function Login() {
       </div>
 
       <div className="relative mx-auto flex max-w-6xl justify-end">
-        <ThemeToggleButton compact className="mb-3" />
+        <ThemeToggleButton compact className="mb-2" />
       </div>
 
-      <div className="app-modal relative mx-auto grid w-full max-w-6xl overflow-hidden rounded-[2rem] border backdrop-blur lg:h-[calc(100vh-5.25rem)] lg:max-h-[860px] lg:grid-cols-[1.02fr_minmax(0,0.98fr)]">
-        <section className="relative hidden overflow-hidden lg:block lg:px-8 lg:py-8 xl:px-10 xl:py-10" style={{ background: 'var(--sidebar-bg)' }}>
+      <div className="app-modal relative mx-auto grid w-full max-w-6xl overflow-hidden rounded-[2rem] border backdrop-blur lg:h-[calc(100vh-4.4rem)] lg:max-h-[760px] lg:grid-cols-[0.98fr_minmax(0,1.02fr)]">
+        <section className="relative hidden overflow-hidden lg:block lg:px-7 lg:py-6 xl:px-8 xl:py-7" style={{ background: 'var(--sidebar-bg)' }}>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.16),transparent_36%),radial-gradient(circle_at_bottom_right,rgba(30,167,189,0.24),transparent_34%)]" />
           <div className="absolute right-8 top-8 h-24 w-24 rounded-full border border-white/10 bg-white/5 blur-2xl" />
           <div className="absolute bottom-10 left-10 h-32 w-32 rounded-full bg-[var(--accent)]/15 blur-3xl" />
 
-          <div className="relative flex h-full flex-col justify-between gap-6">
-            <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-[1.45rem] border border-white/10 bg-white/10 p-2 shadow-[0_18px_45px_rgba(0,0,0,0.18)] backdrop-blur">
-                <img src={logo} alt="StockDesk logo" className="h-10 w-10 object-contain" />
+          <div className="relative flex h-full flex-col justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-[1.2rem] border border-white/10 bg-white/10 p-2 shadow-[0_18px_45px_rgba(0,0,0,0.18)] backdrop-blur">
+                <img src={logo} alt="StockDesk logo" className="h-8 w-8 object-contain" />
               </div>
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/70">StockDesk</p>
-                <p className="mt-1 text-lg font-semibold tracking-tight text-white xl:text-xl">Inventory and POS control</p>
+                <p className="mt-0.5 text-base font-semibold tracking-tight text-white xl:text-lg">Inventory and POS control</p>
               </div>
             </div>
 
@@ -234,37 +234,37 @@ export default function Login() {
               <div className="inline-flex items-center rounded-full border border-white/12 bg-white/8 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">
                 Retail operations workspace
               </div>
-              <h1 className="mt-4 text-3xl font-semibold leading-tight tracking-tight text-white xl:text-[2.3rem]">
+              <h1 className="mt-3 text-[2.1rem] font-semibold leading-tight tracking-tight text-white xl:text-[2.2rem]">
                 Run sales, stock, and staff from one cleaner control surface.
               </h1>
-              <p className="mt-3 max-w-lg text-sm leading-6 text-white/70 xl:text-[15px]">
+              <p className="mt-2.5 max-w-lg text-[14px] leading-6 text-white/70">
                 Keep inventory, checkout, and daily oversight in one focused system designed for fast shop operations.
               </p>
             </div>
 
-            <div className="grid gap-3 xl:grid-cols-2">
+            <div className="grid gap-2.5 xl:grid-cols-2">
               {featureHighlights.map(({ title, description, Icon }, index) => (
                 <div
                   key={title}
-                  className={`flex items-start gap-3 rounded-[1.25rem] border border-white/10 bg-white/6 px-4 py-3.5 backdrop-blur-sm ${
+                  className={`flex items-start gap-3 rounded-[1.1rem] border border-white/10 bg-white/6 px-3.5 py-3 backdrop-blur-sm ${
                     index === 2 ? 'xl:col-span-2' : ''
                   }`}
                 >
-                  <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-[1rem] bg-white/10 text-white">
+                  <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-[0.95rem] bg-white/10 text-white">
                     <Icon />
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-white">{title}</p>
-                    <p className="mt-1 text-[13px] leading-5 text-white/70">{description}</p>
+                    <p className="mt-1 text-[12.5px] leading-5 text-white/70">{description}</p>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="hidden grid-cols-3 gap-2.5 2xl:grid">
               {brandStats.map((item) => (
-                <div key={item.label} className="rounded-[1.2rem] border border-white/10 bg-white/8 px-3 py-3 text-center backdrop-blur-sm">
-                  <div className="text-base font-semibold tracking-tight text-white xl:text-lg">{item.value}</div>
+                <div key={item.label} className="rounded-[1.1rem] border border-white/10 bg-white/8 px-3 py-2.5 text-center backdrop-blur-sm">
+                  <div className="text-sm font-semibold tracking-tight text-white xl:text-base">{item.value}</div>
                   <div className="mt-1 text-xs uppercase tracking-[0.16em] text-white/70">{item.label}</div>
                 </div>
               ))}
@@ -272,7 +272,7 @@ export default function Login() {
           </div>
         </section>
 
-        <section className="px-5 py-6 sm:px-7 sm:py-7 lg:px-8 lg:py-8 xl:px-10 xl:py-10">
+        <section className="px-5 py-5 sm:px-7 sm:py-6 lg:px-7 lg:py-6 xl:px-8 xl:py-7">
           <div className="mx-auto max-w-xl lg:flex lg:h-full lg:flex-col lg:justify-center">
             <div className="mb-5 lg:hidden">
               <div className="flex items-center gap-3">
@@ -292,10 +292,10 @@ export default function Login() {
             <div className="inline-flex items-center rounded-full border border-[var(--border-default)] bg-[var(--surface-secondary)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--accent-strong)]">
               {panelCopy.eyebrow}
             </div>
-            <h2 className="mt-3 text-[2rem] font-semibold tracking-tight text-[var(--text-primary)] sm:text-[2.15rem]">{panelCopy.title}</h2>
+            <h2 className="mt-3 text-[1.9rem] font-semibold tracking-tight text-[var(--text-primary)] sm:text-[2rem]">{panelCopy.title}</h2>
             <p className="mt-2 max-w-lg text-sm leading-6 text-[var(--text-soft)] sm:text-[15px]">{panelCopy.description}</p>
 
-            <div className="mt-5 grid grid-cols-2 rounded-[1.1rem] bg-[var(--surface-secondary)] p-1.5">
+            <div className="mt-4 grid grid-cols-2 rounded-[1.1rem] bg-[var(--surface-secondary)] p-1.5">
               <button
                 type="button"
                 onClick={() => {
@@ -326,7 +326,7 @@ export default function Login() {
               </button>
             </div>
 
-            <div className="app-panel-soft mt-5 rounded-[1.45rem] border p-4 sm:p-5">
+            <div className="app-panel-soft mt-4 rounded-[1.35rem] border p-4 sm:p-4.5">
               {mode === 'login' ? (
                 <form className="space-y-3.5" onSubmit={handleSubmit}>
                   <AuthField
