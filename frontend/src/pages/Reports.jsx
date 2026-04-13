@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { fetchReports, fetchBestSelling, fetchCashierReport, fetchSettings } from '../utils/api';
+import { fetchReports, fetchBestSelling, fetchCashierReport, fetchDashboardSummary, fetchSettings } from '../utils/api';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, CartesianGrid } from 'recharts';
 
 const colors = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)'];
@@ -61,6 +61,7 @@ export default function Reports() {
   const [dailySales, setDailySales] = useState([]);
   const [bestSelling, setBestSelling] = useState([]);
   const [cashierReport, setCashierReport] = useState([]);
+  const [summary, setSummary] = useState(null);
   const [currency, setCurrency] = useState('USD');
   const [loading, setLoading] = useState(true);
 
@@ -68,15 +69,17 @@ export default function Reports() {
     async function loadReports() {
       try {
         setLoading(true);
-        const [salesData, productData, cashierData, settings] = await Promise.all([
+        const [salesData, productData, cashierData, summaryData, settings] = await Promise.all([
           fetchReports(),
           fetchBestSelling(),
           fetchCashierReport(),
+          fetchDashboardSummary(),
           fetchSettings(),
         ]);
         setDailySales(salesData);
         setBestSelling(productData);
         setCashierReport(cashierData);
+        setSummary(summaryData);
         setCurrency(settings.currency || 'USD');
       } catch (error) {
         console.error(error);
@@ -105,8 +108,12 @@ export default function Reports() {
     [cashierReport]
   );
   const totalRevenue = useMemo(
-    () => dailySales.reduce((sum, sale) => sum + Number(sale.total || 0), 0),
-    [dailySales]
+    () => Number(summary?.periods?.today?.netSales || dailySales.reduce((sum, sale) => sum + Number(sale.total || 0), 0)),
+    [dailySales, summary]
+  );
+  const totalProfit = useMemo(
+    () => Number(summary?.periods?.today?.grossProfit || 0),
+    [summary]
   );
   const averageSale = dailySales.length ? totalRevenue / dailySales.length : 0;
 
@@ -122,9 +129,10 @@ export default function Reports() {
           <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--text-muted)]">Review sales performance, best-selling products, and cashier contribution with richer, clearer analytics.</p>
         </div>
 
-        <div className="mt-5 grid gap-4 md:grid-cols-3">
+        <div className="mt-5 grid gap-4 md:grid-cols-4">
           <MetricCard label="Recorded Sales" value={dailySales.length.toLocaleString()} helper="Transactions included in this report." eyebrow="Activity" />
           <MetricCard label="Revenue" value={formatMoney(currency, totalRevenue)} helper="Combined total from listed sales." eyebrow="Revenue" />
+          <MetricCard label="Gross Profit" value={formatMoney(currency, totalProfit)} helper="Estimated profit for the same sales period." eyebrow="Profit" />
           <MetricCard label="Average Sale" value={formatMoney(currency, averageSale)} helper="Typical transaction value across the report." eyebrow="Efficiency" />
         </div>
       </section>
