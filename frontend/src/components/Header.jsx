@@ -1,6 +1,6 @@
 import { useLocation } from 'react-router-dom';
 import ThemeToggleButton from './ThemeToggleButton';
-import logo from '../assets/image.png';
+import logo from '../assets/logo.png';
 
 const pageTitles = {
   '/app': 'Dashboard',

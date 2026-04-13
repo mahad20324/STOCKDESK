@@ -3,22 +3,22 @@ import { useNavigate } from 'react-router-dom';
 import { login, signup } from '../utils/api';
 import { consumeSessionNotice, saveSession } from '../utils/auth';
 import ThemeToggleButton from '../components/ThemeToggleButton';
-import logo from '../assets/image.png';
+import logo from '../assets/logo.png';
 
 const featureHighlights = [
   {
     title: 'Live inventory visibility',
-    description: 'Monitor stock movement, low inventory, and restock priorities without jumping between screens.',
+    description: 'Track stock movement, low inventory, and restock priorities from one workspace.',
     Icon: InventoryIcon,
   },
   {
     title: 'Fast retail operations',
-    description: 'Keep checkout, reporting, and cashier activity running from one focused workspace.',
+    description: 'Keep checkout, reporting, and cashier activity moving without extra handoffs.',
     Icon: LightningIcon,
   },
   {
     title: 'Built for shop teams',
-    description: 'Separate shop access from platform ownership with role-aware sign in and cleaner controls.',
+    description: 'Use role-aware sign in and cleaner controls built for day-to-day store work.',
     Icon: ShieldIcon,
   },
 ];
@@ -101,7 +101,7 @@ function KeyIcon() {
 function AuthField({ label, type = 'text', value, onChange, placeholder, autoComplete, Icon }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-[var(--text-secondary)]">{label}</label>
+      <label className="block text-[13px] font-medium text-[var(--text-secondary)]">{label}</label>
       <div className="relative mt-2">
         <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-[var(--text-muted)]">
           <Icon />
@@ -112,7 +112,7 @@ function AuthField({ label, type = 'text', value, onChange, placeholder, autoCom
           onChange={onChange}
           placeholder={placeholder}
           autoComplete={autoComplete}
-          className="app-input w-full rounded-2xl border py-3 pl-12 pr-4 text-sm shadow-sm"
+          className="app-input w-full rounded-[1.15rem] border py-2.5 pl-12 pr-4 text-sm shadow-sm"
         />
       </div>
     </div>
@@ -202,7 +202,7 @@ export default function Login() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden px-4 py-5 sm:px-6 lg:px-8" style={{ background: 'var(--bg-auth)' }}>
+    <div className="relative min-h-screen overflow-hidden px-3 py-3 sm:px-4 sm:py-4 lg:px-6" style={{ background: 'var(--bg-auth)' }}>
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -left-24 top-8 h-64 w-64 rounded-full bg-[var(--accent)]/15 blur-3xl" />
         <div className="absolute right-0 top-1/4 h-72 w-72 rounded-full bg-[var(--success)]/10 blur-3xl" />
@@ -210,56 +210,61 @@ export default function Login() {
       </div>
 
       <div className="relative mx-auto flex max-w-6xl justify-end">
-        <ThemeToggleButton compact className="mb-4" />
+        <ThemeToggleButton compact className="mb-3" />
       </div>
 
-      <div className="app-modal relative mx-auto grid w-full max-w-6xl overflow-hidden rounded-[2rem] border backdrop-blur lg:grid-cols-[1.05fr_minmax(0,0.95fr)]">
-        <section className="relative overflow-hidden px-6 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12" style={{ background: 'var(--sidebar-bg)' }}>
+      <div className="app-modal relative mx-auto grid w-full max-w-6xl overflow-hidden rounded-[2rem] border backdrop-blur lg:h-[calc(100vh-5.25rem)] lg:max-h-[860px] lg:grid-cols-[1.02fr_minmax(0,0.98fr)]">
+        <section className="relative hidden overflow-hidden lg:block lg:px-8 lg:py-8 xl:px-10 xl:py-10" style={{ background: 'var(--sidebar-bg)' }}>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.16),transparent_36%),radial-gradient(circle_at_bottom_right,rgba(30,167,189,0.24),transparent_34%)]" />
           <div className="absolute right-8 top-8 h-24 w-24 rounded-full border border-white/10 bg-white/5 blur-2xl" />
           <div className="absolute bottom-10 left-10 h-32 w-32 rounded-full bg-[var(--accent)]/15 blur-3xl" />
 
-          <div className="relative flex h-full flex-col">
+          <div className="relative flex h-full flex-col justify-between gap-6">
             <div className="flex items-center gap-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-[1.6rem] border border-white/10 bg-white/10 p-2 shadow-[0_18px_45px_rgba(0,0,0,0.18)] backdrop-blur">
-                <img src={logo} alt="StockDesk logo" className="h-12 w-12 object-contain" />
+              <div className="flex h-14 w-14 items-center justify-center rounded-[1.45rem] border border-white/10 bg-white/10 p-2 shadow-[0_18px_45px_rgba(0,0,0,0.18)] backdrop-blur">
+                <img src={logo} alt="StockDesk logo" className="h-10 w-10 object-contain" />
               </div>
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/65">StockDesk</p>
-                <p className="mt-1 text-xl font-semibold tracking-tight text-white sm:text-2xl">Inventory and POS control</p>
+                <p className="mt-1 text-lg font-semibold tracking-tight text-white xl:text-xl">Inventory and POS control</p>
               </div>
             </div>
 
-            <div className="mt-8 max-w-xl">
+            <div className="max-w-xl">
               <div className="inline-flex items-center rounded-full border border-white/12 bg-white/8 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/75">
                 Retail operations workspace
               </div>
-              <h1 className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-white sm:text-[2.7rem]">
+              <h1 className="mt-4 text-3xl font-semibold leading-tight tracking-tight text-white xl:text-[2.55rem]">
                 Run sales, stock, and staff from one cleaner control surface.
               </h1>
-              <p className="mt-4 max-w-lg text-sm leading-7 text-white/72 sm:text-base">
-                The reference you shared has the right structure. This version keeps that split-screen feel, but uses your own StockDesk palette and product tone instead of copying it.
+              <p className="mt-3 max-w-lg text-sm leading-6 text-white/72 xl:text-[15px]">
+                Keep inventory, checkout, and daily oversight in one focused system designed for fast shop operations.
               </p>
             </div>
 
-            <div className="mt-8 grid gap-3">
-              {featureHighlights.map(({ title, description, Icon }) => (
-                <div key={title} className="flex items-start gap-4 rounded-[1.4rem] border border-white/10 bg-white/6 px-4 py-4 backdrop-blur-sm">
-                  <div className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-white">
+            <div className="grid gap-3 xl:grid-cols-2">
+              {featureHighlights.map(({ title, description, Icon }, index) => (
+                <div
+                  key={title}
+                  className={`flex items-start gap-3 rounded-[1.25rem] border border-white/10 bg-white/6 px-4 py-3.5 backdrop-blur-sm ${
+                    index === 2 ? 'xl:col-span-2' : ''
+                  }`}
+                >
+                  <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-[1rem] bg-white/10 text-white">
                     <Icon />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-white sm:text-[15px]">{title}</p>
-                    <p className="mt-1 text-sm leading-6 text-white/65">{description}</p>
+                    <p className="text-sm font-semibold text-white">{title}</p>
+                    <p className="mt-1 text-[13px] leading-5 text-white/65">{description}</p>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="mt-8 grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               {brandStats.map((item) => (
-                <div key={item.label} className="rounded-[1.35rem] border border-white/10 bg-white/8 px-4 py-4 text-center backdrop-blur-sm">
-                  <div className="text-lg font-semibold tracking-tight text-white sm:text-xl">{item.value}</div>
+                <div key={item.label} className="rounded-[1.2rem] border border-white/10 bg-white/8 px-3 py-3 text-center backdrop-blur-sm">
+                  <div className="text-base font-semibold tracking-tight text-white xl:text-lg">{item.value}</div>
                   <div className="mt-1 text-xs uppercase tracking-[0.16em] text-white/60">{item.label}</div>
                 </div>
               ))}
@@ -267,15 +272,30 @@ export default function Login() {
           </div>
         </section>
 
-        <section className="px-6 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
-          <div className="mx-auto max-w-xl">
+        <section className="px-5 py-6 sm:px-7 sm:py-7 lg:px-8 lg:py-8 xl:px-10 xl:py-10">
+          <div className="mx-auto max-w-xl lg:flex lg:h-full lg:flex-col lg:justify-center">
+            <div className="mb-5 lg:hidden">
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-[1rem] bg-[var(--surface-secondary)] p-2 shadow-sm">
+                  <img src={logo} alt="StockDesk logo" className="h-8 w-8 object-contain" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent-strong)]">StockDesk</p>
+                  <p className="mt-1 text-lg font-semibold tracking-tight text-[var(--text-primary)]">Business workspace</p>
+                </div>
+              </div>
+              <p className="mt-3 text-sm leading-6 text-[var(--text-soft)]">
+                Sign in quickly and keep stock, sales, and team activity in one place.
+              </p>
+            </div>
+
             <div className="inline-flex items-center rounded-full border border-[var(--border-default)] bg-[var(--surface-secondary)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--accent-strong)]">
               {panelCopy.eyebrow}
             </div>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-[var(--text-primary)] sm:text-[2.4rem]">{panelCopy.title}</h2>
-            <p className="mt-3 max-w-lg text-sm leading-7 text-[var(--text-soft)] sm:text-base">{panelCopy.description}</p>
+            <h2 className="mt-3 text-[2rem] font-semibold tracking-tight text-[var(--text-primary)] sm:text-[2.15rem]">{panelCopy.title}</h2>
+            <p className="mt-2 max-w-lg text-sm leading-6 text-[var(--text-soft)] sm:text-[15px]">{panelCopy.description}</p>
 
-            <div className="mt-6 grid grid-cols-2 rounded-[1.2rem] bg-[var(--surface-secondary)] p-1.5">
+            <div className="mt-5 grid grid-cols-2 rounded-[1.1rem] bg-[var(--surface-secondary)] p-1.5">
               <button
                 type="button"
                 onClick={() => {
@@ -306,9 +326,9 @@ export default function Login() {
               </button>
             </div>
 
-            <div className="app-panel-soft mt-6 rounded-[1.6rem] border p-5 sm:p-6">
+            <div className="app-panel-soft mt-5 rounded-[1.45rem] border p-4 sm:p-5">
               {mode === 'login' ? (
-                <form className="space-y-4" onSubmit={handleSubmit}>
+                <form className="space-y-3.5" onSubmit={handleSubmit}>
                   <AuthField
                     label="Shop Name"
                     value={loginForm.shopName}
@@ -336,17 +356,17 @@ export default function Login() {
                     Icon={LockIcon}
                   />
 
-                  <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--surface-primary)] px-4 py-3 text-sm text-[var(--text-muted)]">
+                  <div className="rounded-[1.1rem] border border-[var(--border-default)] bg-[var(--surface-primary)] px-4 py-2.5 text-sm text-[var(--text-muted)]">
                     {panelCopy.note}
                   </div>
 
-                  {error ? <div className="app-alert-danger rounded-2xl px-4 py-3 text-sm">{error}</div> : null}
-                  {success ? <div className="app-alert-success rounded-2xl px-4 py-3 text-sm">{success}</div> : null}
+                  {error ? <div className="app-alert-danger rounded-[1.1rem] px-4 py-2.5 text-sm">{error}</div> : null}
+                  {success ? <div className="app-alert-success rounded-[1.1rem] px-4 py-2.5 text-sm">{success}</div> : null}
 
                   <button
                     type="submit"
                     disabled={loading}
-                    className={`w-full rounded-2xl px-4 py-3.5 text-sm font-semibold text-white transition ${
+                    className={`w-full rounded-[1.1rem] px-4 py-3 text-sm font-semibold text-white transition ${
                       loading ? 'cursor-not-allowed bg-gray-400' : 'app-btn-primary'
                     }`}
                   >
@@ -354,27 +374,27 @@ export default function Login() {
                   </button>
                 </form>
               ) : createdCredentials ? (
-                <div className="space-y-4">
-                  <div className="app-alert-success rounded-2xl px-4 py-3 text-sm">
+                <div className="space-y-3.5">
+                  <div className="app-alert-success rounded-[1.1rem] px-4 py-2.5 text-sm">
                     Shop created successfully. Save these credentials now. They are shown once.
                   </div>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--surface-primary)] px-4 py-4">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-[1.1rem] border border-[var(--border-default)] bg-[var(--surface-primary)] px-4 py-3.5">
                       <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">Shop Name</p>
-                      <p className="mt-2 text-base font-semibold text-[var(--text-primary)]">{createdCredentials.shopName}</p>
+                      <p className="mt-2 text-sm font-semibold text-[var(--text-primary)] sm:text-base">{createdCredentials.shopName}</p>
                     </div>
-                    <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--surface-primary)] px-4 py-4">
+                    <div className="rounded-[1.1rem] border border-[var(--border-default)] bg-[var(--surface-primary)] px-4 py-3.5">
                       <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">Admin Username</p>
-                      <p className="mt-2 text-base font-semibold text-[var(--text-primary)]">{createdCredentials.username}</p>
+                      <p className="mt-2 text-sm font-semibold text-[var(--text-primary)] sm:text-base">{createdCredentials.username}</p>
                     </div>
                   </div>
-                  <div className="rounded-2xl border border-[var(--border-default)] bg-[var(--surface-primary)] px-4 py-4">
+                  <div className="rounded-[1.1rem] border border-[var(--border-default)] bg-[var(--surface-primary)] px-4 py-3.5">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">Password</p>
-                    <p className="mt-2 rounded-2xl bg-[var(--surface-secondary)] px-4 py-3 font-mono text-sm text-[var(--text-primary)]">
+                    <p className="mt-2 rounded-[1rem] bg-[var(--surface-secondary)] px-4 py-2.5 font-mono text-sm text-[var(--text-primary)]">
                       {createdCredentials.password}
                     </p>
                   </div>
-                  <div className="app-alert-warning rounded-2xl px-4 py-3 text-sm">
+                  <div className="app-alert-warning rounded-[1.1rem] px-4 py-2.5 text-sm">
                     Save this password before leaving this screen. For security, StockDesk does not show stored passwords again.
                   </div>
                   <button
@@ -385,13 +405,13 @@ export default function Login() {
                       setCreatedCredentials(null);
                       setSuccess('Shop created. Use the saved credentials to sign in.');
                     }}
-                    className="app-btn-primary w-full rounded-2xl px-4 py-3.5 text-sm font-semibold text-white transition"
+                    className="app-btn-primary w-full rounded-[1.1rem] px-4 py-3 text-sm font-semibold text-white transition"
                   >
                     I Saved These Details
                   </button>
                 </div>
               ) : (
-                <form className="grid gap-4 md:grid-cols-2" onSubmit={handleSignup}>
+                <form className="grid gap-3 md:grid-cols-2" onSubmit={handleSignup}>
                   <AuthField
                     label="Shop Name"
                     value={signupForm.shopName}
@@ -425,17 +445,17 @@ export default function Login() {
                     Icon={KeyIcon}
                   />
 
-                  <div className="app-alert-warning md:col-span-2 rounded-2xl px-4 py-3 text-sm">
+                  <div className="app-alert-warning md:col-span-2 rounded-[1.1rem] px-4 py-2.5 text-sm">
                     {panelCopy.note}
                   </div>
 
-                  {error ? <div className="app-alert-danger md:col-span-2 rounded-2xl px-4 py-3 text-sm">{error}</div> : null}
-                  {success ? <div className="app-alert-success md:col-span-2 rounded-2xl px-4 py-3 text-sm">{success}</div> : null}
+                  {error ? <div className="app-alert-danger md:col-span-2 rounded-[1.1rem] px-4 py-2.5 text-sm">{error}</div> : null}
+                  {success ? <div className="app-alert-success md:col-span-2 rounded-[1.1rem] px-4 py-2.5 text-sm">{success}</div> : null}
 
                   <button
                     type="submit"
                     disabled={loading}
-                    className={`md:col-span-2 w-full rounded-2xl px-4 py-3.5 text-sm font-semibold text-white transition ${
+                    className={`md:col-span-2 w-full rounded-[1.1rem] px-4 py-3 text-sm font-semibold text-white transition ${
                       loading ? 'cursor-not-allowed bg-gray-400' : 'app-btn-primary'
                     }`}
                   >
@@ -445,19 +465,6 @@ export default function Login() {
               )}
             </div>
 
-            <div className="mt-5 flex flex-col gap-3 rounded-[1.35rem] border border-[var(--border-default)] bg-[var(--surface-primary)] px-4 py-4 text-sm text-[var(--text-muted)] sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="font-medium text-[var(--text-secondary)]">Platform owner access</p>
-                <p className="mt-1 text-sm leading-6">Use the separate console route if you manage all shops.</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => navigate('/owner/login')}
-                className="app-btn-secondary shrink-0 rounded-2xl border px-4 py-2.5 font-medium transition"
-              >
-                Owner Login
-              </button>
-            </div>
           </div>
         </section>
       </div>

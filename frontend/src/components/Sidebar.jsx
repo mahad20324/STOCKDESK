@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { getUser } from '../utils/auth';
-import logo from '../assets/image.png';
+import logo from '../assets/logo.png';
 
 const links = [
   {
@@ -115,13 +115,13 @@ export default function Sidebar({ user: providedUser, isOpen = false, onClose = 
       >
         <div className="flex items-center justify-between lg:block">
           <div>
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--surface-secondary)] shadow-sm">
-                <img src={logo} alt="StockDesk logo" className="h-8 w-8 object-contain" />
+            <div className="flex items-center gap-3.5">
+              <div className="flex h-14 w-14 items-center justify-center rounded-[1.15rem] bg-white p-1.5 shadow-[0_12px_26px_rgba(15,23,42,0.2)] ring-1 ring-white/10">
+                <img src={logo} alt="StockDesk logo" className="h-11 w-11 object-contain" />
               </div>
-              <div>
-                <p className="text-lg font-semibold text-[var(--sidebar-text)]">StockDesk</p>
-                <p className="text-sm text-[var(--sidebar-muted)]">Business dashboard</p>
+              <div className="pt-0.5">
+                <p className="text-[1.9rem] font-semibold leading-none tracking-tight text-[var(--sidebar-text)]">StockDesk</p>
+                <p className="mt-2 text-sm font-medium tracking-[0.02em] text-[var(--sidebar-muted)]">Business overview</p>
               </div>
             </div>
           </div>
