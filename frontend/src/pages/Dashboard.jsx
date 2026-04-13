@@ -15,7 +15,7 @@ function DashboardIcon({ children, tone = 'default' }) {
     warning: 'bg-[linear-gradient(135deg,rgba(216,155,73,0.18),rgba(216,155,73,0.08))] text-[var(--warning)] ring-1 ring-[rgba(216,155,73,0.12)]',
   };
 
-  return <div className={`flex h-12 w-12 items-center justify-center rounded-2xl shadow-sm ${toneClasses[tone]}`}>{children}</div>;
+  return <div className={`flex h-10 w-10 items-center justify-center rounded-[1.05rem] shadow-sm ${toneClasses[tone]}`}>{children}</div>;
 }
 
 function StatCard({ title, value, helper, tone = 'default', icon, eyebrow }) {
@@ -28,14 +28,14 @@ function StatCard({ title, value, helper, tone = 'default', icon, eyebrow }) {
   }[tone];
 
   return (
-    <div className={`app-panel relative overflow-hidden rounded-[1.4rem] border p-5 transition duration-200 hover:-translate-y-1 hover:shadow-lg`}>
-      <div className={`absolute inset-x-0 top-0 h-20 bg-gradient-to-b ${accentClass}`} />
-      <div className="relative flex items-start justify-between gap-4">
+    <div className={`app-panel relative overflow-hidden rounded-[1.2rem] border p-4 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg`}>
+      <div className={`absolute inset-x-0 top-0 h-16 bg-gradient-to-b ${accentClass}`} />
+      <div className="relative flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">{eyebrow || 'Overview'}</p>
-          <p className="mt-3 text-sm font-medium text-[var(--text-muted)]">{title}</p>
-          <p className={`mt-3 text-3xl font-semibold tracking-tight ${valueClass}`}>{value}</p>
-          <p className="mt-2 max-w-[18ch] text-sm leading-6 text-[var(--text-muted)]">{helper}</p>
+          <p className="mt-2 text-sm font-medium text-[var(--text-muted)]">{title}</p>
+          <p className={`mt-2 text-[2rem] font-semibold tracking-tight leading-none ${valueClass}`}>{value}</p>
+          <p className="mt-2 max-w-[18ch] text-[13px] leading-5 text-[var(--text-muted)]">{helper}</p>
         </div>
         <DashboardIcon tone={tone}>{icon}</DashboardIcon>
       </div>
@@ -45,21 +45,21 @@ function StatCard({ title, value, helper, tone = 'default', icon, eyebrow }) {
 
 function SectionCard({ title, subtitle, children, action }) {
   return (
-    <section className="app-panel rounded-[1.5rem] border p-5 sm:p-6">
-      <div className="flex items-start justify-between gap-4 border-b border-[var(--border-default)] pb-4">
+    <section className="app-panel rounded-[1.3rem] border p-4 sm:p-5">
+      <div className="flex items-start justify-between gap-3 border-b border-[var(--border-default)] pb-3.5">
         <div>
-          <h2 className="text-lg font-semibold tracking-tight text-[var(--text-primary)]">{title}</h2>
-          <p className="mt-1 text-sm leading-6 text-[var(--text-muted)]">{subtitle}</p>
+          <h2 className="text-base font-semibold tracking-tight text-[var(--text-primary)] sm:text-lg">{title}</h2>
+          <p className="mt-1 text-sm leading-5 text-[var(--text-muted)]">{subtitle}</p>
         </div>
         {action}
       </div>
-      <div className="mt-6">{children}</div>
+      <div className="mt-4">{children}</div>
     </section>
   );
 }
 
 function SkeletonCard() {
-  return <div className="app-panel-soft h-36 animate-pulse rounded-lg border p-5" />;
+  return <div className="app-panel-soft h-28 animate-pulse rounded-lg border p-4" />;
 }
 
 function EmptyState({ title, message }) {
@@ -127,6 +127,7 @@ export default function Dashboard() {
   const lowStockCount = lowStockItems.length;
   const todaysSales = Number(summary?.periods?.today?.orderCount || 0);
   const totalRevenue = Number(summary?.periods?.thisMonth?.netSales || sales.reduce((sum, sale) => sum + parseFloat(sale.total || 0), 0));
+  const totalProfit = Number(summary?.periods?.thisMonth?.grossProfit || 0);
 
   const salesTrend = useMemo(() => {
     const today = new Date();
@@ -170,20 +171,23 @@ export default function Dashboard() {
   const lowStockProducts = products.filter((product) => Number(product.quantity || 0) < Math.max(5, Number(product.lowStock || 0)));
   const weeklySalesTotal = useMemo(() => salesTrend.reduce((sum, item) => sum + Number(item.sales || 0), 0), [salesTrend]);
   const weeklyAverageSales = salesTrend.length ? weeklySalesTotal / salesTrend.length : 0;
+  const lowStockPreview = lowStockItems.slice(0, 3);
+  const topProductsPreview = bestProductData.slice(0, 4);
+  const bestDay = salesTrend.length ? salesTrend.reduce((best, current) => (current.sales > best.sales ? current : best), salesTrend[0]).label : '-';
 
   return (
-    <div className="space-y-6">
-      <section className="app-panel relative overflow-hidden rounded-[1.7rem] border p-5 sm:p-6">
+    <div className="space-y-4">
+      <section className="app-panel relative overflow-hidden rounded-[1.45rem] border p-4 sm:p-5">
         <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/3 bg-[radial-gradient(circle_at_top_right,rgba(30,167,189,0.14),transparent_58%)] lg:block" />
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative">
-            <div className="mb-3 inline-flex items-center rounded-full border border-[var(--border-default)] bg-[var(--surface-secondary)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--accent-strong)]">
+            <div className="mb-2 inline-flex items-center rounded-full border border-[var(--border-default)] bg-[var(--surface-secondary)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--accent-strong)]">
               Command Center
             </div>
-            <h2 className="mt-1 text-2xl font-semibold tracking-tight text-[var(--text-primary)]">{shopName} at a glance</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--text-muted)]">Track stock movement, daily sales, and products that need attention from one simple dashboard.</p>
+            <h2 className="mt-1 text-[1.7rem] font-semibold tracking-tight text-[var(--text-primary)] sm:text-[1.95rem]">{shopName} at a glance</h2>
+            <p className="mt-1.5 max-w-2xl text-sm leading-5 text-[var(--text-muted)]">Track stock, sales, and inventory risks from one compact dashboard.</p>
           </div>
-          <div className="app-panel-accent rounded-2xl border border-[rgba(30,167,189,0.12)] px-4 py-3 text-sm sm:min-w-[220px]">
+          <div className="app-panel-accent rounded-[1.1rem] border border-[rgba(30,167,189,0.12)] px-4 py-2.5 text-sm sm:min-w-[210px]">
             <p className="font-medium">Last updated</p>
             <p className="mt-1 text-[var(--accent)]">{new Date().toLocaleString()}</p>
           </div>
@@ -192,19 +196,19 @@ export default function Dashboard() {
 
       {loading ? (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-            {Array.from({ length: 5 }).map((_, index) => (
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+            {Array.from({ length: 6 }).map((_, index) => (
               <SkeletonCard key={index} />
             ))}
           </div>
-          <div className="grid gap-6 xl:grid-cols-[1.65fr_1fr]">
-            <div className="app-panel-soft h-96 animate-pulse rounded-lg border" />
-            <div className="app-panel-soft h-96 animate-pulse rounded-lg border" />
+          <div className="grid gap-4 xl:grid-cols-[1.55fr_0.95fr]">
+            <div className="app-panel-soft h-80 animate-pulse rounded-lg border" />
+            <div className="app-panel-soft h-80 animate-pulse rounded-lg border" />
           </div>
         </>
       ) : (
         <>
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
             <StatCard
               title="Total Products"
               value={totalProducts.toLocaleString()}
@@ -258,6 +262,19 @@ export default function Dashboard() {
               }
             />
             <StatCard
+              title="Gross Profit"
+              value={formatMoney(currency, totalProfit)}
+              helper="This month estimated gross profit"
+              tone="warning"
+              eyebrow="Profit"
+              icon={
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+                  <path d="M4 16l5-5 4 4 7-8" />
+                  <path d="M14 7h6v6" />
+                </svg>
+              }
+            />
+            <StatCard
               title="Low Stock Items"
               value={lowStockProducts.length.toLocaleString()}
               helper="Products below safe stock level"
@@ -273,29 +290,27 @@ export default function Dashboard() {
             />
           </section>
 
-          <section className="grid gap-6 xl:grid-cols-[1.7fr_1fr]">
+          <section className="grid gap-4 xl:grid-cols-[1.55fr_0.95fr]">
             <SectionCard
               title="Sales Overview"
               subtitle="Net sales across the last 7 days."
-              action={<div className="app-panel-accent rounded-2xl px-3 py-2 text-sm font-medium">Today: {formatMoney(currency, todayRevenue)}</div>}
+              action={<div className="app-panel-accent rounded-[1rem] px-3 py-2 text-sm font-medium">Today: {formatMoney(currency, todayRevenue)}</div>}
             >
-              <div className="mb-5 grid gap-3 sm:grid-cols-3">
-                <div className="app-panel-soft rounded-2xl border p-4">
+              <div className="mb-4 grid gap-3 sm:grid-cols-3">
+                <div className="app-panel-soft rounded-[1rem] border p-3.5">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">7-Day Total</p>
-                  <p className="mt-2 text-xl font-semibold text-[var(--text-primary)]">{formatMoney(currency, weeklySalesTotal)}</p>
+                  <p className="mt-2 text-lg font-semibold text-[var(--text-primary)]">{formatMoney(currency, weeklySalesTotal)}</p>
                 </div>
-                <div className="app-panel-soft rounded-2xl border p-4">
+                <div className="app-panel-soft rounded-[1rem] border p-3.5">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">Daily Average</p>
-                  <p className="mt-2 text-xl font-semibold text-[var(--text-primary)]">{formatMoney(currency, weeklyAverageSales)}</p>
+                  <p className="mt-2 text-lg font-semibold text-[var(--text-primary)]">{formatMoney(currency, weeklyAverageSales)}</p>
                 </div>
-                <div className="app-panel-soft rounded-2xl border p-4">
+                <div className="app-panel-soft rounded-[1rem] border p-3.5">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">Best Day</p>
-                  <p className="mt-2 text-xl font-semibold text-[var(--text-primary)]">
-                    {salesTrend.length ? salesTrend.reduce((best, current) => (current.sales > best.sales ? current : best), salesTrend[0]).label : '-'}
-                  </p>
+                  <p className="mt-2 text-lg font-semibold text-[var(--text-primary)]">{bestDay}</p>
                 </div>
               </div>
-              <div className="h-80">
+              <div className="h-56 sm:h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={salesTrend} barCategoryGap="28%">
                     <defs>
@@ -308,7 +323,7 @@ export default function Dashboard() {
                     <XAxis dataKey="label" tickLine={false} axisLine={false} stroke="var(--text-muted)" />
                     <YAxis tickLine={false} axisLine={false} stroke="var(--text-muted)" tickFormatter={(value) => Number(value).toLocaleString()} />
                     <Tooltip cursor={{ fill: 'var(--surface-secondary)' }} content={<SalesTooltip currency={currency} />} />
-                    <Bar dataKey="sales" fill="url(#salesGradient)" radius={[12, 12, 4, 4]} maxBarSize={54} />
+                    <Bar dataKey="sales" fill="url(#salesGradient)" radius={[10, 10, 4, 4]} maxBarSize={42} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -319,83 +334,91 @@ export default function Dashboard() {
               ) : null}
             </SectionCard>
 
-            <SectionCard title="Low Stock Alert" subtitle="Products below the recommended threshold need restocking.">
-              {lowStockItems.length ? (
-                <div className="space-y-3">
-                  {lowStockItems.map((product) => (
-                    <div key={product.id} className="flex items-start gap-3 rounded-2xl border border-[var(--danger-border)] bg-[linear-gradient(135deg,rgba(255,242,239,0.95),rgba(255,255,255,0.9))] px-4 py-4 transition hover:border-[var(--danger)] hover:shadow-md">
-                      <DashboardIcon tone={Number(product.quantity || 0) === 0 ? 'danger' : 'warning'}>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
-                          <path d="M12 9v4" />
-                          <path d="M12 17h.01" />
-                          <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />
-                        </svg>
-                      </DashboardIcon>
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium text-[var(--text-primary)]">{product.name}</p>
-                        <p className="mt-1 text-sm text-[var(--text-muted)]">{product.category || 'Uncategorized'}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-semibold text-[var(--danger)]">{product.quantity} left</p>
-                        <p className="mt-1 text-xs text-[var(--text-muted)]">Threshold {Math.max(5, Number(product.lowStock || 0))}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <EmptyState title="Inventory looks healthy" message="No products are currently below the low stock threshold." />
-              )}
-            </SectionCard>
-          </section>
-
-          <section className="grid gap-6 lg:grid-cols-2">
-            <SectionCard title="Top Products" subtitle="Best performing items by quantity sold.">
-              {bestProductData.length ? (
-                <div className="overflow-hidden rounded-lg border border-[var(--border-default)]">
-                  <div className="app-table-head grid grid-cols-[minmax(0,1fr)_120px] px-4 py-3 text-sm font-medium">
-                    <span>Product</span>
-                    <span className="text-right">Quantity Sold</span>
-                  </div>
-                  {bestProductData.map((item, index) => (
-                    <div key={item.name} className="app-row-hover grid grid-cols-[minmax(0,1fr)_120px] border-t border-[var(--border-default)] px-4 py-3.5 text-sm transition">
-                      <span className="flex items-center gap-3 truncate font-medium text-[var(--text-primary)]">
-                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--surface-secondary)] text-xs font-semibold text-[var(--accent-strong)]">{index + 1}</span>
-                        <span className="truncate">{item.name}</span>
-                      </span>
-                      <span className="text-right text-[var(--text-muted)]">{item.value}</span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <EmptyState title="No product sales yet" message="Top-selling products will appear here once sales are recorded." />
-              )}
-            </SectionCard>
-
             <SectionCard
-              title="Stock Summary"
-              subtitle="Quick health check for inventory and sales activity."
-              action={<div className="app-panel-soft rounded-2xl border px-3 py-2 text-sm text-[var(--text-muted)]">{sales.length} total sales</div>}
+              title="Operations Snapshot"
+              subtitle="Low stock, top products, and inventory health in one compact view."
+              action={<div className="app-panel-soft rounded-[1rem] border px-3 py-2 text-sm text-[var(--text-muted)]">{sales.length} total sales</div>}
             >
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="app-panel-soft rounded-2xl border p-4">
-                  <p className="text-sm font-medium text-[var(--text-muted)]">Products In Stock</p>
-                  <p className="mt-2 text-2xl font-semibold text-[var(--text-primary)]">{totalStock.toLocaleString()}</p>
-                  <p className="mt-2 text-sm text-[var(--text-muted)]">Across {totalProducts.toLocaleString()} products.</p>
+              <div className="space-y-4">
+                <div>
+                  <div className="mb-2 flex items-center justify-between gap-3">
+                    <h3 className="text-sm font-semibold text-[var(--text-primary)]">Low Stock</h3>
+                    <span className="text-xs font-medium text-[var(--text-muted)]">{lowStockCount} flagged</span>
+                  </div>
+                  {lowStockPreview.length ? (
+                    <div className="space-y-2.5">
+                      {lowStockPreview.map((product) => (
+                        <div key={product.id} className="flex items-start gap-3 rounded-[1rem] border border-[var(--danger-border)] bg-[linear-gradient(135deg,rgba(255,242,239,0.95),rgba(255,255,255,0.9))] px-3 py-3 transition hover:border-[var(--danger)] hover:shadow-md">
+                          <DashboardIcon tone={Number(product.quantity || 0) === 0 ? 'danger' : 'warning'}>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
+                              <path d="M12 9v4" />
+                              <path d="M12 17h.01" />
+                              <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />
+                            </svg>
+                          </DashboardIcon>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium text-[var(--text-primary)]">{product.name}</p>
+                            <p className="mt-0.5 text-xs text-[var(--text-muted)]">{product.category || 'Uncategorized'}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-semibold text-[var(--danger)]">{product.quantity} left</p>
+                            <p className="mt-0.5 text-xs text-[var(--text-muted)]">Min {Math.max(5, Number(product.lowStock || 0))}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <EmptyState title="Inventory looks healthy" message="No products are currently below the low stock threshold." />
+                  )}
                 </div>
-                <div className="app-panel-soft rounded-2xl border p-4">
-                  <p className="text-sm font-medium text-[var(--text-muted)]">Low Stock Alerts</p>
-                  <p className="mt-2 text-2xl font-semibold text-[var(--danger)]">{lowStockCount.toLocaleString()}</p>
-                  <p className="mt-2 text-sm text-[var(--text-muted)]">Items that need restocking now.</p>
-                </div>
-                <div className="app-panel-soft rounded-2xl border p-4">
-                  <p className="text-sm font-medium text-[var(--text-muted)]">Today's Revenue</p>
-                  <p className="mt-2 text-2xl font-semibold text-[var(--success)]">{formatMoney(currency, todayRevenue)}</p>
-                  <p className="mt-2 text-sm text-[var(--text-muted)]">From {todaysSales.toLocaleString()} completed sales.</p>
-                </div>
-                <div className="app-panel-soft rounded-2xl border p-4">
-                  <p className="text-sm font-medium text-[var(--text-muted)]">This Week Units Sold</p>
-                  <p className="mt-2 text-2xl font-semibold text-[var(--text-primary)]">{Number(summary?.periods?.thisWeek?.itemsSold || 0).toLocaleString()}</p>
-                  <p className="mt-2 text-sm text-[var(--text-muted)]">Useful for reorder planning.</p>
+
+                <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr] xl:grid-cols-1 2xl:grid-cols-[1.05fr_0.95fr]">
+                  <div>
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <h3 className="text-sm font-semibold text-[var(--text-primary)]">Top Products</h3>
+                      <span className="text-xs font-medium text-[var(--text-muted)]">Best sellers</span>
+                    </div>
+                    {topProductsPreview.length ? (
+                      <div className="overflow-hidden rounded-[1rem] border border-[var(--border-default)]">
+                        {topProductsPreview.map((item, index) => (
+                          <div key={item.name} className="app-row-hover grid grid-cols-[minmax(0,1fr)_90px] border-t border-[var(--border-default)] px-3 py-2.5 text-sm first:border-t-0 transition">
+                            <span className="flex items-center gap-2.5 truncate font-medium text-[var(--text-primary)]">
+                              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--surface-secondary)] text-[11px] font-semibold text-[var(--accent-strong)]">{index + 1}</span>
+                              <span className="truncate">{item.name}</span>
+                            </span>
+                            <span className="text-right text-[var(--text-muted)]">{item.value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <EmptyState title="No product sales yet" message="Top-selling products will appear here once sales are recorded." />
+                    )}
+                  </div>
+
+                  <div>
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <h3 className="text-sm font-semibold text-[var(--text-primary)]">Stock Summary</h3>
+                      <span className="text-xs font-medium text-[var(--text-muted)]">Quick health check</span>
+                    </div>
+                    <div className="grid gap-2.5 sm:grid-cols-2">
+                      <div className="app-panel-soft rounded-[1rem] border p-3">
+                        <p className="text-[12px] font-medium text-[var(--text-muted)]">Products In Stock</p>
+                        <p className="mt-1.5 text-xl font-semibold text-[var(--text-primary)]">{totalStock.toLocaleString()}</p>
+                      </div>
+                      <div className="app-panel-soft rounded-[1rem] border p-3">
+                        <p className="text-[12px] font-medium text-[var(--text-muted)]">Low Stock Alerts</p>
+                        <p className="mt-1.5 text-xl font-semibold text-[var(--danger)]">{lowStockCount.toLocaleString()}</p>
+                      </div>
+                      <div className="app-panel-soft rounded-[1rem] border p-3">
+                        <p className="text-[12px] font-medium text-[var(--text-muted)]">Today's Revenue</p>
+                        <p className="mt-1.5 text-xl font-semibold text-[var(--success)]">{formatMoney(currency, todayRevenue)}</p>
+                      </div>
+                      <div className="app-panel-soft rounded-[1rem] border p-3">
+                        <p className="text-[12px] font-medium text-[var(--text-muted)]">This Week Units</p>
+                        <p className="mt-1.5 text-xl font-semibold text-[var(--text-primary)]">{Number(summary?.periods?.thisWeek?.itemsSold || 0).toLocaleString()}</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </SectionCard>

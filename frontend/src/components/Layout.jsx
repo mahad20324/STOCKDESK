@@ -16,10 +16,10 @@ export default function Layout() {
     <div className="app-shell min-h-screen">
       <div className="flex min-h-screen">
         <Sidebar user={user} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} onLogout={handleLogout} />
-        <div className="flex-1 px-4 py-4 sm:px-6 sm:py-5 lg:px-8 lg:py-6">
+        <div className="flex-1 px-3 py-3 sm:px-4 sm:py-4 lg:px-5 lg:py-4.5">
           <div className="mx-auto w-full max-w-[1440px]">
             <Header onOpenSidebar={() => setSidebarOpen(true)} />
-            <div className="mt-5 sm:mt-6">
+            <div className="mt-4 sm:mt-5">
               <Outlet />
             </div>
           </div>
