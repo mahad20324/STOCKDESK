@@ -19,23 +19,22 @@ function DashboardIcon({ children, tone = 'default' }) {
 }
 
 function StatCard({ title, value, helper, tone = 'default', icon, eyebrow }) {
-  const valueClass = tone === 'success' ? 'text-[var(--success)]' : tone === 'danger' ? 'text-[var(--danger)]' : 'text-[var(--text-primary)]';
-  const accentClass = {
-    default: 'from-[rgba(30,167,189,0.16)] to-transparent',
-    success: 'from-[rgba(74,168,132,0.18)] to-transparent',
-    danger: 'from-[rgba(218,106,90,0.18)] to-transparent',
-    warning: 'from-[rgba(216,155,73,0.18)] to-transparent',
+  const valueClass = tone === 'success' ? 'text-[var(--success)]' : tone === 'danger' ? 'text-[var(--danger)]' : tone === 'warning' ? 'text-[var(--warning)]' : 'text-[var(--text-primary)]';
+  const borderAccent = {
+    default: 'border-l-[3px] border-l-[var(--accent)]',
+    success: 'border-l-[3px] border-l-[var(--success)]',
+    danger: 'border-l-[3px] border-l-[var(--danger)]',
+    warning: 'border-l-[3px] border-l-[var(--warning)]',
   }[tone];
 
   return (
-    <div className={`app-panel relative overflow-hidden rounded-[1.2rem] border p-4 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg`}>
-      <div className={`absolute inset-x-0 top-0 h-16 bg-gradient-to-b ${accentClass}`} />
-      <div className="relative flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">{eyebrow || 'Overview'}</p>
-          <p className="mt-2 text-sm font-medium text-[var(--text-muted)]">{title}</p>
-          <p className={`mt-2 text-[2rem] font-semibold tracking-tight leading-none ${valueClass}`}>{value}</p>
-          <p className="mt-2 max-w-[18ch] text-[13px] leading-5 text-[var(--text-muted)]">{helper}</p>
+    <div className={`app-panel relative overflow-hidden rounded-[1.2rem] border ${borderAccent} p-4 transition duration-200 hover:shadow-lg`}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">{eyebrow || 'Overview'}</p>
+          <p className="mt-1.5 text-[13px] font-medium text-[var(--text-secondary)]">{title}</p>
+          <p className={`mt-2 text-[1.55rem] font-bold tracking-tight leading-none break-all ${valueClass}`}>{value}</p>
+          <p className="mt-2 text-[12px] leading-4 text-[var(--text-muted)]">{helper}</p>
         </div>
         <DashboardIcon tone={tone}>{icon}</DashboardIcon>
       </div>
@@ -181,11 +180,8 @@ export default function Dashboard() {
         <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/3 bg-[radial-gradient(circle_at_top_right,rgba(30,167,189,0.14),transparent_58%)] lg:block" />
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative">
-            <div className="mb-2 inline-flex items-center rounded-full border border-[var(--border-default)] bg-[var(--surface-secondary)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--accent-strong)]">
-              Command Center
-            </div>
-            <h2 className="mt-1 text-[1.7rem] font-semibold tracking-tight text-[var(--text-primary)] sm:text-[1.95rem]">{shopName} at a glance</h2>
-            <p className="mt-1.5 max-w-2xl text-sm leading-5 text-[var(--text-muted)]">Track stock, sales, and inventory risks from one compact dashboard.</p>
+            <h2 className="text-[1.7rem] font-bold tracking-tight text-[var(--text-primary)] sm:text-[1.95rem]">{shopName}</h2>
+            <p className="mt-1 max-w-2xl text-sm leading-5 text-[var(--text-muted)]">Stock, sales, and inventory — all at a glance.</p>
           </div>
           <div className="app-panel-accent rounded-[1.1rem] border border-[rgba(30,167,189,0.12)] px-4 py-2.5 text-sm sm:min-w-[210px]">
             <p className="font-medium">Last updated</p>
@@ -348,7 +344,7 @@ export default function Dashboard() {
                   {lowStockPreview.length ? (
                     <div className="space-y-2.5">
                       {lowStockPreview.map((product) => (
-                        <div key={product.id} className="flex items-start gap-3 rounded-[1rem] border border-[var(--danger-border)] bg-[linear-gradient(135deg,rgba(255,242,239,0.95),rgba(255,255,255,0.9))] px-3 py-3 transition hover:border-[var(--danger)] hover:shadow-md">
+                        <div key={product.id} className="flex items-start gap-3 rounded-[1rem] border border-[var(--danger-border)] bg-[var(--danger-soft)] px-3 py-3 transition hover:border-[var(--danger)] hover:shadow-md">
                           <DashboardIcon tone={Number(product.quantity || 0) === 0 ? 'danger' : 'warning'}>
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
                               <path d="M12 9v4" />
