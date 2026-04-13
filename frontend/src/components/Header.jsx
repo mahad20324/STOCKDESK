@@ -1,5 +1,6 @@
 import { useLocation } from 'react-router-dom';
 import ThemeToggleButton from './ThemeToggleButton';
+import logo from '../assets/logo.png';
 
 const pageTitles = {
   '/app': 'Dashboard',
@@ -32,6 +33,12 @@ export default function Header({ onOpenSidebar }) {
           </svg>
         </button>
         <div className="min-w-0">
+          <div className="mb-1 flex items-center gap-2 lg:hidden">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--surface-secondary)] shadow-sm">
+              <img src={logo} alt="StockDesk logo" className="h-8 w-8 object-contain" />
+            </div>
+            <span className="truncate text-base font-semibold tracking-tight text-[var(--text-primary)]">StockDesk</span>
+          </div>
           <p className="text-sm font-medium tracking-tight text-[var(--text-muted)]">Overview</p>
           <h1 className="truncate text-[1.65rem] font-semibold leading-tight tracking-tight text-[var(--text-primary)] sm:text-2xl">{pageTitle}</h1>
         </div>

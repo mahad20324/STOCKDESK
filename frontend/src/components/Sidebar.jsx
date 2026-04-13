@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { getUser } from '../utils/auth';
+import logo from '../assets/logo.png';
 
 const links = [
   {
@@ -115,7 +116,9 @@ export default function Sidebar({ user: providedUser, isOpen = false, onClose = 
         <div className="flex items-center justify-between lg:block">
           <div>
             <div className="flex items-center gap-3">
-              <div className="app-brand-mark flex h-11 w-11 items-center justify-center rounded-xl text-base font-semibold">S</div>
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--surface-secondary)] shadow-sm">
+                <img src={logo} alt="StockDesk logo" className="h-8 w-8 object-contain" />
+              </div>
               <div>
                 <p className="text-lg font-semibold text-[var(--sidebar-text)]">StockDesk</p>
                 <p className="text-sm text-[var(--sidebar-muted)]">Business dashboard</p>

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login, signup } from '../utils/api';
 import { consumeSessionNotice, saveSession } from '../utils/auth';
+import logo from '../assets/logo.png';
 
 export default function Login() {
   const [mode, setMode] = useState('login');
@@ -72,8 +73,13 @@ export default function Login() {
     <div className="min-h-screen px-4 py-12" style={{ background: 'var(--bg-auth)' }}>
       <div className="app-modal mx-auto w-full max-w-2xl rounded-[2rem] border p-8 backdrop-blur">
         <div className="mb-6 text-center">
-          <div className="text-4xl font-bold text-[var(--accent-strong)]">StockDesk</div>
-          <p className="mt-2 text-[var(--text-soft)]">Simple shop-based sign in for multi-tenant inventory and POS teams</p>
+          <div className="mx-auto flex w-fit flex-col items-center">
+            <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-[var(--surface-secondary)] p-2 shadow-sm">
+              <img src={logo} alt="StockDesk logo" className="h-16 w-16 object-contain" />
+            </div>
+            <div className="text-4xl font-bold text-[var(--accent-strong)]">StockDesk</div>
+          </div>
+          <p className="mt-3 text-[var(--text-soft)]">Simple shop-based sign in for multi-tenant inventory and POS teams</p>
         </div>
 
         <div className="mb-6 grid grid-cols-2 rounded-3xl bg-[var(--surface-secondary)] p-1">
