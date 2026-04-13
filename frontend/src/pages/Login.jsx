@@ -225,19 +225,19 @@ export default function Login() {
                 <img src={logo} alt="StockDesk logo" className="h-10 w-10 object-contain" />
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/65">StockDesk</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/70">StockDesk</p>
                 <p className="mt-1 text-lg font-semibold tracking-tight text-white xl:text-xl">Inventory and POS control</p>
               </div>
             </div>
 
             <div className="max-w-xl">
-              <div className="inline-flex items-center rounded-full border border-white/12 bg-white/8 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/75">
+              <div className="inline-flex items-center rounded-full border border-white/12 bg-white/8 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">
                 Retail operations workspace
               </div>
-              <h1 className="mt-4 text-3xl font-semibold leading-tight tracking-tight text-white xl:text-[2.55rem]">
+              <h1 className="mt-4 text-3xl font-semibold leading-tight tracking-tight text-white xl:text-[2.3rem]">
                 Run sales, stock, and staff from one cleaner control surface.
               </h1>
-              <p className="mt-3 max-w-lg text-sm leading-6 text-white/72 xl:text-[15px]">
+              <p className="mt-3 max-w-lg text-sm leading-6 text-white/70 xl:text-[15px]">
                 Keep inventory, checkout, and daily oversight in one focused system designed for fast shop operations.
               </p>
             </div>
@@ -255,7 +255,7 @@ export default function Login() {
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-white">{title}</p>
-                    <p className="mt-1 text-[13px] leading-5 text-white/65">{description}</p>
+                    <p className="mt-1 text-[13px] leading-5 text-white/70">{description}</p>
                   </div>
                 </div>
               ))}
@@ -265,7 +265,7 @@ export default function Login() {
               {brandStats.map((item) => (
                 <div key={item.label} className="rounded-[1.2rem] border border-white/10 bg-white/8 px-3 py-3 text-center backdrop-blur-sm">
                   <div className="text-base font-semibold tracking-tight text-white xl:text-lg">{item.value}</div>
-                  <div className="mt-1 text-xs uppercase tracking-[0.16em] text-white/60">{item.label}</div>
+                  <div className="mt-1 text-xs uppercase tracking-[0.16em] text-white/70">{item.label}</div>
                 </div>
               ))}
             </div>
@@ -304,7 +304,7 @@ export default function Login() {
                   setSuccess('');
                   setCreatedCredentials(null);
                 }}
-                className={`rounded-[1rem] px-4 py-3 text-sm font-semibold transition ${
+                className={`inline-flex items-center justify-center rounded-[1rem] px-4 py-3 text-sm font-semibold leading-none transition ${
                   mode === 'login' ? 'app-panel text-[var(--accent-strong)]' : 'text-[var(--text-muted)]'
                 }`}
               >
@@ -318,7 +318,7 @@ export default function Login() {
                   setSuccess('');
                   setCreatedCredentials(null);
                 }}
-                className={`rounded-[1rem] px-4 py-3 text-sm font-semibold transition ${
+                className={`inline-flex items-center justify-center rounded-[1rem] px-4 py-3 text-sm font-semibold leading-none transition ${
                   mode === 'signup' ? 'app-panel text-[var(--accent-strong)]' : 'text-[var(--text-muted)]'
                 }`}
               >
@@ -366,7 +366,7 @@ export default function Login() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className={`w-full rounded-[1.1rem] px-4 py-3 text-sm font-semibold text-white transition ${
+                    className={`inline-flex w-full items-center justify-center rounded-[1.1rem] px-4 py-3 text-sm font-semibold leading-none text-white transition ${
                       loading ? 'cursor-not-allowed bg-gray-400' : 'app-btn-primary'
                     }`}
                   >
@@ -405,7 +405,7 @@ export default function Login() {
                       setCreatedCredentials(null);
                       setSuccess('Shop created. Use the saved credentials to sign in.');
                     }}
-                    className="app-btn-primary w-full rounded-[1.1rem] px-4 py-3 text-sm font-semibold text-white transition"
+                    className="app-btn-primary inline-flex w-full items-center justify-center rounded-[1.1rem] px-4 py-3 text-sm font-semibold leading-none text-white transition"
                   >
                     I Saved These Details
                   </button>
@@ -455,7 +455,7 @@ export default function Login() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className={`md:col-span-2 w-full rounded-[1.1rem] px-4 py-3 text-sm font-semibold text-white transition ${
+                    className={`md:col-span-2 inline-flex w-full items-center justify-center rounded-[1.1rem] px-4 py-3 text-sm font-semibold leading-none text-white transition ${
                       loading ? 'cursor-not-allowed bg-gray-400' : 'app-btn-primary'
                     }`}
                   >
