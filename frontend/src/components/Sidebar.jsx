@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { getUser } from '../utils/auth';
-import logo from '../assets/logo.png';
+import logo from '../assets/image.png';
 
 const links = [
   {
