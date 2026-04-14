@@ -331,25 +331,12 @@ export default function Settings() {
 
   return (
     <div className="space-y-6">
-      <section className="app-panel relative overflow-hidden rounded-[1.7rem] border p-5 sm:p-6">
-        <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/3 bg-[radial-gradient(circle_at_top_right,rgba(30,167,189,0.14),transparent_58%)] lg:block" />
-        <div className="relative">
-          <h2 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">Settings</h2>
-          <p className="mt-2 text-sm text-[var(--text-muted)]">
-            {isAdmin
-              ? 'Manage shop details, receipt preferences, printer setup, and end-of-day operations.'
-              : 'Review shop details and receipt settings. Only admins can make changes.'}
-          </p>
+      {!isAdmin ? (
+        <div className="app-alert-info rounded-xl border border-[var(--border-default)] px-4 py-3 text-sm">
+          You have read-only access to this page.
         </div>
-
-        {!isAdmin ? (
-          <div className="app-alert-info mt-5 rounded-lg border border-[var(--border-default)] px-4 py-3 text-sm">
-            You have read-only access to this page.
-          </div>
-        ) : null}
-
-        {status ? <div className={`mt-5 rounded-2xl px-4 py-3 text-sm ${statusClasses(status)}`}>{status}</div> : null}
-      </section>
+      ) : null}
+      {status ? <div className={`rounded-xl px-4 py-3 text-sm ${statusClasses(status)}`}>{status}</div> : null}
 
       {loading ? (
         <div className="grid gap-6">
