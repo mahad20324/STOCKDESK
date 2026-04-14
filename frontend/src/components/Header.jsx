@@ -12,13 +12,14 @@ const pageTitles = {
   '/app/users': 'Users',
 };
 
-export default function Header({ onOpenSidebar }) {
+export default function Header({ onOpenSidebar, onToggleSidebar, sidebarCollapsed }) {
   const location = useLocation();
   const pageTitle = pageTitles[location.pathname] || 'StockDesk';
 
   return (
     <div className="app-topbar flex flex-wrap items-center justify-between gap-3 rounded-[1.35rem] border px-4 py-3 sm:px-5 sm:py-3.5">
       <div className="flex min-w-0 items-center gap-3">
+        {/* Mobile hamburger */}
         <button
           type="button"
           onClick={onOpenSidebar}
@@ -29,6 +30,29 @@ export default function Header({ onOpenSidebar }) {
             <path d="M4 7h16" />
             <path d="M4 12h16" />
             <path d="M4 17h16" />
+          </svg>
+        </button>
+        {/* Desktop collapse toggle */}
+        <button
+          type="button"
+          onClick={onToggleSidebar}
+          title={sidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'}
+          aria-label={sidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'}
+          className="app-btn-secondary hidden rounded-lg border p-2 lg:flex"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+            {sidebarCollapsed ? (
+              <>
+                <path d="M3 12h18" />
+                <path d="M3 6h18" />
+                <path d="M3 18h18" />
+              </>
+            ) : (
+              <>
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <path d="M9 3v18" />
+              </>
+            )}
           </svg>
         </button>
         <div className="min-w-0">

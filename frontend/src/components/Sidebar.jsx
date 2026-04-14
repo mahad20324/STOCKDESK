@@ -87,7 +87,7 @@ function ShopsIcon() {
   );
 }
 
-export default function Sidebar({ user: providedUser, isOpen = false, onClose = () => {}, onLogout = () => {} }) {
+export default function Sidebar({ user: providedUser, isOpen = false, collapsed = false, onClose = () => {}, onLogout = () => {} }) {
   const user = providedUser || getUser();
   const { resolvedTheme, setThemeMode, themeMode } = useTheme();
   const activeTheme = themeMode === 'system' ? resolvedTheme : themeMode;
@@ -112,8 +112,10 @@ export default function Sidebar({ user: providedUser, isOpen = false, onClose = 
         onClick={onClose}
       />
       <aside
-        className={`app-sidebar-shell fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r px-5 py-5 transition-transform duration-300 lg:static lg:translate-x-0 lg:px-6 lg:py-6 lg:shadow-none ${
+        className={`app-sidebar-shell fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r px-5 py-5 transition-all duration-300 lg:static lg:shadow-none ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
+        } ${
+          collapsed ? 'lg:-translate-x-full lg:w-0 lg:overflow-hidden lg:px-0 lg:opacity-0' : 'lg:translate-x-0 lg:px-6 lg:py-6'
         }`}
       >
         <div className="flex items-center justify-between lg:block">
