@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { getUser } from '../utils/auth';
+import { useTheme } from './ThemeProvider';
 import logo from '../assets/logo.png';
 
 const links = [
@@ -88,6 +89,8 @@ function ShopsIcon() {
 
 export default function Sidebar({ user: providedUser, isOpen = false, onClose = () => {}, onLogout = () => {} }) {
   const user = providedUser || getUser();
+  const { resolvedTheme, setThemeMode, themeMode } = useTheme();
+  const activeTheme = themeMode === 'system' ? resolvedTheme : themeMode;
   const isAdmin = user?.role === 'Admin';
   const isSuperAdmin = user?.role === 'SuperAdmin';
   const shopName = isSuperAdmin ? 'Platform Console' : user?.shop?.name || 'Default Shop';
@@ -188,10 +191,31 @@ export default function Sidebar({ user: providedUser, isOpen = false, onClose = 
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--sidebar-active-bg)] text-sm font-semibold text-[var(--sidebar-active-text)] shadow-[var(--sidebar-active-shadow)]">
               {String(user?.name || 'S').slice(0, 1).toUpperCase()}
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold text-[var(--sidebar-text)]">{user?.name || 'Staff'}</p>
               <p className="truncate text-xs text-[var(--sidebar-muted)]">{user?.displayRole || user?.role || 'User'}</p>
             </div>
+            <button
+              type="button"
+              title={activeTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              onClick={() => setThemeMode(activeTheme === 'dark' ? 'light' : 'dark')}
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--sidebar-muted)] transition hover:bg-white/10 hover:text-[var(--sidebar-text)]"
+              aria-label="Toggle theme"
+            >
+              {activeTheme === 'dark' ? (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
+                  <circle cx="12" cy="12" r="4" />
+                  <path d="M12 2v2.5" /><path d="M12 19.5V22" />
+                  <path d="M4.9 4.9 6.7 6.7" /><path d="M17.3 17.3 19.1 19.1" />
+                  <path d="M2 12h2.5" /><path d="M19.5 12H22" />
+                  <path d="m4.9 19.1 1.8-1.8" /><path d="m17.3 6.7 1.8-1.8" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
+                  <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" />
+                </svg>
+              )}
+            </button>
           </div>
           <button
             type="button"

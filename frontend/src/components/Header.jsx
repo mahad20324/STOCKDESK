@@ -1,5 +1,4 @@
 import { useLocation } from 'react-router-dom';
-import ThemeToggleButton from './ThemeToggleButton';
 import logo from '../assets/logo.png';
 
 const pageTitles = {
@@ -42,9 +41,6 @@ export default function Header({ onOpenSidebar }) {
           <p className="text-[13px] font-medium tracking-tight text-[var(--text-muted)]">Overview</p>
           <h1 className="truncate text-[1.45rem] font-semibold leading-tight tracking-tight text-[var(--text-primary)] sm:text-[1.8rem]">{pageTitle}</h1>
         </div>
-      </div>
-      <div className="flex w-full items-center justify-between gap-2.5 sm:w-auto sm:justify-end sm:gap-3">
-        <ThemeToggleButton compact className="shrink-0" />
       </div>
     </div>
   );
