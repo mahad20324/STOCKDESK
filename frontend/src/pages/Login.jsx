@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login, signup } from '../utils/api';
 import { consumeSessionNotice, saveSession } from '../utils/auth';
-import ThemeToggleButton from '../components/ThemeToggleButton';
+import { useTheme } from '../components/ThemeProvider';
 import logo from '../assets/logo.png';
 
 const featureHighlights = [
@@ -121,6 +121,8 @@ function AuthField({ label, type = 'text', value, onChange, placeholder, autoCom
 
 export default function Login() {
   const [mode, setMode] = useState('login');
+  const { resolvedTheme, themeMode, setThemeMode } = useTheme();
+  const activeTheme = themeMode === 'system' ? resolvedTheme : themeMode;
   const [loginForm, setLoginForm] = useState({ shopName: '', username: '', password: '' });
   const [signupForm, setSignupForm] = useState({
     shopName: '',
@@ -210,7 +212,27 @@ export default function Login() {
       </div>
 
       <div className="relative mx-auto flex max-w-6xl justify-end">
-        <ThemeToggleButton compact className="mb-2" />
+        <button
+          type="button"
+          onClick={() => setThemeMode(activeTheme === 'dark' ? 'light' : 'dark')}
+          title={activeTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          aria-label="Toggle theme"
+          className="mb-2 flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border-default)] bg-[var(--surface-primary)] text-[var(--text-muted)] shadow-sm transition hover:text-[var(--text-primary)]"
+        >
+          {activeTheme === 'dark' ? (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2v2.5" /><path d="M12 19.5V22" />
+              <path d="M4.9 4.9 6.7 6.7" /><path d="M17.3 17.3 19.1 19.1" />
+              <path d="M2 12h2.5" /><path d="M19.5 12H22" />
+              <path d="m4.9 19.1 1.8-1.8" /><path d="m17.3 6.7 1.8-1.8" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
+              <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" />
+            </svg>
+          )}
+        </button>
       </div>
 
       <div className="app-modal relative mx-auto grid w-full max-w-6xl overflow-hidden rounded-[2rem] border backdrop-blur lg:h-[calc(100vh-4.4rem)] lg:max-h-[760px] lg:grid-cols-[0.98fr_minmax(0,1.02fr)]">
@@ -231,10 +253,7 @@ export default function Login() {
             </div>
 
             <div className="max-w-xl">
-              <div className="inline-flex items-center rounded-full border border-white/12 bg-white/8 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">
-                Retail operations workspace
-              </div>
-              <h1 className="mt-3 text-[2.1rem] font-semibold leading-tight tracking-tight text-white xl:text-[2.2rem]">
+              <h1 className="text-[2.1rem] font-bold leading-tight tracking-tight text-white xl:text-[2.2rem]">
                 Run sales, stock, and staff from one cleaner control surface.
               </h1>
               <p className="mt-2.5 max-w-lg text-[14px] leading-6 text-white/70">
@@ -289,10 +308,7 @@ export default function Login() {
               </p>
             </div>
 
-            <div className="inline-flex items-center rounded-full border border-[var(--border-default)] bg-[var(--surface-secondary)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--accent-strong)]">
-              {panelCopy.eyebrow}
-            </div>
-            <h2 className="mt-3 text-[1.9rem] font-semibold tracking-tight text-[var(--text-primary)] sm:text-[2rem]">{panelCopy.title}</h2>
+            <h2 className="mt-1 text-[1.9rem] font-bold tracking-tight text-[var(--text-primary)] sm:text-[2rem]">{panelCopy.title}</h2>
             <p className="mt-2 max-w-lg text-sm leading-6 text-[var(--text-soft)] sm:text-[15px]">{panelCopy.description}</p>
 
             <div className="mt-4 grid grid-cols-2 rounded-[1.1rem] bg-[var(--surface-secondary)] p-1.5">
