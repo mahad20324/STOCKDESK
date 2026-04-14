@@ -176,6 +176,27 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-4">
+      {/* Low-stock alert banner */}
+      {!loading && lowStockProducts.length > 0 && (
+        <div className="flex items-start gap-3 rounded-[1.25rem] border border-amber-400/30 bg-amber-400/10 px-4 py-3">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="mt-0.5 h-5 w-5 shrink-0 text-amber-500">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+            <line x1="12" y1="9" x2="12" y2="13" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-amber-600 dark:text-amber-400">
+              {lowStockProducts.length} product{lowStockProducts.length !== 1 ? 's' : ''} running low on stock
+            </p>
+            <p className="mt-0.5 text-xs text-amber-600/80 dark:text-amber-400/80">
+              {lowStockProducts.slice(0, 3).map((p) => p.name).join(', ')}
+              {lowStockProducts.length > 3 && ` and ${lowStockProducts.length - 3} more`}
+              {' — '}restock via Products &rsaquo; Restock.
+            </p>
+          </div>
+        </div>
+      )}
+
       <section className="app-panel relative overflow-hidden rounded-[1.45rem] border p-4 sm:p-5">
         <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/3 bg-[radial-gradient(circle_at_top_right,rgba(30,167,189,0.14),transparent_58%)] lg:block" />
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

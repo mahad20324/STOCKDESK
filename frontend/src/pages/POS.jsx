@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { fetchProducts, createSale, fetchSettings, downloadReceipt, fetchSale, fetchCustomers, printReceiptToPrinter } from '../utils/api';
+import { fetchProducts, createSale, fetchSettings, downloadReceipt, fetchSale, fetchCustomers, printReceiptToPrinter, createReturn } from '../utils/api';
 import { getToken, getUser } from '../utils/auth';
 import PosReceipt from '../components/Receipt/PosReceipt';
 
@@ -39,6 +39,18 @@ export default function POS() {
   const [printing, setPrinting] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
   const [mobileSection, setMobileSection] = useState('browse');
+  const [heldSales, setHeldSales] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('pos_held_sales') || '[]'); } catch { return []; }
+  });
+  const [useSplit, setUseSplit] = useState(false);
+  const [splitPayments, setSplitPayments] = useState([{ method: 'Cash', amount: '' }, { method: 'Card', amount: '' }]);
+  const [showReturns, setShowReturns] = useState(false);
+  const [returnSaleId, setReturnSaleId] = useState('');
+  const [returnLookup, setReturnLookup] = useState(null);
+  const [returnItems, setReturnItems] = useState({});
+  const [returnReason, setReturnReason] = useState('');
+  const [returnMessage, setReturnMessage] = useState('');
+  const [returnLoading, setReturnLoading] = useState(false);
 
   useEffect(() => {
     loadProducts();
@@ -123,7 +135,76 @@ export default function POS() {
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const discountAmount = discountType === 'percentage' ? (subtotal * discount) / 100 : discount;
-  const total = Math.max(0, subtotal - discountAmount);
+  const afterDiscount = Math.max(0, subtotal - discountAmount);
+  const vatRate = Number(settings?.vat || 0);
+  const taxAmount = (afterDiscount * vatRate) / 100;
+  const total = afterDiscount + taxAmount;
+
+  const holdSale = () => {
+    if (!cart.length) return;
+    const held = { id: Date.now(), cart, customerId, paymentMethod, discount, discountType, savedAt: new Date().toISOString() };
+    const newHeld = [...heldSales, held];
+    setHeldSales(newHeld);
+    localStorage.setItem('pos_held_sales', JSON.stringify(newHeld));
+    clearCart();
+    setMessage('Sale held. You can restore it any time.');
+  };
+
+  const restoreHeld = (held) => {
+    setCart(held.cart);
+    setCustomerId(held.customerId);
+    setPaymentMethod(held.paymentMethod);
+    setDiscount(held.discount);
+    setDiscountType(held.discountType);
+    const newHeld = heldSales.filter((h) => h.id !== held.id);
+    setHeldSales(newHeld);
+    localStorage.setItem('pos_held_sales', JSON.stringify(newHeld));
+  };
+
+  const deleteHeld = (id) => {
+    const newHeld = heldSales.filter((h) => h.id !== id);
+    setHeldSales(newHeld);
+    localStorage.setItem('pos_held_sales', JSON.stringify(newHeld));
+  };
+
+  const lookupReturnSale = async () => {
+    if (!returnSaleId.trim()) return;
+    try {
+      setReturnLoading(true);
+      setReturnMessage('');
+      const sale = await fetchSale(returnSaleId.trim());
+      setReturnLookup(sale);
+      const initItems = {};
+      (sale.items || []).forEach((item) => { initItems[item.productId] = 0; });
+      setReturnItems(initItems);
+    } catch (e) {
+      setReturnMessage(e.message);
+      setReturnLookup(null);
+    } finally {
+      setReturnLoading(false);
+    }
+  };
+
+  const handleReturn = async () => {
+    try {
+      setReturnLoading(true);
+      setReturnMessage('');
+      const items = Object.entries(returnItems)
+        .filter(([, qty]) => Number(qty) > 0)
+        .map(([productId, quantity]) => ({ productId: Number(productId), quantity: Number(quantity) }));
+      if (!items.length) { setReturnMessage('Select at least one item to return.'); setReturnLoading(false); return; }
+      const result = await createReturn(returnLookup.id, { items, reason: returnReason });
+      setReturnMessage(`Return processed. Total refund: ${formatMoney(currency, result.totalRefund)}`);
+      setReturnLookup(null);
+      setReturnItems({});
+      setReturnSaleId('');
+      setReturnReason('');
+    } catch (e) {
+      setReturnMessage(e.message);
+    } finally {
+      setReturnLoading(false);
+    }
+  };
 
   const printToThermalPrinter = async (saleId) => {
     try {
@@ -155,11 +236,19 @@ export default function POS() {
         setMessage('Add at least one product to cart.');
         return;
       }
+      if (useSplit) {
+        const splitTotal = splitPayments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+        if (Math.abs(splitTotal - total) > 0.01) {
+          setMessage(`Split amounts (${formatMoney(currency, splitTotal)}) must equal the total (${formatMoney(currency, total)}).`);
+          return;
+        }
+      }
       setLoading(true);
       setMessage('');
       const response = await createSale({
         items: cart,
-        paymentMethod,
+        paymentMethod: useSplit ? 'Split' : paymentMethod,
+        paymentSplits: useSplit ? splitPayments.filter((p) => parseFloat(p.amount) > 0) : null,
         currency: currency || 'USD',
         discount,
         discountType,
@@ -392,15 +481,52 @@ export default function POS() {
             </div>
             <div className="app-panel-soft mt-6 rounded-[1.35rem] border p-4 sm:p-5">
               <p className="text-sm text-[var(--text-muted)]">Payment method</p>
-              <select
-                value={paymentMethod}
-                onChange={(event) => setPaymentMethod(event.target.value)}
-                className="app-btn-secondary mt-3 w-full rounded-lg border px-4 py-3"
-              >
-                {paymentMethods.map((method) => (
-                  <option key={method} value={method}>{method}</option>
-                ))}
-              </select>
+              <div className="mt-3 flex flex-col gap-2">
+                <div className="flex items-center gap-3">
+                  <select
+                    value={paymentMethod}
+                    onChange={(event) => setPaymentMethod(event.target.value)}
+                    disabled={useSplit}
+                    className="app-btn-secondary flex-1 rounded-lg border px-4 py-3 disabled:opacity-50"
+                  >
+                    {paymentMethods.map((method) => (
+                      <option key={method} value={method}>{method}</option>
+                    ))}
+                  </select>
+                  <label className="flex items-center gap-2 text-sm text-[var(--text-secondary)] whitespace-nowrap">
+                    <input type="checkbox" checked={useSplit} onChange={(e) => setUseSplit(e.target.checked)} />
+                    Split
+                  </label>
+                </div>
+                {useSplit && (
+                  <div className="mt-2 space-y-2">
+                    {splitPayments.map((sp, i) => (
+                      <div key={i} className="flex gap-2">
+                        <select
+                          value={sp.method}
+                          onChange={(e) => setSplitPayments((prev) => prev.map((p, idx) => idx === i ? { ...p, method: e.target.value } : p))}
+                          className="app-btn-secondary rounded-lg border px-3 py-2 text-sm"
+                        >
+                          {paymentMethods.map((m) => <option key={m} value={m}>{m}</option>)}
+                        </select>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          placeholder="0.00"
+                          value={sp.amount}
+                          onChange={(e) => setSplitPayments((prev) => prev.map((p, idx) => idx === i ? { ...p, amount: e.target.value } : p))}
+                          className="app-input flex-1 rounded-lg border px-3 py-2 text-sm"
+                        />
+                      </div>
+                    ))}
+                    <div className="flex gap-2">
+                      <button type="button" onClick={() => setSplitPayments((prev) => [...prev, { method: 'Cash', amount: '' }])} className="app-btn-secondary rounded-lg border px-3 py-2 text-xs">+ Add method</button>
+                      {splitPayments.length > 2 && <button type="button" onClick={() => setSplitPayments((prev) => prev.slice(0, -1))} className="app-btn-danger rounded-lg px-3 py-2 text-xs">Remove</button>}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="app-panel-soft mt-6 rounded-[1.35rem] border p-4 sm:p-5">
@@ -438,6 +564,12 @@ export default function POS() {
                   <span>-{formatMoney(currency, discountAmount)}</span>
                 </div>
               )}
+              {vatRate > 0 && (
+                <div className="mt-2 flex items-center justify-between text-sm text-[var(--text-muted)]">
+                  <span>VAT ({vatRate}%)</span>
+                  <span>+{formatMoney(currency, taxAmount)}</span>
+                </div>
+              )}
               <div className="mt-2 flex items-center justify-between border-t border-[var(--border-default)] pt-2 text-[var(--text-primary)]">
                 <span>Total</span>
                 <strong>{formatMoney(currency, total)}</strong>
@@ -446,16 +578,23 @@ export default function POS() {
                 <input type="checkbox" checked={autoPrint} onChange={(event) => setAutoPrint(event.target.checked)} />
                 Print receipt automatically after checkout
               </label>
-              <button
-                type="button"
-                onClick={handleCheckout}
-                disabled={loading}
-                className={`mt-4 w-full rounded-3xl px-4 py-3 text-white transition ${
-                  loading ? 'cursor-not-allowed bg-gray-400' : 'app-btn-primary'
-                }`}
-              >
-                {loading ? 'Processing...' : 'Complete Sale'}
-              </button>
+              <div className="mt-4 flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={handleCheckout}
+                  disabled={loading}
+                  className={`w-full rounded-3xl px-4 py-3 text-white transition ${
+                    loading ? 'cursor-not-allowed bg-gray-400' : 'app-btn-primary'
+                  }`}
+                >
+                  {loading ? 'Processing...' : 'Complete Sale'}
+                </button>
+                {cart.length > 0 && (
+                  <button type="button" onClick={holdSale} className="app-btn-secondary w-full rounded-3xl border px-4 py-2.5 text-sm transition">
+                    Hold Sale
+                  </button>
+                )}
+              </div>
             </div>
             {message && (
               <div className={`mt-4 rounded-lg px-4 py-3 text-sm ${message.includes('successfully') ? 'app-alert-success' : 'app-alert-danger'}`}>
@@ -509,6 +648,99 @@ export default function POS() {
           onClose={() => setShowReceipt(false)}
         />
       )}
+
+      {/* Held Sales */}
+      {heldSales.length > 0 && (
+        <section className="app-panel rounded-[1.5rem] border p-5 sm:p-6">
+          <h3 className="text-lg font-semibold text-[var(--text-primary)]">Held Sales</h3>
+          <p className="mt-1 text-sm text-[var(--text-muted)]">Saved carts waiting to be completed.</p>
+          <div className="mt-4 space-y-3">
+            {heldSales.map((held) => {
+              const heldTotal = held.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+              return (
+                <div key={held.id} className="app-panel-soft flex items-center justify-between gap-4 rounded-[1.35rem] border p-4">
+                  <div>
+                    <p className="text-sm font-medium text-[var(--text-primary)]">{held.cart.length} item{held.cart.length !== 1 ? 's' : ''} &middot; {formatMoney(currency, heldTotal)}</p>
+                    <p className="mt-0.5 text-xs text-[var(--text-muted)]">{new Date(held.savedAt).toLocaleTimeString()}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button type="button" onClick={() => restoreHeld(held)} className="app-btn-primary rounded-lg px-3 py-2 text-sm">Restore</button>
+                    <button type="button" onClick={() => deleteHeld(held.id)} className="app-btn-danger rounded-lg px-3 py-2 text-sm">Discard</button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* Returns */}
+      <section className="app-panel rounded-[1.5rem] border p-5 sm:p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-[var(--text-primary)]">Process Return</h3>
+            <p className="mt-1 text-sm text-[var(--text-muted)]">Look up a past sale by ID and refund items. Stock is restored automatically.</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowReturns((v) => !v)}
+            className="app-btn-secondary rounded-xl border px-4 py-2 text-sm transition"
+          >
+            {showReturns ? 'Hide' : 'Open'}
+          </button>
+        </div>
+        {showReturns && (
+          <div className="mt-5 space-y-4">
+            {returnMessage && (
+              <div className={`rounded-xl px-4 py-3 text-sm ${returnMessage.includes('processed') ? 'app-alert-success' : 'app-alert-danger'}`}>{returnMessage}</div>
+            )}
+            <div className="flex gap-3">
+              <input
+                type="text"
+                placeholder="Sale ID (e.g. 42)"
+                value={returnSaleId}
+                onChange={(e) => setReturnSaleId(e.target.value)}
+                className="app-input flex-1 rounded-lg border px-4 py-3"
+              />
+              <button type="button" onClick={lookupReturnSale} disabled={returnLoading} className="app-btn-primary rounded-lg px-4 py-3 transition disabled:opacity-50">
+                {returnLoading && !returnLookup ? 'Looking...' : 'Lookup'}
+              </button>
+            </div>
+            {returnLookup && (
+              <div className="app-panel-soft rounded-[1.35rem] border p-4 space-y-3">
+                <p className="text-sm font-semibold text-[var(--text-primary)]">Sale #{returnLookup.id} &middot; {formatMoney(currency, returnLookup.total)} &middot; {new Date(returnLookup.createdAt).toLocaleDateString()}</p>
+                {(returnLookup.items || []).map((item) => (
+                  <div key={item.productId} className="flex items-center justify-between gap-4 text-sm">
+                    <span className="text-[var(--text-primary)]">{item.Product?.name || `Product #${item.productId}`}</span>
+                    <span className="text-[var(--text-muted)]">Sold: {item.quantity}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-[var(--text-muted)]">Return qty:</span>
+                      <input
+                        type="number"
+                        min="0"
+                        max={item.quantity}
+                        value={returnItems[item.productId] || 0}
+                        onChange={(e) => setReturnItems((prev) => ({ ...prev, [item.productId]: Number(e.target.value) }))}
+                        className="app-input w-20 rounded-lg border px-3 py-1.5 text-sm"
+                      />
+                    </div>
+                  </div>
+                ))}
+                <input
+                  type="text"
+                  placeholder="Reason (optional)"
+                  value={returnReason}
+                  onChange={(e) => setReturnReason(e.target.value)}
+                  className="app-input w-full rounded-lg border px-4 py-3 text-sm"
+                />
+                <button type="button" onClick={handleReturn} disabled={returnLoading} className="app-btn-primary w-full rounded-2xl px-4 py-3 text-sm transition disabled:opacity-50">
+                  {returnLoading ? 'Processing...' : 'Process Return'}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { fetchReports, fetchBestSelling, fetchCashierReport, fetchDashboardSummary, fetchSettings } from '../utils/api';
+import { fetchReports, fetchBestSelling, fetchCashierReport, fetchDashboardSummary, fetchSettings, fetchRangeReport } from '../utils/api';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, CartesianGrid } from 'recharts';
 
 const colors = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)'];
@@ -64,6 +64,10 @@ export default function Reports() {
   const [summary, setSummary] = useState(null);
   const [currency, setCurrency] = useState('USD');
   const [loading, setLoading] = useState(true);
+  const [rangeStart, setRangeStart] = useState('');
+  const [rangeEnd, setRangeEnd] = useState('');
+  const [rangeData, setRangeData] = useState(null);
+  const [rangeLoading, setRangeLoading] = useState(false);
 
   useEffect(() => {
     async function loadReports() {
@@ -116,6 +120,44 @@ export default function Reports() {
     [summary]
   );
   const averageSale = dailySales.length ? totalRevenue / dailySales.length : 0;
+
+  const runRangeReport = async () => {
+    if (!rangeStart || !rangeEnd) return;
+    setRangeLoading(true);
+    try {
+      const data = await fetchRangeReport(rangeStart, rangeEnd);
+      setRangeData(data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setRangeLoading(false);
+    }
+  };
+
+  const downloadCSV = () => {
+    if (!rangeData) return;
+    const rows = [
+      ['Sale ID', 'Date', 'Customer', 'Cashier', 'Payment', 'Subtotal', 'Tax', 'Total'],
+      ...(rangeData.sales || []).map((s) => [
+        s.id,
+        new Date(s.createdAt).toLocaleDateString(),
+        s.customer?.name || 'Walk-in',
+        s.cashier?.name || '',
+        s.paymentMethod,
+        s.subTotal,
+        s.taxAmount || 0,
+        s.total,
+      ]),
+    ];
+    const csv = rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `report_${rangeStart}_to_${rangeEnd}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="space-y-6">
@@ -247,6 +289,115 @@ export default function Reports() {
           </SectionCard>
         </div>
       )}
+
+      {/* Date Range Report */}
+      <section className="app-panel rounded-[1.7rem] border p-5 sm:p-6">
+        <div className="border-b border-[var(--border-default)] pb-4">
+          <h3 className="text-lg font-semibold text-[var(--text-primary)]">Date Range Report</h3>
+          <p className="mt-1 text-sm text-[var(--text-muted)]">Run a detailed report for any date range with CSV export.</p>
+        </div>
+        <div className="mt-4 flex flex-wrap items-end gap-3">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold text-[var(--text-muted)]">Start Date</label>
+            <input type="date" value={rangeStart} onChange={(e) => setRangeStart(e.target.value)} className="app-input rounded-xl border px-3 py-2 text-sm" />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold text-[var(--text-muted)]">End Date</label>
+            <input type="date" value={rangeEnd} onChange={(e) => setRangeEnd(e.target.value)} className="app-input rounded-xl border px-3 py-2 text-sm" />
+          </div>
+          <button type="button" onClick={runRangeReport} disabled={!rangeStart || !rangeEnd || rangeLoading} className="app-btn-primary rounded-xl px-4 py-2 text-sm font-medium disabled:opacity-50">
+            {rangeLoading ? 'Loading…' : 'Run Report'}
+          </button>
+          {rangeData && (
+            <button type="button" onClick={downloadCSV} className="app-btn-secondary flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              Export CSV
+            </button>
+          )}
+        </div>
+
+        {rangeData && (
+          <div className="mt-6 space-y-5">
+            {/* Summary metrics */}
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {[
+                { label: 'Sales', value: (rangeData.metrics?.txCount || 0).toLocaleString() },
+                { label: 'Revenue', value: formatMoney(currency, rangeData.metrics?.netSales) },
+                { label: 'Gross Profit', value: formatMoney(currency, rangeData.metrics?.grossProfit) },
+                { label: 'Expenses', value: formatMoney(currency, rangeData.totalExpenses) },
+              ].map((m) => (
+                <div key={m.label} className="app-panel-soft rounded-[1.25rem] border p-4">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">{m.label}</p>
+                  <p className="mt-2 text-xl font-bold text-[var(--text-primary)]">{m.value}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Profit margin + net profit */}
+            {(() => {
+              const revenue = Number(rangeData.metrics?.netSales || 0);
+              const cogs = Number(rangeData.metrics?.cogs || 0);
+              const expenses = Number(rangeData.totalExpenses || 0);
+              const grossProfit = Number(rangeData.metrics?.grossProfit || 0);
+              const netProfit = grossProfit - expenses;
+              const grossMargin = revenue > 0 ? ((grossProfit / revenue) * 100).toFixed(1) : '0.0';
+              const netMargin = revenue > 0 ? ((netProfit / revenue) * 100).toFixed(1) : '0.0';
+              return (
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div className="app-panel-soft rounded-[1.25rem] border p-4">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">Gross Margin</p>
+                    <p className="mt-2 text-2xl font-bold text-[var(--text-primary)]">{grossMargin}%</p>
+                    <p className="mt-1 text-xs text-[var(--text-muted)]">Revenue minus cost of goods sold</p>
+                  </div>
+                  <div className="app-panel-soft rounded-[1.25rem] border p-4">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">Net Profit</p>
+                    <p className={`mt-2 text-2xl font-bold ${netProfit >= 0 ? 'text-[var(--text-primary)]' : 'text-red-500'}`}>{formatMoney(currency, netProfit)}</p>
+                    <p className="mt-1 text-xs text-[var(--text-muted)]">Gross profit minus expenses · {netMargin}% margin</p>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Sales table */}
+            {rangeData.sales?.length > 0 && (
+              <div className="overflow-hidden rounded-[1.25rem] border border-[var(--border-default)]">
+                <div className="border-b border-[var(--border-default)] px-5 py-3">
+                  <p className="text-sm font-semibold text-[var(--text-primary)]">Sales in Range <span className="ml-1 text-xs text-[var(--text-muted)]">{rangeData.sales.length} transactions</span></p>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-[var(--border-default)] text-left">
+                        {['ID', 'Date', 'Customer', 'Cashier', 'Payment', 'Total'].map((h) => (
+                          <th key={h} className="px-5 py-3 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[var(--border-default)]">
+                      {rangeData.sales.map((sale) => (
+                        <tr key={sale.id} className="transition hover:bg-[var(--surface-secondary)]">
+                          <td className="px-5 py-3 text-xs text-[var(--text-muted)]">#{sale.id}</td>
+                          <td className="px-5 py-3 text-[var(--text-secondary)]">{new Date(sale.createdAt).toLocaleDateString()}</td>
+                          <td className="px-5 py-3 text-[var(--text-primary)]">{sale.customer?.name || 'Walk-in'}</td>
+                          <td className="px-5 py-3 text-[var(--text-secondary)]">{sale.cashier?.name || '—'}</td>
+                          <td className="px-5 py-3">
+                            <span className="inline-block rounded-lg bg-[var(--surface-secondary)] px-2 py-0.5 text-xs font-semibold text-[var(--text-secondary)]">{sale.paymentMethod}</span>
+                          </td>
+                          <td className="px-5 py-3 font-semibold text-[var(--text-primary)]">{formatMoney(currency, sale.total)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

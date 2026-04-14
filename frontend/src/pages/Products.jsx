@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { fetchProducts, createProduct, updateProduct, deleteProduct, fetchSettings } from '../utils/api';
+import { fetchProducts, createProduct, updateProduct, deleteProduct, fetchSettings, restockProduct, fetchStockHistory } from '../utils/api';
 import { getUser } from '../utils/auth';
 
 const emptyForm = { name: '', category: '', buyPrice: '', sellPrice: '', quantity: 0, lowStock: 5 };
@@ -39,6 +39,11 @@ export default function Products() {
   const [message, setMessage] = useState('');
   const [currency, setCurrency] = useState('USD');
   const [loading, setLoading] = useState(true);
+  const [restockmodal, setRestockModal] = useState(null); // product being restocked
+  const [restockForm, setRestockForm] = useState({ quantity: '', costPrice: '', supplier: '', notes: '' });
+  const [restockMessage, setRestockMessage] = useState('');
+  const [stockHistory, setStockHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -94,6 +99,33 @@ export default function Products() {
     await deleteProduct(id);
     setMessage('Product deleted.');
     await loadData();
+  };
+
+  const openRestock = async (product) => {
+    setRestockModal(product);
+    setRestockForm({ quantity: '', costPrice: product.buyPrice || '', supplier: '', notes: '' });
+    setRestockMessage('');
+    setHistoryLoading(true);
+    try {
+      const history = await fetchStockHistory(product.id);
+      setStockHistory(history);
+    } catch {
+      setStockHistory([]);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  const handleRestock = async (e) => {
+    e.preventDefault();
+    try {
+      const result = await restockProduct(restockmodal.id, restockForm);
+      setRestockMessage(`Restocked. New stock: ${result.newQuantity} units.`);
+      await loadData();
+      setRestockForm((prev) => ({ ...prev, quantity: '' }));
+    } catch (err) {
+      setRestockMessage(err.message);
+    }
   };
 
   const totalUnits = useMemo(() => products.reduce((sum, product) => sum + Number(product.quantity || 0), 0), [products]);
@@ -268,8 +300,7 @@ export default function Products() {
                   <th className="px-4 py-3 font-medium">Sell</th>
                   <th className="px-4 py-3 font-medium">Qty</th>
                   <th className="px-4 py-3 font-medium">Low Stock</th>
-                  {isAdmin ? <th className="px-4 py-3 font-medium">Actions</th> : null}
-                </tr>
+                  {isAdmin ? <th className="px-4 py-3 font-medium">Actions</th> : null}                </tr>
               </thead>
               <tbody className="divide-y divide-[var(--border-default)] bg-[var(--surface-primary)]">
                 {products.map((product) => {
@@ -305,6 +336,13 @@ export default function Products() {
                             </button>
                             <button
                               type="button"
+                              onClick={() => openRestock(product)}
+                              className="app-btn-secondary rounded-lg border px-3 py-1.5 text-sm transition"
+                            >
+                              Restock
+                            </button>
+                            <button
+                              type="button"
                               onClick={() => removeProduct(product.id)}
                               className="app-btn-danger rounded-lg px-3 py-1.5 text-sm transition"
                             >
@@ -321,6 +359,65 @@ export default function Products() {
           </div>
         )}
       </section>
+
+      {/* Restock Modal */}
+      {restockmodal && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4 sm:items-center" onClick={(e) => { if (e.target === e.currentTarget) setRestockModal(null); }}>
+          <div className="app-panel w-full max-w-lg rounded-[1.5rem] border p-6">
+            <div className="flex items-center justify-between border-b border-[var(--border-default)] pb-4">
+              <div>
+                <h3 className="text-lg font-semibold text-[var(--text-primary)]">Restock · {restockmodal.name}</h3>
+                <p className="mt-1 text-sm text-[var(--text-muted)]">Current stock: {restockmodal.quantity} units</p>
+              </div>
+              <button type="button" onClick={() => setRestockModal(null)} className="app-btn-subtle rounded-full p-2">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><path d="M6 6l12 12M18 6L6 18" /></svg>
+              </button>
+            </div>
+            {restockMessage && (
+              <div className={`mt-4 rounded-xl px-4 py-3 text-sm ${restockMessage.includes('Restocked') ? 'app-alert-success' : 'app-alert-danger'}`}>{restockMessage}</div>
+            )}
+            <form className="mt-4 grid gap-4 sm:grid-cols-2" onSubmit={handleRestock}>
+              <label className="space-y-2 text-sm text-[var(--text-secondary)]">
+                Add quantity *
+                <input type="number" min="1" required value={restockForm.quantity} onChange={(e) => setRestockForm((prev) => ({ ...prev, quantity: e.target.value }))} className="app-input w-full rounded-lg border px-4 py-3" placeholder="e.g. 50" />
+              </label>
+              <label className="space-y-2 text-sm text-[var(--text-secondary)]">
+                Cost price (updates buy price)
+                <input type="number" step="0.01" min="0" value={restockForm.costPrice} onChange={(e) => setRestockForm((prev) => ({ ...prev, costPrice: e.target.value }))} className="app-input w-full rounded-lg border px-4 py-3" placeholder={String(restockmodal.buyPrice)} />
+              </label>
+              <label className="space-y-2 text-sm text-[var(--text-secondary)]">
+                Supplier
+                <input type="text" value={restockForm.supplier} onChange={(e) => setRestockForm((prev) => ({ ...prev, supplier: e.target.value }))} className="app-input w-full rounded-lg border px-4 py-3" placeholder="Supplier name" />
+              </label>
+              <label className="space-y-2 text-sm text-[var(--text-secondary)]">
+                Notes
+                <input type="text" value={restockForm.notes} onChange={(e) => setRestockForm((prev) => ({ ...prev, notes: e.target.value }))} className="app-input w-full rounded-lg border px-4 py-3" placeholder="Optional" />
+              </label>
+              <div className="sm:col-span-2 flex gap-3">
+                <button type="submit" className="app-btn-primary rounded-xl px-5 py-3 text-white transition">Add Stock</button>
+                <button type="button" onClick={() => setRestockModal(null)} className="app-btn-secondary rounded-xl border px-5 py-3 transition">Close</button>
+              </div>
+            </form>
+            {/* Stock history */}
+            {historyLoading ? (
+              <div className="mt-5 h-20 animate-pulse rounded-xl bg-[var(--surface-secondary)]" />
+            ) : stockHistory.length > 0 ? (
+              <div className="mt-5">
+                <p className="mb-3 text-sm font-medium text-[var(--text-muted)]">Recent restock history</p>
+                <div className="max-h-48 overflow-y-auto space-y-2">
+                  {stockHistory.map((entry) => (
+                    <div key={entry.id} className="app-panel-soft flex items-center justify-between rounded-xl border px-4 py-2.5 text-sm">
+                      <span className="text-[var(--text-primary)]">+{entry.quantity} units</span>
+                      {entry.supplier && <span className="text-[var(--text-muted)]">{entry.supplier}</span>}
+                      <span className="text-xs text-[var(--text-muted)]">{new Date(entry.createdAt).toLocaleDateString()}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

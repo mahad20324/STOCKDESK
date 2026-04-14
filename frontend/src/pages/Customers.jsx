@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { createCustomer, deleteCustomer, fetchCustomers, updateCustomer } from '../utils/api';
+import { createCustomer, deleteCustomer, fetchCustomers, updateCustomer, fetchCustomerSales, fetchSettings } from '../utils/api';
 import { getUser } from '../utils/auth';
 
 const initialForm = {
@@ -34,12 +34,17 @@ export default function Customers() {
   const [loading, setLoading] = useState(true);
   const currentUser = getUser();
   const canDelete = currentUser?.role === 'Admin';
+  const [currency, setCurrency] = useState('USD');
+  const [historyCustomer, setHistoryCustomer] = useState(null);
+  const [historyData, setHistoryData] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   const activeCustomers = useMemo(() => customers.filter((customer) => customer.isActive !== false).length, [customers]);
   const repeatCustomers = useMemo(() => customers.filter((customer) => Number(customer.salesCount || 0) > 1).length, [customers]);
 
   useEffect(() => {
     loadCustomers();
+    fetchSettings().then((s) => setCurrency(s?.currency || 'USD')).catch(() => {});
   }, []);
 
   const filteredCustomers = useMemo(() => {
@@ -105,7 +110,21 @@ export default function Customers() {
       setMessage(error.message);
     }
   }
+  const openHistory = async (customer) => {
+    setHistoryCustomer(customer);
+    setHistoryData([]);
+    setHistoryLoading(true);
+    try {
+      const sales = await fetchCustomerSales(customer.id);
+      setHistoryData(sales);
+    } catch {
+      setHistoryData([]);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
 
+  const formatMoney = (value) => `${currency} ${Number(value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   return (
     <div className="space-y-6">
       <section className="app-panel relative overflow-hidden rounded-[1.7rem] border p-5 sm:p-6">
@@ -223,6 +242,13 @@ export default function Customers() {
                           </button>
                           <button
                             type="button"
+                            onClick={() => openHistory(customer)}
+                            className="app-btn-secondary rounded-lg border px-3 py-2 text-xs font-medium transition"
+                          >
+                            History
+                          </button>
+                          <button
+                            type="button"
                             onClick={() => handleDelete(customer)}
                             className="app-btn-danger rounded-lg px-3 py-2 text-xs font-medium transition disabled:opacity-50"
                             disabled={!canDelete}
@@ -329,6 +355,52 @@ export default function Customers() {
           ) : null}
         </section>
       </div>
+
+      {/* Purchase History Modal */}
+      {historyCustomer && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4 sm:items-center" onClick={(e) => { if (e.target === e.currentTarget) setHistoryCustomer(null); }}>
+          <div className="app-panel w-full max-w-2xl rounded-[1.5rem] border p-6">
+            <div className="flex items-center justify-between border-b border-[var(--border-default)] pb-4">
+              <div>
+                <h3 className="text-lg font-semibold text-[var(--text-primary)]">{historyCustomer.name} · Purchase History</h3>
+                <p className="mt-1 text-sm text-[var(--text-muted)]">{historyData.length} transaction{historyData.length !== 1 ? 's' : ''} found</p>
+              </div>
+              <button type="button" onClick={() => setHistoryCustomer(null)} className="app-btn-subtle rounded-full p-2">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><path d="M6 6l12 12M18 6L6 18" /></svg>
+              </button>
+            </div>
+            <div className="mt-4 max-h-96 overflow-y-auto space-y-3">
+              {historyLoading ? (
+                Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-16 animate-pulse rounded-xl bg-[var(--surface-secondary)]" />)
+              ) : historyData.length === 0 ? (
+                <div className="py-8 text-center text-sm text-[var(--text-muted)]">No sales found for this customer.</div>
+              ) : historyData.map((sale) => (
+                <div key={sale.id} className="app-panel-soft rounded-[1.35rem] border p-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold text-[var(--text-primary)]">{formatMoney(sale.total)}</span>
+                    <span className="text-xs text-[var(--text-muted)]">{new Date(sale.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  <div className="mt-2 flex gap-3 text-xs text-[var(--text-muted)]">
+                    <span>#{sale.id}</span>
+                    <span>{sale.paymentMethod}</span>
+                    {sale.cashier && <span>by {sale.cashier.name}</span>}
+                  </div>
+                  {sale.items && sale.items.length > 0 && (
+                    <div className="mt-2 space-y-1">
+                      {sale.items.map((item) => (
+                        <div key={item.productId} className="flex justify-between text-xs text-[var(--text-secondary)]">
+                          <span>{item.Product?.name || `Product #${item.productId}`}</span>
+                          <span>x{item.quantity}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
