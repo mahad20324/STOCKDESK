@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { fetchBestSelling, fetchDashboardSummary, fetchProducts, fetchSales, fetchSettings } from '../utils/api';
 import { getUser } from '../utils/auth';
 
@@ -308,19 +308,19 @@ export default function Dashboard() {
               </div>
               <div className="h-56 sm:h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={salesTrend} barCategoryGap="28%">
+                  <AreaChart data={salesTrend}>
                     <defs>
                       <linearGradient id="salesGradient" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stopColor="var(--chart-1)" stopOpacity="0.95" />
-                        <stop offset="100%" stopColor="var(--accent-hover)" stopOpacity="0.72" />
+                        <stop offset="0%" stopColor="var(--chart-1)" stopOpacity="0.25" />
+                        <stop offset="100%" stopColor="var(--chart-1)" stopOpacity="0.02" />
                       </linearGradient>
                     </defs>
                     <CartesianGrid vertical={false} stroke="var(--chart-grid)" />
                     <XAxis dataKey="label" tickLine={false} axisLine={false} stroke="var(--text-muted)" />
                     <YAxis tickLine={false} axisLine={false} stroke="var(--text-muted)" tickFormatter={(value) => Number(value).toLocaleString()} />
-                    <Tooltip cursor={{ fill: 'var(--surface-secondary)' }} content={<SalesTooltip currency={currency} />} />
-                    <Bar dataKey="sales" fill="url(#salesGradient)" radius={[10, 10, 4, 4]} maxBarSize={42} />
-                  </BarChart>
+                    <Tooltip cursor={{ stroke: 'var(--chart-1)', strokeWidth: 1, strokeDasharray: '4 2' }} content={<SalesTooltip currency={currency} />} />
+                    <Area type="monotone" dataKey="sales" stroke="var(--chart-1)" strokeWidth={2.5} fill="url(#salesGradient)" dot={false} activeDot={{ r: 5, fill: 'var(--chart-1)', strokeWidth: 0 }} />
+                  </AreaChart>
                 </ResponsiveContainer>
               </div>
               {salesTrend.every((item) => item.sales === 0) ? (
