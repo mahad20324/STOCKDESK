@@ -9,18 +9,24 @@ function formatMoney(currency, value) {
 }
 
 function StatTile({ label, value, tone = 'default', eyebrow = 'Inventory' }) {
-  const tones = {
-    default: 'text-[var(--text-primary)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(249,251,254,0.94))]',
-    success: 'text-[var(--success)] bg-[linear-gradient(180deg,rgba(236,250,244,0.98),rgba(255,255,255,0.96))]',
-    danger: 'text-[var(--danger)] bg-[linear-gradient(180deg,rgba(255,242,239,0.98),rgba(255,255,255,0.96))]',
-    warning: 'text-[var(--warning)] bg-[linear-gradient(180deg,rgba(255,247,236,0.98),rgba(255,255,255,0.96))]',
-  };
+  const valueClass = {
+    default: 'text-[var(--text-primary)]',
+    success: 'text-[var(--success)]',
+    danger: 'text-[var(--danger)]',
+    warning: 'text-[var(--warning)]',
+  }[tone];
+  const borderAccent = {
+    default: 'border-l-[3px] border-l-[var(--accent)]',
+    success: 'border-l-[3px] border-l-[var(--success)]',
+    danger: 'border-l-[3px] border-l-[var(--danger)]',
+    warning: 'border-l-[3px] border-l-[var(--warning)]',
+  }[tone];
 
   return (
-    <div className={`rounded-[1.35rem] border border-[var(--border-default)] p-4 shadow-sm ${tones[tone]}`}>
-      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">{eyebrow}</p>
-      <p className="mt-3 text-sm text-[var(--text-muted)]">{label}</p>
-      <p className="mt-2 text-2xl font-semibold tracking-tight">{value}</p>
+    <div className={`app-panel rounded-[1.2rem] border ${borderAccent} p-4 transition duration-200 hover:shadow-lg`}>
+      <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">{eyebrow}</p>
+      <p className="mt-1.5 text-[13px] font-medium text-[var(--text-secondary)]">{label}</p>
+      <p className={`mt-2 text-2xl font-bold tracking-tight ${valueClass}`}>{value}</p>
     </div>
   );
 }
@@ -106,10 +112,7 @@ export default function Products() {
         <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/3 bg-[radial-gradient(circle_at_top_right,rgba(30,167,189,0.14),transparent_58%)] lg:block" />
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="relative">
-            <div className="mb-3 inline-flex items-center rounded-full border border-[var(--border-default)] bg-[var(--surface-secondary)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--accent-strong)]">
-              Inventory Studio
-            </div>
-            <h2 className="text-2xl font-semibold text-[var(--text-primary)]">Products</h2>
+            <h2 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">Products</h2>
             <p className="mt-2 text-sm text-[var(--text-muted)]">
               {isAdmin
                 ? 'Manage your inventory catalog, prices, and stock levels from one place.'

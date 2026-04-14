@@ -11,14 +11,11 @@ function formatMoney(currency, value) {
 
 function SummaryStat({ label, value, helper }) {
   return (
-    <div className="app-panel relative overflow-hidden rounded-[1.4rem] border p-4">
-      <div className="absolute inset-x-0 top-0 h-14 bg-[linear-gradient(180deg,rgba(30,167,189,0.10),transparent)]" />
-      <div className="relative">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">POS</p>
-        <p className="mt-3 text-sm text-[var(--text-muted)]">{label}</p>
-        <p className="mt-2 text-2xl font-semibold tracking-tight text-[var(--text-primary)]">{value}</p>
-        <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">{helper}</p>
-      </div>
+    <div className="app-panel rounded-[1.2rem] border border-l-[3px] border-l-[var(--accent)] p-4 transition duration-200 hover:shadow-lg">
+      <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">POS</p>
+      <p className="mt-1.5 text-[13px] font-medium text-[var(--text-secondary)]">{label}</p>
+      <p className="mt-2 text-2xl font-bold tracking-tight text-[var(--text-primary)]">{value}</p>
+      <p className="mt-1.5 text-[12px] leading-4 text-[var(--text-muted)]">{helper}</p>
     </div>
   );
 }
@@ -201,10 +198,7 @@ export default function POS() {
         <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/3 bg-[radial-gradient(circle_at_top_right,rgba(30,167,189,0.14),transparent_58%)] lg:block" />
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="relative">
-            <div className="mb-3 inline-flex items-center rounded-full border border-[var(--border-default)] bg-[var(--surface-secondary)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--accent-strong)]">
-              Checkout Flow
-            </div>
-            <h2 className="text-2xl font-semibold tracking-tight text-[var(--text-primary)]">Point of Sale</h2>
+            <h2 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">Point of Sale</h2>
             <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">Search products, add items to cart, apply discounts, and complete sales quickly.</p>
           </div>
           <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[460px]">

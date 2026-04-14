@@ -116,8 +116,8 @@ export default function Sidebar({ user: providedUser, isOpen = false, onClose = 
         <div className="flex items-center justify-between lg:block">
           <div>
             <div className="flex items-center gap-3.5">
-              <div className="flex h-14 w-14 items-center justify-center rounded-[1.15rem] bg-white p-1.5 shadow-[0_12px_26px_rgba(15,23,42,0.2)] ring-1 ring-white/10">
-                <img src={logo} alt="StockDesk logo" className="h-11 w-11 object-contain" />
+              <div className="flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-[1.4rem] bg-white p-2 shadow-[0_12px_26px_rgba(15,23,42,0.22)] ring-1 ring-white/10">
+                <img src={logo} alt="StockDesk logo" className="h-14 w-14 object-contain" />
               </div>
               <div className="pt-0.5">
                 <p className="text-[1.9rem] font-semibold leading-none tracking-tight text-[var(--sidebar-text)]">StockDesk</p>

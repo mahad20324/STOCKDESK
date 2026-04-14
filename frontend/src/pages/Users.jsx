@@ -5,12 +5,25 @@ import { getUser } from '../utils/auth';
 const ROLE_OPTIONS = ['Admin', 'Manager', 'Cashier'];
 const initialForm = { name: '', username: '', password: '', displayRole: 'Cashier' };
 
-function StatCard({ label, value, helper }) {
+function StatCard({ label, value, helper, tone = 'default' }) {
+  const valueClass = {
+    default: 'text-[var(--text-primary)]',
+    success: 'text-[var(--success)]',
+    danger: 'text-[var(--danger)]',
+    warning: 'text-[var(--warning)]',
+  }[tone];
+  const borderAccent = {
+    default: 'border-l-[var(--accent)]',
+    success: 'border-l-[var(--success)]',
+    danger: 'border-l-[var(--danger)]',
+    warning: 'border-l-[var(--warning)]',
+  }[tone];
+
   return (
-    <div className="app-panel-soft rounded-xl border p-4">
-      <p className="text-sm text-[var(--text-muted)]">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-[var(--accent-strong)]">{value}</p>
-      <p className="mt-1 text-sm text-[var(--text-muted)]">{helper}</p>
+    <div className={`app-panel rounded-[1.2rem] border border-l-[3px] ${borderAccent} p-4 transition hover:shadow-lg`}>
+      <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">{label}</p>
+      <p className={`mt-2 text-2xl font-bold tracking-tight ${valueClass}`}>{value}</p>
+      <p className="mt-1.5 text-[12px] text-[var(--text-muted)]">{helper}</p>
     </div>
   );
 }
@@ -80,7 +93,7 @@ export default function Users() {
       <section className="app-panel rounded-[2rem] border p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <h2 className="text-2xl font-semibold text-[var(--accent-strong)]">User Management</h2>
+            <h2 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">User Management</h2>
             <p className="mt-2 max-w-2xl text-sm text-[var(--text-muted)]">Create clean team accounts with a full name, username, password, and assigned role.</p>
           </div>
           <div className="grid gap-3 sm:grid-cols-4 lg:min-w-[580px]">
@@ -108,7 +121,7 @@ export default function Users() {
                   <th className="px-4 py-3">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200">
+              <tbody className="divide-y divide-[var(--border-default)] bg-[var(--surface-primary)]">
                 {users.map((user) => (
                   <tr key={user.id} className="app-row-hover transition">
                     <td className="px-4 py-3 font-medium text-[var(--text-primary)]">{user.name || '-'}</td>
@@ -142,7 +155,7 @@ export default function Users() {
         </div>
 
         <div className="app-panel rounded-[2rem] border p-6">
-          <h3 className="text-lg font-semibold text-[var(--accent-strong)]">Create Team Account</h3>
+          <h3 className="text-lg font-semibold text-[var(--text-primary)]">Create Team Account</h3>
           <p className="mt-1 text-sm text-[var(--text-muted)]">Set the user’s full name, username, password, and operational role.</p>
           <form className="mt-4 space-y-4" onSubmit={handleCreate}>
             <label className="block text-sm text-[var(--text-secondary)]">Full Name</label>
