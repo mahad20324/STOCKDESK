@@ -137,6 +137,10 @@ export default function Products() {
     () => products.reduce((sum, product) => sum + Number(product.quantity || 0) * Number(product.buyPrice || 0), 0),
     [products]
   );
+  const uniqueCategories = useMemo(() => {
+    const categories = new Set(products.map(p => p.category).filter(Boolean));
+    return Array.from(categories).sort();
+  }, [products]);
 
   return (
     <div className="space-y-6">
@@ -200,11 +204,17 @@ export default function Products() {
             <label className="space-y-2 text-sm text-[var(--text-secondary)]">
               Category
               <input
-                placeholder="Category"
+                placeholder="Select or type a category"
+                list="categoryList"
                 value={form.category}
                 onChange={(e) => setForm((prev) => ({ ...prev, category: e.target.value }))}
                 className="app-input w-full rounded-lg border px-4 py-3"
               />
+              <datalist id="categoryList">
+                {uniqueCategories.map((cat) => (
+                  <option key={cat} value={cat} />
+                ))}
+              </datalist>
             </label>
             <label className="space-y-2 text-sm text-[var(--text-secondary)]">
               Buying price
