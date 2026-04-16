@@ -421,28 +421,20 @@ export default function Dashboard() {
                     </div>
                     <div className="grid gap-2.5 sm:grid-cols-2">
                       <div className="app-panel-soft rounded-[1rem] border p-3">
-                        <div className="flex items-baseline justify-between gap-2">
-                          <p className="text-[12px] font-medium text-[var(--text-muted)]">Products In Stock</p>
-                          <p className="text-lg font-semibold text-[var(--text-primary)]">{totalStock.toLocaleString()}</p>
-                        </div>
+                        <p className="text-[12px] font-medium text-[var(--text-muted)]">Products In Stock</p>
+                        <p className="mt-1.5 text-xl font-semibold text-[var(--text-primary)]">{totalStock.toLocaleString()}</p>
                       </div>
                       <div className="app-panel-soft rounded-[1rem] border p-3">
-                        <div className="flex items-baseline justify-between gap-2">
-                          <p className="text-[12px] font-medium text-[var(--text-muted)]">Low Stock Alerts</p>
-                          <p className="text-lg font-semibold text-[var(--danger)]">{lowStockCount.toLocaleString()}</p>
-                        </div>
+                        <p className="text-[12px] font-medium text-[var(--text-muted)]">Low Stock Alerts</p>
+                        <p className="mt-1.5 text-xl font-semibold text-[var(--danger)]">{lowStockCount.toLocaleString()}</p>
                       </div>
                       <div className="app-panel-soft rounded-[1rem] border p-3">
-                        <div className="flex items-baseline justify-between gap-2">
-                          <p className="text-[12px] font-medium text-[var(--text-muted)]">Today's Revenue</p>
-                          <p className="text-lg font-semibold text-[var(--success)]">{formatMoney(currency, todayRevenue)}</p>
-                        </div>
+                        <p className="text-[12px] font-medium text-[var(--text-muted)]">Today's Revenue</p>
+                        <p className="mt-1.5 text-xl font-semibold text-[var(--success)]">{formatMoney(currency, todayRevenue)}</p>
                       </div>
                       <div className="app-panel-soft rounded-[1rem] border p-3">
-                        <div className="flex items-baseline justify-between gap-2">
-                          <p className="text-[12px] font-medium text-[var(--text-muted)]">This Week Units</p>
-                          <p className="text-lg font-semibold text-[var(--text-primary)]">{Number(summary?.periods?.thisWeek?.itemsSold || 0).toLocaleString()}</p>
-                        </div>
+                        <p className="text-[12px] font-medium text-[var(--text-muted)]">This Week Units</p>
+                        <p className="mt-1.5 text-xl font-semibold text-[var(--text-primary)]">{Number(summary?.periods?.thisWeek?.itemsSold || 0).toLocaleString()}</p>
                       </div>
                     </div>
                   </div>
