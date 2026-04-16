@@ -32,8 +32,10 @@ function StatCard({ title, value, helper, tone = 'default', icon, eyebrow }) {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">{eyebrow || 'Overview'}</p>
-          <p className="mt-1.5 text-[13px] font-medium text-[var(--text-secondary)]">{title}</p>
-          <p className={`mt-2 text-[1.55rem] font-bold tracking-tight leading-none break-all ${valueClass}`}>{value}</p>
+          <div className="mt-1.5 flex flex-wrap items-baseline gap-2">
+            <p className="text-[13px] font-medium text-[var(--text-secondary)]">{title}</p>
+            <p className={`text-[1.55rem] font-bold tracking-tight leading-none break-all ${valueClass}`}>{value}</p>
+          </div>
           <p className="mt-2 text-[12px] leading-4 text-[var(--text-muted)]">{helper}</p>
         </div>
         <DashboardIcon tone={tone}>{icon}</DashboardIcon>
@@ -419,20 +421,28 @@ export default function Dashboard() {
                     </div>
                     <div className="grid gap-2.5 sm:grid-cols-2">
                       <div className="app-panel-soft rounded-[1rem] border p-3">
-                        <p className="text-[12px] font-medium text-[var(--text-muted)]">Products In Stock</p>
-                        <p className="mt-1.5 text-xl font-semibold text-[var(--text-primary)]">{totalStock.toLocaleString()}</p>
+                        <div className="flex flex-wrap items-baseline justify-between gap-2">
+                          <p className="text-[12px] font-medium text-[var(--text-muted)]">Products In Stock</p>
+                          <p className="text-xl font-semibold text-[var(--text-primary)]">{totalStock.toLocaleString()}</p>
+                        </div>
                       </div>
                       <div className="app-panel-soft rounded-[1rem] border p-3">
-                        <p className="text-[12px] font-medium text-[var(--text-muted)]">Low Stock Alerts</p>
-                        <p className="mt-1.5 text-xl font-semibold text-[var(--danger)]">{lowStockCount.toLocaleString()}</p>
+                        <div className="flex flex-wrap items-baseline justify-between gap-2">
+                          <p className="text-[12px] font-medium text-[var(--text-muted)]">Low Stock Alerts</p>
+                          <p className="text-xl font-semibold text-[var(--danger)]">{lowStockCount.toLocaleString()}</p>
+                        </div>
                       </div>
                       <div className="app-panel-soft rounded-[1rem] border p-3">
-                        <p className="text-[12px] font-medium text-[var(--text-muted)]">Today's Revenue</p>
-                        <p className="mt-1.5 text-xl font-semibold text-[var(--success)]">{formatMoney(currency, todayRevenue)}</p>
+                        <div className="flex flex-wrap items-baseline justify-between gap-2">
+                          <p className="text-[12px] font-medium text-[var(--text-muted)]">Today's Revenue</p>
+                          <p className="text-xl font-semibold text-[var(--success)]">{formatMoney(currency, todayRevenue)}</p>
+                        </div>
                       </div>
                       <div className="app-panel-soft rounded-[1rem] border p-3">
-                        <p className="text-[12px] font-medium text-[var(--text-muted)]">This Week Units</p>
-                        <p className="mt-1.5 text-xl font-semibold text-[var(--text-primary)]">{Number(summary?.periods?.thisWeek?.itemsSold || 0).toLocaleString()}</p>
+                        <div className="flex flex-wrap items-baseline justify-between gap-2">
+                          <p className="text-[12px] font-medium text-[var(--text-muted)]">This Week Units</p>
+                          <p className="text-xl font-semibold text-[var(--text-primary)]">{Number(summary?.periods?.thisWeek?.itemsSold || 0).toLocaleString()}</p>
+                        </div>
                       </div>
                     </div>
                   </div>
