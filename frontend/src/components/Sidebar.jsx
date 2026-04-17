@@ -41,8 +41,17 @@ const links = [
     ),
   },
   {
-    to: '/app/reports',
-    label: 'Reports',
+    to: '/app/customers',
+    label: 'Customers',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" />
+        <path d="M9.5 11a4 4 0 1 0 0-8a4 4 0 0 0 0 8Z" />
+        <path d="M21 21v-2a4 4 0 0 0-3-3.9" />
+        <path d="M16 3.1a4 4 0 0 1 0 7.8" />
+      </svg>
+    ),
+  },
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
         <path d="M4 19h16" />
