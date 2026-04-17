@@ -164,9 +164,6 @@ export default function Reports() {
       <section className="app-panel relative overflow-hidden rounded-[1.7rem] border p-5 sm:p-6">
         <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/3 bg-[radial-gradient(circle_at_top_right,rgba(30,167,189,0.14),transparent_58%)] lg:block" />
         <div className="relative">
-          <div className="mb-3 inline-flex items-center rounded-full border border-[var(--border-default)] bg-[var(--surface-secondary)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--accent-strong)]">
-            Intelligence Hub
-          </div>
           <h2 className="text-2xl font-semibold text-[var(--text-primary)]">Reports</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--text-muted)]">Review sales performance, best-selling products, and cashier contribution with richer, clearer analytics.</p>
         </div>
