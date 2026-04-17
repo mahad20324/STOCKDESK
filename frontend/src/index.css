@@ -166,8 +166,8 @@ textarea:focus {
 }
 
 ::selection {
-  background: var(--accent-soft);
-  color: var(--text-primary);
+  background: var(--accent);
+  color: #ffffff;
 }
 
 @layer components {
