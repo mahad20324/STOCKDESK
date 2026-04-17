@@ -75,6 +75,26 @@ const links = [
     ),
   },
   {
+    to: '/app/stock-reconciliation',
+    label: 'Stock Reconciliation',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+        <path d="M9 3H5a2 2 0 0 0-2 2v4m0 0H3m2 0v2m0-6h10a2 2 0 0 1 2 2v4m0 0h2m-2 0v2m0 0v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5m0 0H3" />
+        <path d="M9 11l1.5 1.5 3-3" />
+      </svg>
+    ),
+  },
+  {
+    to: '/app/audit-logs',
+    label: 'Audit Logs',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
+        <path d="M12 6v6l4 2" />
+      </svg>
+    ),
+  },
+  {
     to: '/app/settings',
     label: 'Settings',
     icon: (
