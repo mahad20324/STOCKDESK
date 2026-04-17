@@ -52,6 +52,9 @@ const links = [
       </svg>
     ),
   },
+  {
+    to: '/app/reports',
+    label: 'Reports',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
         <path d="M4 19h16" />
