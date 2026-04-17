@@ -119,6 +119,7 @@ async function printerRequest(path, options = {}) {
 
 export const login = (body) => request('/auth/login', { method: 'POST', body: JSON.stringify(body) });
 export const signup = (body) => request('/auth/signup', { method: 'POST', body: JSON.stringify(body) });
+export const refreshToken = () => request('/auth/refresh', { method: 'POST' });
 export const fetchUsers = () => request('/users');
 export const createUser = (body) => request('/users', { method: 'POST', body: JSON.stringify(body) });
 export const resetUserPassword = (id, body) => request(`/users/${id}/reset-password`, { method: 'POST', body: JSON.stringify(body) });

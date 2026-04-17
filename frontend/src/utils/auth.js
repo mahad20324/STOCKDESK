@@ -93,3 +93,11 @@ export const logout = ({ message = '', redirectTo } = {}) => {
   window.dispatchEvent(new Event('auth-changed'));
   window.location.href = redirectTo || (user?.role === 'SuperAdmin' ? '/owner-login' : '/login');
 };
+
+export const updateToken = (token, user) => {
+  localStorage.setItem(STORAGE_KEY, token);
+  if (user) {
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+  }
+  window.dispatchEvent(new Event('auth-changed'));
+};
