@@ -71,11 +71,11 @@ export default function Products() {
       if (!form.name || form.name.trim().length === 0) {
         validationErrors.push('Product name is required');
       }
+      if (!form.buyPrice || parseFloat(form.buyPrice) < 0) {
+        validationErrors.push('Buying price is required and must be a positive number');
+      }
       if (!form.sellPrice || parseFloat(form.sellPrice) < 0) {
         validationErrors.push('Selling price is required and must be a positive number');
-      }
-      if (form.buyPrice && parseFloat(form.buyPrice) < 0) {
-        validationErrors.push('Buying price must be a positive number');
       }
       
       if (validationErrors.length > 0) {
