@@ -236,6 +236,21 @@ export default function POS() {
         setMessage('Add at least one product to cart.');
         return;
       }
+      
+      // Pre-checkout validation: verify stock availability
+      const outOfStockItems = [];
+      for (const item of cart) {
+        const product = products.find(p => p.id === item.productId);
+        if (product && product.quantity < item.quantity) {
+          outOfStockItems.push(`${product.name} - Available: ${product.quantity}, Requested: ${item.quantity}`);
+        }
+      }
+      
+      if (outOfStockItems.length > 0) {
+        setMessage(`Out of stock: ${outOfStockItems.join('; ')}. Please adjust quantities in your cart.`);
+        return;
+      }
+      
       if (useSplit) {
         const splitTotal = splitPayments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
         if (Math.abs(splitTotal - total) > 0.01) {
