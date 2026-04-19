@@ -83,45 +83,53 @@ export default function Expenses() {
     }
   };
 
-  return (
-    <div className="page-root">
-      {/* Hero */}
-      <div className="mb-8 flex flex-col gap-1">
-        <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--brand)] to-[var(--brand-dark)] shadow-[var(--brand-shadow)]">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5 text-white">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
-              <path d="M12 6v6l4 2" />
-            </svg>
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-[var(--text-primary)]">Expenses</h1>
-            <p className="text-sm text-[var(--text-muted)]">Track and manage business expenditure</p>
-          </div>
-        </div>
-      </div>
+  const CATEGORY_META = {
+    Rent:        { icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/></svg>, color: 'var(--accent)' },
+    Utilities:   { icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>, color: 'var(--warning)' },
+    Supplies:    { icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4"><path d="m3 7 9-4 9 4-9 4-9-4Z"/><path d="m3 7 9 4 9-4"/><path d="M12 11v10"/></svg>, color: 'var(--accent)' },
+    Salaries:    { icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>, color: 'var(--success)' },
+    Maintenance: { icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>, color: 'var(--warning)' },
+    Marketing:   { icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>, color: 'var(--accent)' },
+    Other:       { icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4"><circle cx="12" cy="12" r="10"/><path d="M12 16v.01"/><path d="M12 8v4"/></svg>, color: 'var(--text-muted)' },
+  };
 
+  return (
+    <div className="space-y-4">
       {/* Stat Cards */}
-      <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {[
-          { label: 'This Month', value: fmt(totalThisMonth) },
-          { label: 'Total (Filtered)', value: fmt(totalAll) },
-          { label: 'Top Category', value: topCategory },
-        ].map((card) => (
-          <div key={card.label} className="app-panel rounded-[1.5rem] border p-5">
-            <p className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">{card.label}</p>
-            <p className="mt-2 text-2xl font-bold text-[var(--text-primary)]">{card.value}</p>
-          </div>
-        ))}
+          { label: 'This Month', value: fmt(totalThisMonth), eyebrow: 'Monthly', tone: 'danger', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> },
+          { label: 'Total (Filtered)', value: fmt(totalAll), eyebrow: 'Expenses', tone: 'warning', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7H14.5a3.5 3.5 0 0 1 0 7H6"/></svg> },
+          { label: 'Top Category', value: topCategory, eyebrow: 'Category', tone: 'default', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path d="M4 19h16"/><path d="M7 15V9"/><path d="M12 15V5"/><path d="M17 15v-2"/></svg> },
+        ].map((card) => {
+          const toneClasses = {
+            default: 'border-l-[var(--accent)] bg-[linear-gradient(135deg,rgba(30,167,189,0.18),rgba(30,167,189,0.08))] text-[var(--accent)]',
+            danger:  'border-l-[var(--danger)] bg-[linear-gradient(135deg,rgba(218,106,90,0.18),rgba(218,106,90,0.08))] text-[var(--danger)]',
+            warning: 'border-l-[var(--warning)] bg-[linear-gradient(135deg,rgba(216,155,73,0.18),rgba(216,155,73,0.08))] text-[var(--warning)]',
+          };
+          const iconClass = toneClasses[card.tone] || toneClasses.default;
+          return (
+            <div key={card.label} className={`app-panel relative overflow-hidden rounded-[1.2rem] border border-l-[3px] ${card.tone === 'danger' ? 'border-l-[var(--danger)]' : card.tone === 'warning' ? 'border-l-[var(--warning)]' : 'border-l-[var(--accent)]'} p-4 transition duration-200 hover:shadow-lg`}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">{card.eyebrow}</p>
+                  <p className="mt-1.5 text-[13px] font-medium text-[var(--text-secondary)]">{card.label}</p>
+                  <p className="mt-2 text-[1.55rem] font-bold tracking-tight leading-none text-[var(--text-primary)]">{card.value}</p>
+                </div>
+                <div className={`flex h-10 w-10 items-center justify-center rounded-[1.05rem] shadow-sm ring-1 ring-black/5 ${iconClass}`}>{card.icon}</div>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       <div className="flex flex-col gap-6 lg:flex-row">
         {/* Left: Table */}
         <section className="min-w-0 flex-1">
           {/* Date filters */}
-          <div className="app-panel mb-4 flex flex-wrap items-end gap-3 rounded-[1.5rem] border p-4">
+          <div className="app-panel mb-4 flex flex-wrap items-end gap-3 rounded-[1.4rem] border p-4">
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold text-[var(--text-muted)]">From</label>
+              <label className="text-[12px] font-medium text-[var(--text-muted)]">From</label>
               <input
                 type="date"
                 value={startDate}
@@ -130,7 +138,7 @@ export default function Expenses() {
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold text-[var(--text-muted)]">To</label>
+              <label className="text-[12px] font-medium text-[var(--text-muted)]">To</label>
               <input
                 type="date"
                 value={endDate}
@@ -148,20 +156,23 @@ export default function Expenses() {
             )}
           </div>
 
-          <div className="app-panel overflow-hidden rounded-[1.7rem] border">
-            <div className="border-b border-[var(--border-default)] px-6 py-4">
-              <p className="font-semibold text-[var(--text-primary)]">Expense Records</p>
-              <p className="mt-0.5 text-xs text-[var(--text-muted)]">{expenses.length} record{expenses.length !== 1 ? 's' : ''}</p>
+          <div className="app-panel overflow-hidden rounded-[1.4rem] border">
+            <div className="flex items-center justify-between border-b border-[var(--border-default)] px-5 py-4">
+              <div>
+                <h3 className="text-base font-semibold tracking-tight text-[var(--text-primary)]">Expense Records</h3>
+                <p className="mt-0.5 text-sm text-[var(--text-muted)]">Review, edit, and filter business expenditure.</p>
+              </div>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--surface-secondary)] px-3 py-1 text-xs font-semibold text-[var(--text-muted)]">
+                {expenses.length} record{expenses.length !== 1 ? 's' : ''}
+              </span>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[var(--border-default)] text-left">
-                    <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">Date</th>
-                    <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">Category</th>
-                    <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">Description</th>
-                    <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">Amount</th>
-                    {isAdmin && <th className="px-6 py-3.5 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">Actions</th>}
+                  <tr className="border-b border-[var(--border-default)] bg-[var(--surface-secondary)]">
+                    {['Date', 'Category', 'Description', 'Amount', ...(isAdmin ? ['Actions'] : [])].map((h) => (
+                      <th key={h} className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">{h}</th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--border-default)]">
@@ -169,51 +180,58 @@ export default function Expenses() {
                     Array.from({ length: 5 }).map((_, i) => (
                       <tr key={i}>
                         {Array.from({ length: isAdmin ? 5 : 4 }).map((__, j) => (
-                          <td key={j} className="px-6 py-4">
-                            <div className="h-4 w-full animate-pulse rounded-lg bg-[var(--surface-secondary)]" />
+                          <td key={j} className="px-4 py-3.5">
+                            <div className="h-3 animate-pulse rounded-md bg-[var(--surface-secondary)]" style={{ width: `${60 + Math.random() * 30}%` }} />
                           </td>
                         ))}
                       </tr>
                     ))
                   ) : expenses.length === 0 ? (
                     <tr>
-                      <td colSpan={isAdmin ? 5 : 4} className="px-6 py-10 text-center text-sm text-[var(--text-muted)]">
-                        No expenses found.
+                      <td colSpan={isAdmin ? 5 : 4} className="px-4 py-10 text-center">
+                        <p className="text-sm font-medium text-[var(--text-primary)]">No expenses recorded yet</p>
+                        <p className="mt-1 text-xs text-[var(--text-muted)]">Use the form to record your first expense.</p>
                       </td>
                     </tr>
                   ) : (
-                    expenses.map((expense) => (
-                      <tr key={expense.id} className="transition hover:bg-[var(--surface-secondary)]">
-                        <td className="px-6 py-4 text-[var(--text-secondary)]">{expense.date}</td>
-                        <td className="px-6 py-4">
-                          <span className="inline-block rounded-lg bg-[var(--surface-secondary)] px-2 py-0.5 text-xs font-semibold text-[var(--text-secondary)]">
-                            {expense.category}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-[var(--text-primary)]">{expense.description || '—'}</td>
-                        <td className="px-6 py-4 font-semibold text-[var(--text-primary)]">{fmt(expense.amount)}</td>
-                        {isAdmin && (
-                          <td className="px-6 py-4">
-                            <div className="flex gap-2">
-                              <button
-                                type="button"
-                                onClick={() => setForm({ id: expense.id, category: expense.category, description: expense.description || '', amount: expense.amount, date: expense.date, notes: expense.notes || '' })}
-                                className="app-btn-secondary rounded-lg border px-3 py-1.5 text-xs font-medium transition"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleDelete(expense)}
-                                className="app-btn-danger rounded-lg px-3 py-1.5 text-xs font-medium transition"
-                              >
-                                Delete
-                              </button>
-                            </div>
+                    expenses.map((expense) => {
+                      const meta = CATEGORY_META[expense.category] || CATEGORY_META.Other;
+                      return (
+                        <tr key={expense.id} className="border-l-[3px] transition hover:bg-[var(--surface-secondary)]" style={{ borderLeftColor: meta.color }}>
+                          <td className="whitespace-nowrap px-4 py-3.5 text-xs text-[var(--text-muted)]">
+                            {new Date(expense.date).toLocaleDateString([], { dateStyle: 'medium' })}
                           </td>
-                        )}
-                      </tr>
-                    ))
+                          <td className="px-4 py-3.5">
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--surface-secondary)] px-2.5 py-1 text-xs font-semibold" style={{ color: meta.color }}>
+                              {meta.icon}
+                              {expense.category}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3.5 text-[var(--text-primary)]">{expense.description || '—'}</td>
+                          <td className="px-4 py-3.5 font-semibold tabular-nums text-[var(--danger)]">{fmt(expense.amount)}</td>
+                          {isAdmin && (
+                            <td className="px-4 py-3.5">
+                              <div className="flex gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => setForm({ id: expense.id, category: expense.category, description: expense.description || '', amount: expense.amount, date: expense.date, notes: expense.notes || '' })}
+                                  className="app-btn-secondary rounded-[0.9rem] border px-3 py-1.5 text-[12px] font-medium transition hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDelete(expense)}
+                                  className="app-btn-secondary rounded-[0.9rem] border px-3 py-1.5 text-[12px] font-medium transition hover:border-[var(--danger)] hover:text-[var(--danger)]"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </td>
+                          )}
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>
@@ -224,9 +242,12 @@ export default function Expenses() {
         {/* Right: Form */}
         {isAdmin && (
           <aside className="w-full lg:w-80 xl:w-96">
-            <div className="app-panel sticky top-6 rounded-[1.7rem] border p-6">
-              <h2 className="mb-5 font-semibold text-[var(--text-primary)]">{form.id ? 'Edit Expense' : 'Record Expense'}</h2>
-              <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="app-panel sticky top-6 rounded-[1.4rem] border p-6">
+              <div className="border-b border-[var(--border-default)] pb-4">
+                <h2 className="text-base font-semibold tracking-tight text-[var(--text-primary)]">{form.id ? 'Edit Expense' : 'Record Expense'}</h2>
+                <p className="mt-1 text-sm text-[var(--text-muted)]">Fill in the details to log an expense.</p>
+              </div>
+              <form onSubmit={handleSubmit} className="mt-5 space-y-4">
                 <div>
                   <label className="mb-1 block text-xs font-semibold text-[var(--text-muted)]">Category</label>
                   <select
@@ -285,7 +306,7 @@ export default function Expenses() {
                   />
                 </div>
                 {message && (
-                  <p className={`text-xs font-medium ${message.toLowerCase().includes('error') || message.toLowerCase().includes('fail') ? 'text-red-500' : 'text-[var(--brand)]'}`}>
+                  <p className={`rounded-[0.9rem] px-3 py-2 text-xs font-medium ${message.toLowerCase().includes('error') || message.toLowerCase().includes('fail') ? 'bg-[rgba(218,106,90,0.1)] text-[var(--danger)]' : 'bg-[rgba(74,168,132,0.1)] text-[var(--success)]'}`}>
                     {message}
                   </p>
                 )}

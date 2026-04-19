@@ -26,6 +26,37 @@ function SkeletonLine({ w = 'w-full', h = 'h-4' }) {
   return <div className={`animate-pulse rounded-md bg-[var(--surface-secondary)] ${w} ${h}`} />;
 }
 
+const REASON_META = {
+  'Damage':            { icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3.5 w-3.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>, color: 'var(--warning)' },
+  'Theft / Loss':      { icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3.5 w-3.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>, color: 'var(--danger)' },
+  'Count Error':       { icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3.5 w-3.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>, color: 'var(--accent)' },
+  'Expired Product':   { icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3.5 w-3.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>, color: 'var(--warning)' },
+  'Mis-shipment':      { icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3.5 w-3.5"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>, color: 'var(--accent)' },
+  'System Adjustment': { icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3.5 w-3.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>, color: 'var(--text-muted)' },
+  'Other':             { icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3.5 w-3.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v.01"/><path d="M12 8v4"/></svg>, color: 'var(--text-muted)' },
+};
+
+function getRelativeTime(dateStr) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d ago`;
+  return new Date(dateStr).toLocaleDateString([], { dateStyle: 'medium' });
+}
+
+function UserAvatar({ name }) {
+  const initials = String(name || '?').split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
+  return (
+    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--surface-secondary)] text-[10px] font-bold text-[var(--accent)]">
+      {initials}
+    </span>
+  );
+}
+
 export default function StockReconciliation() {
   const [view, setView] = useState('reconcile');
   const [products, setProducts] = useState([]);
@@ -172,19 +203,20 @@ export default function StockReconciliation() {
       {/* Tab bar */}
       <div className="app-panel flex items-center gap-1 rounded-[1.3rem] border p-1">
         {[
-          { key: 'reconcile', label: 'Reconcile Stock' },
-          { key: 'history', label: 'History & Summary' },
-        ].map(({ key, label }) => (
+          { key: 'reconcile', label: 'Reconcile Stock', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4"><path d="m3 7 9-4 9 4-9 4-9-4Z"/><path d="m3 7 9 4 9-4"/><path d="M12 11v10"/></svg> },
+          { key: 'history', label: 'History & Summary', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> },
+        ].map(({ key, label, icon }) => (
           <button
             key={key}
             type="button"
             onClick={() => setView(key)}
-            className={`flex-1 rounded-[1.1rem] px-4 py-2 text-sm font-medium transition-all duration-150 ${
+            className={`flex flex-1 items-center justify-center gap-2 rounded-[1.1rem] px-4 py-2.5 text-sm font-medium transition-all duration-150 ${
               view === key
                 ? 'bg-[var(--accent)] text-white shadow-sm'
                 : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             }`}
           >
+            {icon}
             {label}
           </button>
         ))}
@@ -420,7 +452,7 @@ export default function StockReconciliation() {
                 return (
                   <div
                     key={item.productId}
-                    className={`app-panel rounded-[1.2rem] border border-l-[3px] p-4 ${colors[tone]}`}
+                    className={`app-panel rounded-[1.2rem] border border-l-[3px] p-4 transition duration-200 hover:shadow-lg ${colors[tone]}`}
                   >
                     <p className="truncate text-sm font-semibold text-[var(--text-primary)]">{item.product?.name}</p>
                     <p
@@ -441,7 +473,12 @@ export default function StockReconciliation() {
 
           {/* Filters */}
           <section className="app-panel rounded-[1.4rem] border p-5">
-            <h3 className="text-base font-semibold tracking-tight text-[var(--text-primary)]">Reconciliation History</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-semibold tracking-tight text-[var(--text-primary)]">Reconciliation History</h3>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--surface-secondary)] px-3 py-1 text-xs font-semibold text-[var(--text-muted)]">
+                {reconciliations.length} record{reconciliations.length !== 1 ? 's' : ''}
+              </span>
+            </div>
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
               <div>
                 <label className="mb-1.5 block text-[12px] font-medium text-[var(--text-muted)]">Product</label>
@@ -522,10 +559,15 @@ export default function StockReconciliation() {
                       </td>
                     </tr>
                   ) : (
-                    reconciliations.map((rec) => (
-                      <tr key={rec.id} className="transition hover:bg-[var(--surface-secondary)]">
-                        <td className="whitespace-nowrap px-4 py-3 text-[var(--text-muted)]">
-                          {formatDateTime(rec.reconciliationDate)}
+                    reconciliations.map((rec) => {
+                      const v = parseFloat(rec.variance);
+                      const borderColor = v > 0 ? 'var(--success)' : v < 0 ? 'var(--danger)' : 'var(--accent)';
+                      const reasonMeta = REASON_META[rec.reason] || REASON_META.Other;
+                      return (
+                      <tr key={rec.id} className="border-l-[3px] transition hover:bg-[var(--surface-secondary)]" style={{ borderLeftColor: borderColor }}>
+                        <td className="whitespace-nowrap px-4 py-3">
+                          <p className="text-xs text-[var(--text-secondary)]">{formatDateTime(rec.reconciliationDate)}</p>
+                          <p className="text-[11px] text-[var(--text-muted)]">{getRelativeTime(rec.reconciliationDate)}</p>
                         </td>
                         <td className="px-4 py-3 font-medium text-[var(--text-primary)]">
                           {rec.product?.name}
@@ -539,10 +581,25 @@ export default function StockReconciliation() {
                         <td className="px-4 py-3 text-right">
                           <VariancePill variance={rec.variance} />
                         </td>
-                        <td className="px-4 py-3 text-[var(--text-muted)]">{rec.reason || '—'}</td>
-                        <td className="px-4 py-3 text-[var(--text-secondary)]">{rec.adjustedBy?.name || '—'}</td>
+                        <td className="px-4 py-3">
+                          {rec.reason ? (
+                            <span className="inline-flex items-center gap-1.5 text-xs font-medium" style={{ color: reasonMeta.color }}>
+                              {reasonMeta.icon}
+                              {rec.reason}
+                            </span>
+                          ) : (
+                            <span className="text-[var(--text-muted)]">—</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <UserAvatar name={rec.adjustedBy?.name} />
+                            <span className="text-xs text-[var(--text-secondary)]">{rec.adjustedBy?.name || '—'}</span>
+                          </div>
+                        </td>
                       </tr>
-                    ))
+                      );
+                    })
                   )}
                 </tbody>
               </table>

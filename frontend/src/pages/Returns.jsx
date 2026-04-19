@@ -160,6 +160,27 @@ function ReturnModal({ sale, currency, onClose, onSubmit }) {
   );
 }
 
+function getRelativeTime(dateStr) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d ago`;
+  return new Date(dateStr).toLocaleDateString([], { dateStyle: 'medium' });
+}
+
+function UserAvatar({ name }) {
+  const initials = String(name || '?').split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
+  return (
+    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--surface-secondary)] text-[10px] font-bold text-[var(--accent)]">
+      {initials}
+    </span>
+  );
+}
+
 export default function Returns() {
   const [view, setView] = useState('sales');
   const [sales, setSales] = useState([]);
@@ -239,19 +260,20 @@ export default function Returns() {
       {/* Tab bar */}
       <div className="app-panel flex items-center gap-1 rounded-[1.3rem] border p-1">
         {[
-          { key: 'sales', label: 'Sales — Process Return' },
-          { key: 'returns', label: 'Returns History' },
-        ].map(({ key, label }) => (
+          { key: 'sales', label: 'Process Return', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg> },
+          { key: 'returns', label: 'Returns History', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> },
+        ].map(({ key, label, icon }) => (
           <button
             key={key}
             type="button"
             onClick={() => setView(key)}
-            className={`flex-1 rounded-[1.1rem] px-4 py-2 text-sm font-medium transition-all duration-150 ${
+            className={`flex flex-1 items-center justify-center gap-2 rounded-[1.1rem] px-4 py-2.5 text-sm font-medium transition-all duration-150 ${
               view === key
                 ? 'bg-[var(--accent)] text-white shadow-sm'
                 : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             }`}
           >
+            {icon}
             {label}
           </button>
         ))}
@@ -301,14 +323,20 @@ export default function Returns() {
                   </tr>
                 ) : (
                   sales.map((sale) => (
-                    <tr key={sale.id} className="transition hover:bg-[var(--surface-secondary)]">
+                    <tr key={sale.id} className="border-l-[3px] border-l-[var(--accent)] transition hover:bg-[var(--surface-secondary)]">
                       <td className="px-4 py-3 font-mono text-xs text-[var(--text-muted)]">
                         {sale.receipt?.receiptNumber || `#${sale.id}`}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-[var(--text-secondary)]">
-                        {new Date(sale.createdAt).toLocaleDateString([], { dateStyle: 'medium' })}
+                      <td className="whitespace-nowrap px-4 py-3">
+                        <p className="text-sm text-[var(--text-secondary)]">{new Date(sale.createdAt).toLocaleDateString([], { dateStyle: 'medium' })}</p>
+                        <p className="text-[11px] text-[var(--text-muted)]">{getRelativeTime(sale.createdAt)}</p>
                       </td>
-                      <td className="px-4 py-3 text-[var(--text-primary)]">{sale.cashier?.name || '—'}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <UserAvatar name={sale.cashier?.name} />
+                          <span className="text-[var(--text-primary)]">{sale.cashier?.name || '—'}</span>
+                        </div>
+                      </td>
                       <td className="px-4 py-3 font-semibold tabular-nums text-[var(--text-primary)]">
                         {formatMoney(sale.currency || currency, sale.total)}
                       </td>
@@ -335,11 +363,16 @@ export default function Returns() {
       {/* Returns history */}
       {view === 'returns' && (
         <section className="app-panel overflow-hidden rounded-[1.4rem] border">
-          <div className="border-b border-[var(--border-default)] px-5 py-4">
-            <h2 className="text-base font-semibold tracking-tight text-[var(--text-primary)]">Returns & Refunds</h2>
-            <p className="mt-0.5 text-sm text-[var(--text-muted)]">
-              Every processed return is recorded here with the refund amount and reason.
-            </p>
+          <div className="flex items-center justify-between border-b border-[var(--border-default)] px-5 py-4">
+            <div>
+              <h2 className="text-base font-semibold tracking-tight text-[var(--text-primary)]">Returns & Refunds</h2>
+              <p className="mt-0.5 text-sm text-[var(--text-muted)]">
+                Every processed return is recorded here with the refund amount and reason.
+              </p>
+            </div>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--surface-secondary)] px-3 py-1 text-xs font-semibold text-[var(--text-muted)]">
+              {returns.length} return{returns.length !== 1 ? 's' : ''}
+            </span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -366,9 +399,10 @@ export default function Returns() {
                   </tr>
                 ) : (
                   returns.map((ret) => (
-                    <tr key={ret.id} className="transition hover:bg-[var(--surface-secondary)]">
-                      <td className="whitespace-nowrap px-4 py-3 text-xs text-[var(--text-muted)]">
-                        {new Date(ret.createdAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                    <tr key={ret.id} className="border-l-[3px] border-l-[var(--danger)] transition hover:bg-[var(--surface-secondary)]">
+                      <td className="whitespace-nowrap px-4 py-3">
+                        <p className="text-xs text-[var(--text-secondary)]">{new Date(ret.createdAt).toLocaleDateString([], { dateStyle: 'medium' })}</p>
+                        <p className="text-[11px] text-[var(--text-muted)]">{getRelativeTime(ret.createdAt)}</p>
                       </td>
                       <td className="px-4 py-3 font-mono text-xs text-[var(--text-muted)]">#{ret.saleId}</td>
                       <td className="px-4 py-3 text-[var(--text-secondary)]">
@@ -382,7 +416,12 @@ export default function Returns() {
                         −{formatMoney(currency, ret.totalRefund)}
                       </td>
                       <td className="px-4 py-3 text-[var(--text-muted)]">{ret.reason || '—'}</td>
-                      <td className="px-4 py-3 text-[var(--text-secondary)]">{ret.processedBy?.name || '—'}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <UserAvatar name={ret.processedBy?.name} />
+                          <span className="text-[var(--text-secondary)]">{ret.processedBy?.name || '—'}</span>
+                        </div>
+                      </td>
                     </tr>
                   ))
                 )}
