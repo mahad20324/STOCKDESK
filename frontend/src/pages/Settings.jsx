@@ -213,15 +213,18 @@ export default function Settings() {
         setLoading(true);
         const data = await fetchSettings();
         setSettings(data);
-        if (isAdmin) {
-          const [closures, users] = await Promise.all([fetchDayClosures(), fetchUsers()]);
-          setDayClosures(closures);
-          setTeamUsers(users);
-          // Run printer status check in background — don't block UI
-          checkPrinterStatus();
-        }
       } finally {
         setLoading(false);
+      }
+      // Load admin-only data in background — don't block the UI
+      if (isAdmin) {
+        Promise.all([fetchDayClosures(), fetchUsers()])
+          .then(([closures, users]) => {
+            setDayClosures(closures);
+            setTeamUsers(users);
+          })
+          .catch(() => {});
+        checkPrinterStatus();
       }
     }
     loadSettings();
@@ -504,17 +507,6 @@ export default function Settings() {
                   disabled={!isAdmin}
                   placeholder="https://example.com/logo.png"
                   className="app-input w-full rounded-lg border px-4 py-3 disabled:cursor-not-allowed"
-                />
-              </label>
-              <label className="md:col-span-2 space-y-2 text-sm text-[var(--text-secondary)]">
-                Receipt Header
-                <textarea
-                  value={settings.receiptHeader || ''}
-                  onChange={(e) => setSettings((prev) => ({ ...prev, receiptHeader: e.target.value }))}
-                  disabled={!isAdmin}
-                  placeholder="Welcome to our store"
-                  className="app-input w-full rounded-lg border px-4 py-3 disabled:cursor-not-allowed"
-                  rows="2"
                 />
               </label>
               <label className="md:col-span-2 space-y-2 text-sm text-[var(--text-secondary)]">
