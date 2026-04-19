@@ -165,8 +165,7 @@ export default function Products() {
         <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/3 bg-[radial-gradient(circle_at_top_right,rgba(30,167,189,0.14),transparent_58%)] lg:block" />
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="relative">
-            <h2 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">Products</h2>
-            <p className="mt-2 text-sm text-[var(--text-muted)]">
+            <p className="text-sm text-[var(--text-muted)]">
               {isAdmin
                 ? 'Manage your inventory catalog, prices, and stock levels from one place.'
                 : 'Review current inventory levels. Only admins can make changes.'}

@@ -131,8 +131,7 @@ export default function Customers() {
         <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/3 bg-[radial-gradient(circle_at_top_right,rgba(30,167,189,0.14),transparent_58%)] lg:block" />
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="relative">
-            <h2 className="text-2xl font-semibold text-[var(--text-primary)]">Customers</h2>
-            <p className="mt-2 max-w-2xl text-sm text-[var(--text-muted)]">
+            <p className="max-w-2xl text-sm text-[var(--text-muted)]">
               Keep named customer details organized so repeat visits, delivery follow-up, and account history are easier to manage.
             </p>
             <div className="mt-4 inline-flex max-w-2xl items-start gap-3 rounded-2xl border border-[var(--border-default)] bg-[var(--surface-secondary)] px-4 py-3 text-sm text-[var(--text-secondary)]">

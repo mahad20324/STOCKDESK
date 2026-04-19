@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../utils/api';
 
 const ACTION_META = {
-  CREATE: { label: 'Create', bg: 'bg-[rgba(74,168,132,0.12)]', text: 'text-[var(--success)]' },
-  UPDATE: { label: 'Update', bg: 'bg-[rgba(30,167,189,0.12)]', text: 'text-[var(--accent)]' },
-  DELETE: { label: 'Delete', bg: 'bg-[rgba(218,106,90,0.12)]', text: 'text-[var(--danger)]' },
-  LOGIN:  { label: 'Login',  bg: 'bg-[rgba(142,124,195,0.12)]', text: 'text-[var(--text-secondary)]' },
-  LOGOUT: { label: 'Logout', bg: 'bg-[var(--surface-secondary)]', text: 'text-[var(--text-muted)]' },
+  CREATE: { label: 'Create', bg: 'bg-[rgba(74,168,132,0.12)]', text: 'text-[var(--success)]', border: 'border-l-[var(--success)]', icon: <path d="M12 5v14M5 12h14" /> },
+  UPDATE: { label: 'Update', bg: 'bg-[rgba(30,167,189,0.12)]', text: 'text-[var(--accent)]', border: 'border-l-[var(--accent)]', icon: <path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /> },
+  DELETE: { label: 'Delete', bg: 'bg-[rgba(218,106,90,0.12)]', text: 'text-[var(--danger)]', border: 'border-l-[var(--danger)]', icon: <><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></> },
+  LOGIN:  { label: 'Login',  bg: 'bg-[rgba(142,124,195,0.12)]', text: 'text-[#8e7cc3]', border: 'border-l-[#8e7cc3]', icon: <><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" /><polyline points="10 17 15 12 10 7" /><line x1="15" y1="12" x2="3" y2="12" /></> },
+  LOGOUT: { label: 'Logout', bg: 'bg-[var(--surface-secondary)]', text: 'text-[var(--text-muted)]', border: 'border-l-[var(--text-muted)]', icon: <><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></> },
 };
 
 function ActionChip({ action }) {
@@ -14,6 +14,25 @@ function ActionChip({ action }) {
   return (
     <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${meta.bg} ${meta.text}`}>
       {meta.label}
+    </span>
+  );
+}
+
+function ActionIcon({ action }) {
+  const meta = ACTION_META[action] || {};
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+      className={`h-4 w-4 ${meta.text || 'text-[var(--text-muted)]'}`}>
+      {meta.icon || <circle cx="12" cy="12" r="10" />}
+    </svg>
+  );
+}
+
+function UserAvatar({ name }) {
+  const initials = (name || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  return (
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-[11px] font-bold text-white">
+      {initials}
     </span>
   );
 }
@@ -28,6 +47,18 @@ function SkeletonRow() {
       ))}
     </tr>
   );
+}
+
+function getRelativeTime(dateStr) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d ago`;
+  return `${Math.floor(days / 7)}w ago`;
 }
 
 export default function AuditLogs() {
@@ -122,13 +153,19 @@ export default function AuditLogs() {
           {stats.map((stat) => {
             const meta = ACTION_META[stat.action] || {};
             return (
-              <div key={stat.action} className="app-panel rounded-[1.2rem] border p-4">
-                <p className={`text-[11px] font-semibold uppercase tracking-[0.16em] ${meta.text || 'text-[var(--text-muted)]'}`}>
-                  {stat.action}
-                </p>
+              <div key={stat.action} className={`app-panel rounded-[1.2rem] border border-l-[3px] ${meta.border || ''} p-4 transition hover:shadow-md`}>
+                <div className="flex items-center justify-between">
+                  <p className={`text-[11px] font-semibold uppercase tracking-[0.16em] ${meta.text || 'text-[var(--text-muted)]'}`}>
+                    {stat.action}
+                  </p>
+                  <div className={`rounded-[0.7rem] p-1.5 ${meta.bg || 'bg-[var(--surface-secondary)]'}`}>
+                    <ActionIcon action={stat.action} />
+                  </div>
+                </div>
                 <p className="mt-1.5 text-[1.8rem] font-bold leading-none tracking-tight text-[var(--text-primary)]">
                   {Number(stat.count).toLocaleString()}
                 </p>
+                <p className="mt-1 text-[11px] text-[var(--text-muted)]">total events</p>
               </div>
             );
           })}
@@ -211,12 +248,23 @@ export default function AuditLogs() {
 
       {/* Logs table */}
       <section className="app-panel overflow-hidden rounded-[1.4rem] border">
+        <div className="border-b border-[var(--border-default)] bg-[var(--surface-secondary)] px-5 py-3.5">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-[14px] font-semibold text-[var(--text-primary)]">Activity Log</h3>
+              <p className="mt-0.5 text-[12px] text-[var(--text-muted)]">Every action taken in the system is recorded here.</p>
+            </div>
+            <span className="rounded-full bg-[var(--accent)] px-2.5 py-0.5 text-[10px] font-bold text-white">
+              {totalLogs.toLocaleString()} entries
+            </span>
+          </div>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[var(--border-default)] bg-[var(--surface-secondary)]">
-                {['Timestamp', 'User', 'Action', 'Entity', 'ID', 'IP'].map((h, i) => (
-                  <th key={h} className={`px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)] ${i === 0 ? 'text-left' : 'text-left'}`}>
+              <tr className="border-b border-[var(--border-default)]">
+                {['Timestamp', 'User', 'Action', 'Entity', 'ID', 'IP'].map((h) => (
+                  <th key={h} className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--text-muted)]">
                     {h}
                   </th>
                 ))}
@@ -227,31 +275,57 @@ export default function AuditLogs() {
                 Array.from({ length: 8 }).map((_, i) => <SkeletonRow key={i} />)
               ) : logs.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-12 text-center">
+                  <td colSpan={6} className="px-4 py-16 text-center">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mx-auto mb-3 h-8 w-8 text-[var(--text-muted)]">
+                      <path d="M12 8v4l3 3" /><circle cx="12" cy="12" r="10" />
+                    </svg>
                     <p className="text-sm font-medium text-[var(--text-primary)]">No audit logs found</p>
                     <p className="mt-1 text-xs text-[var(--text-muted)]">Logs appear after logins, product edits, and sales.</p>
                   </td>
                 </tr>
               ) : (
-                logs.map((log) => (
-                  <tr key={log.id} className="transition hover:bg-[var(--surface-secondary)]">
-                    <td className="whitespace-nowrap px-4 py-3 text-xs text-[var(--text-muted)]">
-                      {formatDate(log.createdAt)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="font-medium text-[var(--text-primary)]">{log.user?.name}</span>
-                      {log.user?.username && (
-                        <span className="ml-1 text-xs text-[var(--text-muted)]">@{log.user.username}</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <ActionChip action={log.action} />
-                    </td>
-                    <td className="px-4 py-3 text-[var(--text-secondary)]">{log.entityType}</td>
-                    <td className="px-4 py-3 font-mono text-xs text-[var(--text-muted)]">{log.entityId || '—'}</td>
-                    <td className="px-4 py-3 font-mono text-xs text-[var(--text-muted)]">{log.ipAddress || '—'}</td>
-                  </tr>
-                ))
+                logs.map((log) => {
+                  const meta = ACTION_META[log.action] || {};
+                  return (
+                    <tr key={log.id} className={`border-l-[3px] transition hover:bg-[var(--surface-secondary)] ${meta.border || 'border-l-transparent'}`}>
+                      <td className="whitespace-nowrap px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <div className={`rounded-[0.6rem] p-1 ${meta.bg || 'bg-[var(--surface-secondary)]'}`}>
+                            <ActionIcon action={log.action} />
+                          </div>
+                          <div>
+                            <p className="text-xs font-medium text-[var(--text-secondary)]">{formatDate(log.createdAt)}</p>
+                            <p className="text-[10px] text-[var(--text-muted)]">{getRelativeTime(log.createdAt)}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2.5">
+                          <UserAvatar name={log.user?.name} />
+                          <div className="min-w-0">
+                            <p className="truncate text-[13px] font-semibold text-[var(--text-primary)]">{log.user?.name || '—'}</p>
+                            {log.user?.username && <p className="text-[11px] text-[var(--text-muted)]">@{log.user.username}</p>}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <ActionChip action={log.action} />
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="inline-flex items-center rounded-[0.7rem] bg-[var(--surface-secondary)] px-2.5 py-1 text-[12px] font-medium text-[var(--text-secondary)]">
+                          {log.entityType}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 font-mono text-xs text-[var(--text-muted)]">{log.entityId || '—'}</td>
+                      <td className="px-4 py-3">
+                        <span className="inline-flex items-center gap-1 font-mono text-xs text-[var(--text-muted)]">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-3 w-3 opacity-50"><circle cx="12" cy="12" r="10" /><path d="M2 12h20" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>
+                          {log.ipAddress || '—'}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
