@@ -444,8 +444,6 @@ export default function StockReconciliation() {
                   </div>
                 </div>
               )}
-            </div>
-          </main>
-        </div>
+    </div>
   );
 }
