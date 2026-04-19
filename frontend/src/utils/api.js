@@ -197,3 +197,9 @@ export const printReceiptToPrinter = async (saleId) => {
     body: JSON.stringify(payload),
   });
 };
+
+// Generic api object for pages that need flexible GET/POST calls
+export const api = {
+  get: async (path) => { const data = await request(path); return { data }; },
+  post: async (path, body) => { const data = await request(path, { method: 'POST', body: JSON.stringify(body) }); return { data }; },
+};
