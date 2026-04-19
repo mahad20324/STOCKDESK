@@ -1,8 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../utils/api';
 
+function VariancePill({ variance }) {
+  const v = parseFloat(variance);
+  if (v === 0)
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-[var(--surface-secondary)] px-2.5 py-0.5 text-xs font-semibold text-[var(--text-muted)]">
+        ±0
+      </span>
+    );
+  if (v > 0)
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-[rgba(74,168,132,0.12)] px-2.5 py-0.5 text-xs font-semibold text-[var(--success)]">
+        +{v.toFixed(2)}
+      </span>
+    );
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-[rgba(218,106,90,0.12)] px-2.5 py-0.5 text-xs font-semibold text-[var(--danger)]">
+      {v.toFixed(2)}
+    </span>
+  );
+}
+
+function SkeletonLine({ w = 'w-full', h = 'h-4' }) {
+  return <div className={`animate-pulse rounded-md bg-[var(--surface-secondary)] ${w} ${h}`} />;
+}
+
 export default function StockReconciliation() {
-  const [view, setView] = useState('reconcile'); // 'reconcile' or 'history'
+  const [view, setView] = useState('reconcile');
   const [products, setProducts] = useState([]);
   const [reconciliations, setReconciliations] = useState([]);
   const [summary, setSummary] = useState([]);
@@ -22,7 +47,7 @@ export default function StockReconciliation() {
 
   const reconciliationReasons = [
     'Damage',
-    'Theft/Loss',
+    'Theft / Loss',
     'Count Error',
     'Expired Product',
     'Mis-shipment',
@@ -133,317 +158,398 @@ export default function StockReconciliation() {
     }
   };
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString();
-  };
-
   const formatDateTime = (dateString) => {
-    return new Date(dateString).toLocaleString();
+    return new Date(dateString).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
   };
 
-  const getVarianceBadgeColor = (variance) => {
-    if (variance === 0) return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
-    if (variance > 0) return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-    return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-  };
+  const variance =
+    selectedProduct && physicalQuantity !== ''
+      ? parseFloat(physicalQuantity) - parseFloat(selectedProduct.quantity)
+      : null;
 
   return (
-    <div className="p-6">
-      {/* View Toggle */}
-      <div className="flex gap-4 mb-6">
-                <button
-                  onClick={() => setView('reconcile')}
-                  className={`px-6 py-2 rounded font-medium transition ${
-                    view === 'reconcile'
-                      ? 'bg-accent text-white'
-                      : 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
-                  }`}
-                >
-                  Reconcile Stock
-                </button>
-                <button
-                  onClick={() => setView('history')}
-                  className={`px-6 py-2 rounded font-medium transition ${
-                    view === 'history'
-                      ? 'bg-accent text-white'
-                      : 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
-                  }`}
-                >
-                  History & Summary
-                </button>
+    <div className="space-y-4">
+      {/* Tab bar */}
+      <div className="app-panel flex items-center gap-1 rounded-[1.3rem] border p-1">
+        {[
+          { key: 'reconcile', label: 'Reconcile Stock' },
+          { key: 'history', label: 'History & Summary' },
+        ].map(({ key, label }) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setView(key)}
+            className={`flex-1 rounded-[1.1rem] px-4 py-2 text-sm font-medium transition-all duration-150 ${
+              view === key
+                ? 'bg-[var(--accent)] text-white shadow-sm'
+                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* Alert banner */}
+      {message.text && (
+        <div
+          className={`flex items-start gap-3 rounded-[1.15rem] border px-4 py-3 text-sm font-medium ${
+            message.type === 'success'
+              ? 'border-[rgba(74,168,132,0.3)] bg-[rgba(74,168,132,0.08)] text-[var(--success)]'
+              : 'border-[rgba(218,106,90,0.3)] bg-[rgba(218,106,90,0.08)] text-[var(--danger)]'
+          }`}
+        >
+          {message.type === 'success' ? (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mt-0.5 h-4 w-4 shrink-0">
+              <path d="M20 6 9 17l-5-5" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mt-0.5 h-4 w-4 shrink-0">
+              <circle cx="12" cy="12" r="9" /><path d="M12 8v4" /><path d="M12 16h.01" />
+            </svg>
+          )}
+          {message.text}
+        </div>
+      )}
+
+      {view === 'reconcile' ? (
+        <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
+          {/* Main form */}
+          <section className="app-panel rounded-[1.4rem] border p-5 sm:p-6">
+            <div className="border-b border-[var(--border-default)] pb-4">
+              <h2 className="text-lg font-semibold tracking-tight text-[var(--text-primary)]">Record Stock Count</h2>
+              <p className="mt-1 text-sm text-[var(--text-muted)]">
+                Search for a product, enter the physical count you observed, and optionally note the reason for any variance.
+              </p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="mt-5 space-y-5">
+              {/* Product selector */}
+              <div>
+                <label className="mb-1.5 block text-[13px] font-medium text-[var(--text-secondary)]">Product</label>
+                {selectedProduct ? (
+                  <div className="flex items-start justify-between gap-3 rounded-[1.15rem] border border-[rgba(30,167,189,0.25)] bg-[rgba(30,167,189,0.06)] px-4 py-3.5">
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold text-[var(--text-primary)]">{selectedProduct.name}</p>
+                      <p className="mt-0.5 text-xs text-[var(--text-muted)]">
+                        System quantity: <span className="font-semibold text-[var(--text-secondary)]">{selectedProduct.quantity}</span>
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => { setSelectedProduct(null); setPhysicalQuantity(''); }}
+                      className="shrink-0 rounded-full p-1 text-[var(--text-muted)] transition hover:text-[var(--danger)]"
+                      aria-label="Remove product"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+                        <path d="M18 6 6 18M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-[var(--text-muted)]">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
+                        <circle cx="11" cy="11" r="7" /><path d="m21 21-4.35-4.35" />
+                      </svg>
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Search product by name…"
+                      value={searchQuery}
+                      onChange={handleSearch}
+                      className="app-input w-full rounded-[1.1rem] border py-2.5 pl-10 pr-4 text-sm"
+                    />
+                    {loading && !selectedProduct && searchQuery && (
+                      <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--accent)] border-t-transparent" />
+                      </div>
+                    )}
+                    {products.length > 0 && (
+                      <ul className="absolute z-20 mt-1.5 max-h-60 w-full overflow-y-auto rounded-[1.1rem] border border-[var(--border-default)] bg-[var(--surface-primary)] shadow-xl">
+                        {products.map((product) => (
+                          <li key={product.id}>
+                            <button
+                              type="button"
+                              onClick={() => handleSelectProduct(product)}
+                              className="flex w-full items-center justify-between px-4 py-3 text-left transition hover:bg-[var(--surface-secondary)]"
+                            >
+                              <span className="font-medium text-[var(--text-primary)]">{product.name}</span>
+                              <span className="ml-4 shrink-0 text-xs text-[var(--text-muted)]">Qty {product.quantity}</span>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
               </div>
 
-              {/* Message Alert */}
-              {message.text && (
-                <div className={`mb-6 p-4 rounded ${
-                  message.type === 'success'
-                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                }`}>
-                  {message.text}
-                </div>
+              {selectedProduct && (
+                <>
+                  {/* Physical count */}
+                  <div>
+                    <label className="mb-1.5 block text-[13px] font-medium text-[var(--text-secondary)]">
+                      Physical Count
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={physicalQuantity}
+                      onChange={(e) => setPhysicalQuantity(e.target.value)}
+                      className="app-input w-full rounded-[1.1rem] border px-4 py-2.5 text-sm"
+                      placeholder="Enter actual quantity counted"
+                    />
+                    {variance !== null && (
+                      <div className="mt-2 flex items-center gap-2 text-sm text-[var(--text-muted)]">
+                        <span>Variance:</span>
+                        <VariancePill variance={variance} />
+                        <span className="text-xs">
+                          ({variance > 0 ? 'surplus' : variance < 0 ? 'shortage' : 'exact match'})
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Reason */}
+                  <div>
+                    <label className="mb-1.5 block text-[13px] font-medium text-[var(--text-secondary)]">
+                      Reason for Variance <span className="font-normal text-[var(--text-muted)]">(optional)</span>
+                    </label>
+                    <select
+                      value={reason}
+                      onChange={(e) => setReason(e.target.value)}
+                      className="app-input w-full rounded-[1.1rem] border px-4 py-2.5 text-sm"
+                    >
+                      <option value="">Select a reason…</option>
+                      {reconciliationReasons.map((r) => (
+                        <option key={r} value={r}>{r}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Notes */}
+                  <div>
+                    <label className="mb-1.5 block text-[13px] font-medium text-[var(--text-secondary)]">
+                      Notes <span className="font-normal text-[var(--text-muted)]">(optional)</span>
+                    </label>
+                    <textarea
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      className="app-input w-full resize-none rounded-[1.1rem] border px-4 py-2.5 text-sm"
+                      rows={3}
+                      placeholder="Any additional context about this count…"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="app-btn-primary w-full rounded-[1.1rem] py-2.5 text-sm font-semibold disabled:opacity-60"
+                  >
+                    {loading ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                        Recording…
+                      </span>
+                    ) : (
+                      'Record Reconciliation'
+                    )}
+                  </button>
+                </>
               )}
+            </form>
+          </section>
 
-              {view === 'reconcile' ? (
-                // Reconciliation Form
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <div className="lg:col-span-2">
-                    <div className="app-panel p-6 rounded-lg">
-                      <h2 className="text-xl font-semibold text-text-primary mb-6">Record Stock Count</h2>
-
-                      <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* Product Search */}
-                        <div>
-                          <label className="block text-sm font-medium text-text-primary mb-2">
-                            Select Product
-                          </label>
-                          {selectedProduct ? (
-                            <div className="bg-blue-50 dark:bg-blue-900 p-4 rounded-lg mb-4 flex justify-between items-center">
-                              <div>
-                                <div className="font-semibold text-text-primary">{selectedProduct.name}</div>
-                                <div className="text-sm text-text-secondary">SKU: {selectedProduct.sku}</div>
-                                <div className="text-sm text-text-muted">System Qty: {selectedProduct.quantity}</div>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => setSelectedProduct(null)}
-                                className="text-red-600 hover:text-red-800"
-                              >
-                                ✕
-                              </button>
-                            </div>
-                          ) : (
-                            <>
-                              <input
-                                type="text"
-                                placeholder="Search by product name or SKU..."
-                                value={searchQuery}
-                                onChange={handleSearch}
-                                className="app-input w-full px-3 py-2 rounded border"
-                              />
-                              {products.length > 0 && (
-                                <div className="mt-2 border border-border-default rounded-lg max-h-64 overflow-y-auto">
-                                  {products.map(product => (
-                                    <button
-                                      key={product.id}
-                                      type="button"
-                                      onClick={() => handleSelectProduct(product)}
-                                      className="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 border-b border-border-default last:border-b-0 transition"
-                                    >
-                                      <div className="font-medium text-text-primary">{product.name}</div>
-                                      <div className="text-sm text-text-muted">
-                                        SKU: {product.sku} | Qty: {product.quantity}
-                                      </div>
-                                    </button>
-                                  ))}
-                                </div>
-                              )}
-                            </>
-                          )}
-                        </div>
-
-                        {selectedProduct && (
-                          <>
-                            {/* Physical Quantity */}
-                            <div>
-                              <label className="block text-sm font-medium text-text-primary mb-2">
-                                Physical Count
-                              </label>
-                              <input
-                                type="number"
-                                step="0.01"
-                                value={physicalQuantity}
-                                onChange={(e) => setPhysicalQuantity(e.target.value)}
-                                className="app-input w-full px-3 py-2 rounded border"
-                                placeholder="Enter actual quantity counted"
-                              />
-                              <div className="mt-2 text-sm text-text-secondary">
-                                System Quantity: <span className="font-semibold">{selectedProduct.quantity}</span>
-                                {physicalQuantity && (
-                                  <>
-                                    <br />
-                                    Variance: <span className={physicalQuantity - selectedProduct.quantity > 0 ? 'text-green-600' : 'text-red-600'}>
-                                      {(physicalQuantity - selectedProduct.quantity).toFixed(2)}
-                                    </span>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Reason */}
-                            <div>
-                              <label className="block text-sm font-medium text-text-primary mb-2">
-                                Reason for Variance
-                              </label>
-                              <select
-                                value={reason}
-                                onChange={(e) => setReason(e.target.value)}
-                                className="app-input w-full px-3 py-2 rounded border"
-                              >
-                                <option value="">Select a reason (optional)</option>
-                                {reconciliationReasons.map(r => (
-                                  <option key={r} value={r}>{r}</option>
-                                ))}
-                              </select>
-                            </div>
-
-                            {/* Notes */}
-                            <div>
-                              <label className="block text-sm font-medium text-text-primary mb-2">
-                                Additional Notes
-                              </label>
-                              <textarea
-                                value={notes}
-                                onChange={(e) => setNotes(e.target.value)}
-                                className="app-input w-full px-3 py-2 rounded border"
-                                rows="3"
-                                placeholder="Add any additional notes..."
-                              />
-                            </div>
-
-                            {/* Submit Button */}
-                            <button
-                              type="submit"
-                              disabled={loading}
-                              className="app-btn-primary w-full px-4 py-2 rounded font-medium disabled:opacity-50"
-                            >
-                              {loading ? 'Recording...' : 'Record Reconciliation'}
-                            </button>
-                          </>
-                        )}
-                      </form>
-                    </div>
-                  </div>
-
-                  {/* Quick Stats */}
-                  <div className="app-panel p-6 rounded-lg h-fit">
-                    <h3 className="font-semibold text-text-primary mb-4">Quick Stats</h3>
-                    <div className="space-y-3">
-                      <div>
-                        <div className="text-2xl font-bold text-accent">{products.length}</div>
-                        <div className="text-sm text-text-muted">Total Products</div>
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold text-blue-500">
-                          {reconciliations.filter(r => new Date(r.reconciliationDate).toDateString() === new Date().toDateString()).length}
-                        </div>
-                        <div className="text-sm text-text-muted">Today's Reconciliations</div>
-                      </div>
-                    </div>
-                  </div>
+          {/* Sidebar stats */}
+          <aside className="space-y-4">
+            <section className="app-panel rounded-[1.4rem] border p-5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">Overview</p>
+              <div className="mt-4 space-y-4">
+                <div>
+                  <p className="text-[2rem] font-bold tracking-tight leading-none text-[var(--accent)]">
+                    {products.length > 0 ? products.length : '—'}
+                  </p>
+                  <p className="mt-1 text-sm text-[var(--text-muted)]">Products loaded</p>
                 </div>
-              ) : (
-                // History and Summary
-                <div className="space-y-6">
-                  {/* Summary Cards */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {summary.slice(0, 4).map((item) => (
-                      <div key={item.productId} className="app-panel p-4 rounded-lg">
-                        <div className="text-lg font-semibold text-text-primary truncate">{item.product?.name}</div>
-                        <div className="text-sm text-text-muted mt-1">SKU: {item.product?.sku}</div>
-                        <div className={`text-xl font-bold mt-2 ${item.totalVariance > 0 ? 'text-green-600' : item.totalVariance < 0 ? 'text-red-600' : 'text-gray-600'}`}>
-                          {parseFloat(item.totalVariance).toFixed(2)}
-                        </div>
-                        <div className="text-xs text-text-muted mt-1">{item.reconciliationCount} reconciliation(s)</div>
-                      </div>
+                <div className="border-t border-[var(--border-default)] pt-4">
+                  <p className="text-[1.5rem] font-bold tracking-tight leading-none text-[var(--text-primary)]">
+                    {summary.reduce((sum, s) => sum + (s.reconciliationCount || 0), 0)}
+                  </p>
+                  <p className="mt-1 text-sm text-[var(--text-muted)]">Total reconciliations</p>
+                </div>
+              </div>
+            </section>
+
+            <section className="app-panel rounded-[1.4rem] border p-5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">How it works</p>
+              <ul className="mt-3 space-y-2.5 text-sm text-[var(--text-secondary)]">
+                {[
+                  'Search and select a product',
+                  'Enter the physical count you observed',
+                  'System calculates the variance',
+                  'Optionally note the reason',
+                  'Submit to update records',
+                ].map((step, i) => (
+                  <li key={i} className="flex items-start gap-2.5">
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--surface-secondary)] text-[10px] font-bold text-[var(--text-muted)]">
+                      {i + 1}
+                    </span>
+                    {step}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          </aside>
+        </div>
+      ) : (
+        /* History & Summary */
+        <div className="space-y-4">
+          {/* Summary strip */}
+          {summary.length > 0 && (
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              {summary.slice(0, 4).map((item) => {
+                const v = parseFloat(item.totalVariance);
+                const tone = v > 0 ? 'success' : v < 0 ? 'danger' : 'default';
+                const colors = {
+                  success: 'border-l-[var(--success)]',
+                  danger: 'border-l-[var(--danger)]',
+                  default: 'border-l-[var(--accent)]',
+                };
+                return (
+                  <div
+                    key={item.productId}
+                    className={`app-panel rounded-[1.2rem] border border-l-[3px] p-4 ${colors[tone]}`}
+                  >
+                    <p className="truncate text-sm font-semibold text-[var(--text-primary)]">{item.product?.name}</p>
+                    <p
+                      className={`mt-1.5 text-2xl font-bold leading-none ${
+                        v > 0 ? 'text-[var(--success)]' : v < 0 ? 'text-[var(--danger)]' : 'text-[var(--text-muted)]'
+                      }`}
+                    >
+                      {v > 0 ? '+' : ''}{v.toFixed(2)}
+                    </p>
+                    <p className="mt-1.5 text-xs text-[var(--text-muted)]">
+                      {item.reconciliationCount} reconciliation{item.reconciliationCount !== 1 ? 's' : ''}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Filters */}
+          <section className="app-panel rounded-[1.4rem] border p-5">
+            <h3 className="text-base font-semibold tracking-tight text-[var(--text-primary)]">Reconciliation History</h3>
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              <div>
+                <label className="mb-1.5 block text-[12px] font-medium text-[var(--text-muted)]">Product</label>
+                <select
+                  value={historyFilters.productId}
+                  onChange={(e) => {
+                    setHistoryFilters((prev) => ({ ...prev, productId: e.target.value }));
+                    fetchReconciliations();
+                  }}
+                  className="app-input w-full rounded-[1rem] border px-3 py-2 text-sm"
+                >
+                  <option value="">All products</option>
+                  {summary.map((item) => (
+                    <option key={item.productId} value={item.productId}>
+                      {item.product?.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-[12px] font-medium text-[var(--text-muted)]">From</label>
+                <input
+                  type="date"
+                  value={historyFilters.startDate}
+                  onChange={(e) => {
+                    setHistoryFilters((prev) => ({ ...prev, startDate: e.target.value }));
+                    fetchReconciliations();
+                  }}
+                  className="app-input w-full rounded-[1rem] border px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-[12px] font-medium text-[var(--text-muted)]">To</label>
+                <input
+                  type="date"
+                  value={historyFilters.endDate}
+                  onChange={(e) => {
+                    setHistoryFilters((prev) => ({ ...prev, endDate: e.target.value }));
+                    fetchReconciliations();
+                  }}
+                  className="app-input w-full rounded-[1rem] border px-3 py-2 text-sm"
+                />
+              </div>
+            </div>
+
+            {/* Table */}
+            <div className="mt-4 overflow-x-auto rounded-[1.1rem] border border-[var(--border-default)]">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-[var(--border-default)] bg-[var(--surface-secondary)]">
+                    {['Date', 'Product', 'System', 'Physical', 'Variance', 'Reason', 'By'].map((h, i) => (
+                      <th
+                        key={h}
+                        className={`px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)] ${
+                          i >= 2 && i <= 4 ? 'text-right' : 'text-left'
+                        }`}
+                      >
+                        {h}
+                      </th>
                     ))}
-                  </div>
-
-                  {/* Filters */}
-                  <div className="app-panel p-6 rounded-lg">
-                    <h3 className="text-lg font-semibold text-text-primary mb-4">Reconciliation History</h3>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                      <div>
-                        <label className="block text-sm font-medium text-text-primary mb-2">Product</label>
-                        <select
-                          value={historyFilters.productId}
-                          onChange={(e) => setHistoryFilters(prev => ({ ...prev, productId: e.target.value }))}
-                          className="app-input w-full px-3 py-2 rounded border"
-                          onChangeCapture={() => fetchReconciliations()}
-                        >
-                          <option value="">All Products</option>
-                          {summary.map(item => (
-                            <option key={item.productId} value={item.productId}>
-                              {item.product?.name} ({item.product?.sku})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-text-primary mb-2">Start Date</label>
-                        <input
-                          type="date"
-                          value={historyFilters.startDate}
-                          onChange={(e) => setHistoryFilters(prev => ({ ...prev, startDate: e.target.value }))}
-                          className="app-input w-full px-3 py-2 rounded border"
-                          onChangeCapture={() => fetchReconciliations()}
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-text-primary mb-2">End Date</label>
-                        <input
-                          type="date"
-                          value={historyFilters.endDate}
-                          onChange={(e) => setHistoryFilters(prev => ({ ...prev, endDate: e.target.value }))}
-                          className="app-input w-full px-3 py-2 rounded border"
-                          onChangeCapture={() => fetchReconciliations()}
-                        />
-                      </div>
-                    </div>
-
-                    {/* History Table */}
-                    <div className="overflow-x-auto">
-                      <table className="w-full">
-                        <thead className="bg-gray-100 dark:bg-gray-800 border-b border-border-default">
-                          <tr>
-                            <th className="px-6 py-3 text-left text-sm font-semibold text-text-primary">Date</th>
-                            <th className="px-6 py-3 text-left text-sm font-semibold text-text-primary">Product</th>
-                            <th className="px-6 py-3 text-right text-sm font-semibold text-text-primary">System</th>
-                            <th className="px-6 py-3 text-right text-sm font-semibold text-text-primary">Physical</th>
-                            <th className="px-6 py-3 text-right text-sm font-semibold text-text-primary">Variance</th>
-                            <th className="px-6 py-3 text-left text-sm font-semibold text-text-primary">Reason</th>
-                            <th className="px-6 py-3 text-left text-sm font-semibold text-text-primary">Adjusted By</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-border-default">
-                          {loading ? (
-                            <tr>
-                              <td colSpan="7" className="px-6 py-8 text-center text-text-muted">
-                                Loading...
-                              </td>
-                            </tr>
-                          ) : reconciliations.length === 0 ? (
-                            <tr>
-                              <td colSpan="7" className="px-6 py-8 text-center text-text-muted">
-                                No reconciliations found
-                              </td>
-                            </tr>
-                          ) : (
-                            reconciliations.map((rec) => (
-                              <tr key={rec.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                                <td className="px-6 py-4 text-sm text-text-secondary">{formatDateTime(rec.reconciliationDate)}</td>
-                                <td className="px-6 py-4 text-sm text-text-primary">{rec.product?.name}</td>
-                                <td className="px-6 py-4 text-right text-sm text-text-secondary">{parseFloat(rec.systemQuantity).toFixed(2)}</td>
-                                <td className="px-6 py-4 text-right text-sm text-text-secondary">{parseFloat(rec.physicalQuantity).toFixed(2)}</td>
-                                <td className="px-6 py-4 text-right">
-                                  <span className={`px-2 py-1 rounded text-xs font-semibold ${getVarianceBadgeColor(rec.variance)}`}>
-                                    {parseFloat(rec.variance).toFixed(2)}
-                                  </span>
-                                </td>
-                                <td className="px-6 py-4 text-sm text-text-muted">{rec.reason || '-'}</td>
-                                <td className="px-6 py-4 text-sm text-text-primary">{rec.adjustedBy?.name}</td>
-                              </tr>
-                            ))
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              )}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[var(--border-default)]">
+                  {loading ? (
+                    Array.from({ length: 4 }).map((_, i) => (
+                      <tr key={i}>
+                        {Array.from({ length: 7 }).map((__, j) => (
+                          <td key={j} className="px-4 py-3">
+                            <SkeletonLine w="w-full" h="h-3" />
+                          </td>
+                        ))}
+                      </tr>
+                    ))
+                  ) : reconciliations.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="px-4 py-10 text-center text-sm text-[var(--text-muted)]">
+                        No reconciliation records found
+                      </td>
+                    </tr>
+                  ) : (
+                    reconciliations.map((rec) => (
+                      <tr key={rec.id} className="transition hover:bg-[var(--surface-secondary)]">
+                        <td className="whitespace-nowrap px-4 py-3 text-[var(--text-muted)]">
+                          {formatDateTime(rec.reconciliationDate)}
+                        </td>
+                        <td className="px-4 py-3 font-medium text-[var(--text-primary)]">
+                          {rec.product?.name}
+                        </td>
+                        <td className="px-4 py-3 text-right tabular-nums text-[var(--text-secondary)]">
+                          {parseFloat(rec.systemQuantity).toFixed(2)}
+                        </td>
+                        <td className="px-4 py-3 text-right tabular-nums text-[var(--text-secondary)]">
+                          {parseFloat(rec.physicalQuantity).toFixed(2)}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <VariancePill variance={rec.variance} />
+                        </td>
+                        <td className="px-4 py-3 text-[var(--text-muted)]">{rec.reason || '—'}</td>
+                        <td className="px-4 py-3 text-[var(--text-secondary)]">{rec.adjustedBy?.name || '—'}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      )}
     </div>
   );
 }

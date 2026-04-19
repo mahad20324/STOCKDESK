@@ -14,6 +14,7 @@ import Shops from './pages/Shops';
 import Expenses from './pages/Expenses';
 import AuditLogs from './pages/AuditLogs';
 import StockReconciliation from './pages/StockReconciliation';
+import Returns from './pages/Returns';
 import ProtectedRoute from './components/ProtectedRoute';
 import { getUser, hasActiveSession } from './utils/auth';
 import useInactivityLogout from './hooks/useInactivityLogout';
@@ -58,6 +59,7 @@ function App() {
         <Route path="reports" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : <Reports />} />
         <Route path="expenses" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : <Expenses />} />
         <Route path="stock-reconciliation" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : <StockReconciliation />} />
+        <Route path="returns" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : <Returns />} />
         <Route path="audit-logs" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : <AuditLogs />} />
         <Route path="settings" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : <Settings />} />
         <Route path="users" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : <Users />} />

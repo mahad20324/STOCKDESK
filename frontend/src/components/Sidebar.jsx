@@ -53,6 +53,16 @@ const links = [
     ),
   },
   {
+    to: '/app/returns',
+    label: 'Returns',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+        <path d="M9 14l-4-4 4-4" />
+        <path d="M5 10h11a4 4 0 0 1 0 8h-1" />
+      </svg>
+    ),
+  },
+  {
     to: '/app/reports',
     label: 'Reports',
     icon: (

@@ -217,7 +217,8 @@ export default function Settings() {
           const [closures, users] = await Promise.all([fetchDayClosures(), fetchUsers()]);
           setDayClosures(closures);
           setTeamUsers(users);
-          await checkPrinterStatus();
+          // Run printer status check in background — don't block UI
+          checkPrinterStatus();
         }
       } finally {
         setLoading(false);

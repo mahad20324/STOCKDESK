@@ -243,8 +243,8 @@ export default function Login() {
 
           <div className="relative flex h-full flex-col justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-16 w-16 items-center justify-center rounded-[1.4rem] border border-white/10 bg-white/10 p-2.5 shadow-[0_18px_45px_rgba(0,0,0,0.18)] backdrop-blur">
-                <img src={logo} alt="StockDesk logo" className="h-11 w-11 object-contain" />
+              <div className="flex h-20 w-20 items-center justify-center rounded-[1.6rem] border border-white/10 bg-white/10 p-2.5 shadow-[0_18px_45px_rgba(0,0,0,0.18)] backdrop-blur">
+                <img src={logo} alt="StockDesk logo" className="h-15 w-15 object-contain" />
               </div>
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/70">StockDesk</p>
