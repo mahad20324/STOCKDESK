@@ -1,58 +1,97 @@
 import { useEffect, useMemo, useState } from 'react';
-import { fetchReports, fetchBestSelling, fetchCashierReport, fetchDashboardSummary, fetchSettings, fetchRangeReport } from '../utils/api';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, CartesianGrid } from 'recharts';
+import { fetchReports, fetchBestSelling, fetchCashierReport, fetchDashboardSummary, fetchSettings, fetchRangeReport, fetchReturns } from '../utils/api';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, CartesianGrid, AreaChart, Area, LineChart, Line, Legend } from 'recharts';
 
-const colors = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)'];
+const PALETTE = ['#1ea7bd', '#4aa884', '#da6a5a', '#8e7cc3', '#e8a838', '#5b8def', '#e06fa0', '#5bceae'];
 
 function formatMoney(currency, value) {
   return `${currency} ${Number(value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-function MetricCard({ label, value, helper, eyebrow = 'Insight' }) {
+function formatCompact(value) {
+  const n = Number(value || 0);
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  return n.toLocaleString();
+}
+
+function DeltaBadge({ value }) {
+  const v = Number(value || 0);
+  if (v === 0) return null;
+  const positive = v > 0;
   return (
-    <div className="app-panel relative overflow-hidden rounded-[1.4rem] border p-5">
-      <div className="absolute inset-x-0 top-0 h-16 bg-[linear-gradient(180deg,rgba(30,167,189,0.12),transparent)]" />
-      <div className="relative">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">{eyebrow}</p>
-        <p className="mt-3 text-sm font-medium text-[var(--text-muted)]">{label}</p>
-        <p className="mt-3 text-2xl font-semibold tracking-tight text-[var(--text-primary)]">{value}</p>
-        <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">{helper}</p>
+    <span className={`ml-2 inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[11px] font-semibold ${positive ? 'bg-[rgba(74,168,132,0.12)] text-[var(--success)]' : 'bg-[rgba(218,106,90,0.12)] text-[var(--danger)]'}`}>
+      <svg viewBox="0 0 12 12" className={`h-3 w-3 ${positive ? '' : 'rotate-180'}`} fill="currentColor"><path d="M6 2l4 5H2z" /></svg>
+      {Math.abs(v).toFixed(1)}%
+    </span>
+  );
+}
+
+function KPICard({ eyebrow, label, value, delta, icon }) {
+  return (
+    <div className="app-panel group relative overflow-hidden rounded-[1.3rem] border p-4 transition hover:shadow-md">
+      <div className="pointer-events-none absolute -right-4 -top-4 h-20 w-20 rounded-full bg-[var(--accent)] opacity-[0.06] transition group-hover:opacity-[0.10]" />
+      <div className="relative flex items-start justify-between">
+        <div className="min-w-0">
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">{eyebrow}</p>
+          <p className="mt-2.5 text-2xl font-bold tracking-tight text-[var(--text-primary)]">{value}</p>
+          <p className="mt-1 flex items-center text-[13px] text-[var(--text-muted)]">
+            {label}
+            {delta !== undefined && <DeltaBadge value={delta} />}
+          </p>
+        </div>
+        {icon && <div className="shrink-0 rounded-[0.9rem] bg-[var(--surface-secondary)] p-2.5 text-[var(--text-muted)]">{icon}</div>}
       </div>
     </div>
   );
 }
 
-function SectionCard({ title, subtitle, children, action }) {
+function SectionCard({ title, subtitle, children, action, className = '' }) {
   return (
-    <section className="app-panel rounded-[1.5rem] border p-5 sm:p-6">
-      <div className="flex items-start justify-between gap-4 border-b border-[var(--border-default)] pb-4">
-        <div>
-          <h3 className="text-lg font-semibold text-[var(--text-primary)]">{title}</h3>
-          <p className="mt-1 text-sm text-[var(--text-muted)]">{subtitle}</p>
+    <section className={`app-panel rounded-[1.4rem] border ${className}`}>
+      <div className="flex items-start justify-between gap-4 border-b border-[var(--border-default)] px-5 py-4">
+        <div className="min-w-0">
+          <h3 className="text-[15px] font-semibold tracking-tight text-[var(--text-primary)]">{title}</h3>
+          {subtitle && <p className="mt-0.5 text-[13px] text-[var(--text-muted)]">{subtitle}</p>}
         </div>
         {action}
       </div>
-      <div className="mt-5">{children}</div>
+      <div className="p-5">{children}</div>
     </section>
   );
 }
 
 function EmptyState({ title, message }) {
   return (
-    <div className="app-panel-soft rounded-lg border border-dashed px-4 py-10 text-center">
+    <div className="flex flex-col items-center justify-center rounded-[1.1rem] border border-dashed border-[var(--border-default)] bg-[var(--surface-secondary)] px-4 py-12 text-center">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mb-3 h-8 w-8 text-[var(--text-muted)]"><path d="M4 19h16M7 16V9m5 7V5m5 11v-3" /></svg>
       <p className="text-sm font-medium text-[var(--text-primary)]">{title}</p>
-      <p className="mt-2 text-sm text-[var(--text-muted)]">{message}</p>
+      <p className="mt-1 max-w-xs text-xs text-[var(--text-muted)]">{message}</p>
     </div>
   );
 }
 
-function ChartTooltip({ active, payload, label, currency }) {
+function ChartTooltip({ active, payload, label, currency, valueKey = 'value' }) {
   if (!active || !payload?.length) return null;
-
   return (
-    <div className="app-panel rounded-2xl border px-4 py-3 shadow-xl">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">{label}</p>
-      <p className="mt-2 text-lg font-semibold text-[var(--text-primary)]">{formatMoney(currency, payload[0].value)}</p>
+    <div className="app-panel rounded-[1rem] border px-4 py-3 shadow-xl">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">{label}</p>
+      {payload.map((p, i) => (
+        <p key={i} className="mt-1.5 text-sm font-semibold" style={{ color: p.color || 'var(--text-primary)' }}>
+          {p.name && <span className="mr-1 text-[var(--text-muted)]">{p.name}:</span>}
+          {currency ? formatMoney(currency, p.value) : Number(p.value).toLocaleString()}
+        </p>
+      ))}
+    </div>
+  );
+}
+
+function SkeletonCards({ count = 3 }) {
+  return (
+    <div className="grid gap-5 xl:grid-cols-3">
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="app-panel h-[26rem] animate-pulse rounded-[1.4rem] border" />
+      ))}
     </div>
   );
 }
@@ -62,6 +101,7 @@ export default function Reports() {
   const [bestSelling, setBestSelling] = useState([]);
   const [cashierReport, setCashierReport] = useState([]);
   const [summary, setSummary] = useState(null);
+  const [returns, setReturns] = useState([]);
   const [currency, setCurrency] = useState('USD');
   const [loading, setLoading] = useState(true);
   const [rangeStart, setRangeStart] = useState('');
@@ -73,17 +113,19 @@ export default function Reports() {
     async function loadReports() {
       try {
         setLoading(true);
-        const [salesData, productData, cashierData, summaryData, settings] = await Promise.all([
+        const [salesData, productData, cashierData, summaryData, settings, returnsData] = await Promise.all([
           fetchReports(),
           fetchBestSelling(),
           fetchCashierReport(),
           fetchDashboardSummary(),
           fetchSettings(),
+          fetchReturns().catch(() => []),
         ]);
         setDailySales(salesData);
         setBestSelling(productData);
         setCashierReport(cashierData);
         setSummary(summaryData);
+        setReturns(returnsData);
         setCurrency(settings.currency || 'USD');
       } catch (error) {
         console.error(error);
@@ -91,36 +133,56 @@ export default function Reports() {
         setLoading(false);
       }
     }
-
     loadReports();
   }, []);
 
-  const salesSummary = useMemo(
-    () => dailySales.slice(0, 10).map((sale) => ({ name: `#${sale.id}`, total: parseFloat(sale.total || 0) })),
-    [dailySales]
-  );
+  /* ---------- derived data ---------- */
+  const salesTimeline = useMemo(() => {
+    if (!dailySales.length) return [];
+    const grouped = {};
+    dailySales.forEach((sale) => {
+      const hour = new Date(sale.createdAt).getHours();
+      const label = `${hour % 12 || 12}${hour < 12 ? 'am' : 'pm'}`;
+      if (!grouped[label]) grouped[label] = { time: label, revenue: 0, orders: 0 };
+      grouped[label].revenue += Number(sale.total || 0);
+      grouped[label].orders += 1;
+    });
+    return Object.values(grouped);
+  }, [dailySales]);
+
   const bestProductData = useMemo(
-    () => bestSelling.slice(0, 5).map((item, index) => ({
+    () => bestSelling.slice(0, 6).map((item, i) => ({
       name: item.Product?.name || 'Item',
-      value: Number(item.unitsold || 0),
-      fill: colors[index % colors.length],
+      units: Number(item.unitsold || 0),
+      fill: PALETTE[i % PALETTE.length],
     })),
     [bestSelling]
   );
+
   const cashierData = useMemo(
-    () => cashierReport.map((item) => ({ name: item.cashier?.name || 'Cashier', revenue: Number(item.revenue || 0) })),
+    () => cashierReport.map((item, i) => ({
+      name: item.cashier?.name || 'Cashier',
+      revenue: Number(item.revenue || 0),
+      sales: Number(item.salesCount || 0),
+      color: PALETTE[i % PALETTE.length],
+    })),
     [cashierReport]
   );
+
   const totalRevenue = useMemo(
-    () => Number(summary?.periods?.today?.netSales || dailySales.reduce((sum, sale) => sum + Number(sale.total || 0), 0)),
+    () => Number(summary?.periods?.today?.netSales || dailySales.reduce((sum, s) => sum + Number(s.total || 0), 0)),
     [dailySales, summary]
   );
-  const totalProfit = useMemo(
-    () => Number(summary?.periods?.today?.grossProfit || 0),
-    [summary]
-  );
+  const totalProfit = useMemo(() => Number(summary?.periods?.today?.grossProfit || 0), [summary]);
+  const itemsSold = useMemo(() => Number(summary?.periods?.today?.itemsSold || 0), [summary]);
   const averageSale = dailySales.length ? totalRevenue / dailySales.length : 0;
 
+  const revenueComparison = summary?.comparisons?.todayVsYesterday?.netSales;
+  const profitComparison = summary?.comparisons?.todayVsYesterday?.grossProfit;
+
+  const totalRefunds = useMemo(() => returns.reduce((sum, r) => sum + Number(r.totalRefund || 0), 0), [returns]);
+
+  /* ---------- range report ---------- */
   const runRangeReport = async () => {
     if (!rangeStart || !rangeEnd) return;
     setRangeLoading(true);
@@ -160,166 +222,228 @@ export default function Reports() {
   };
 
   return (
-    <div className="space-y-6">
-      <section className="app-panel relative overflow-hidden rounded-[1.7rem] border p-5 sm:p-6">
-        <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/3 bg-[radial-gradient(circle_at_top_right,rgba(30,167,189,0.14),transparent_58%)] lg:block" />
-        <div className="relative">
-          <h2 className="text-2xl font-semibold text-[var(--text-primary)]">Reports</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--text-muted)]">Review sales performance, best-selling products, and cashier contribution with richer, clearer analytics.</p>
-        </div>
+    <div className="space-y-5">
+      {/* ---------- KPI strip ---------- */}
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        <KPICard
+          eyebrow="Revenue"
+          label="Today's net sales"
+          value={formatMoney(currency, totalRevenue)}
+          delta={revenueComparison?.percentChange}
+          icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>}
+        />
+        <KPICard
+          eyebrow="Profit"
+          label="Gross profit"
+          value={formatMoney(currency, totalProfit)}
+          delta={profitComparison?.percentChange}
+          icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>}
+        />
+        <KPICard
+          eyebrow="Orders"
+          label="Transactions today"
+          value={dailySales.length.toLocaleString()}
+          icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" /><rect x="9" y="3" width="6" height="4" rx="1" /></svg>}
+        />
+        <KPICard
+          eyebrow="Avg Sale"
+          label="Per transaction"
+          value={formatMoney(currency, averageSale)}
+          icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path d="M16 8v8m-8-4v4m4-6v6" /></svg>}
+        />
+        <KPICard
+          eyebrow="Refunds"
+          label={`${returns.length} return${returns.length !== 1 ? 's' : ''} processed`}
+          value={returns.length ? `−${formatMoney(currency, totalRefunds)}` : formatMoney(currency, 0)}
+          icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path d="M9 14l-4-4 4-4" /><path d="M5 10h11a4 4 0 0 1 0 8h-1" /></svg>}
+        />
+      </div>
 
-        <div className="mt-5 grid gap-4 md:grid-cols-4">
-          <MetricCard label="Recorded Sales" value={dailySales.length.toLocaleString()} helper="Transactions included in this report." eyebrow="Activity" />
-          <MetricCard label="Revenue" value={formatMoney(currency, totalRevenue)} helper="Combined total from listed sales." eyebrow="Revenue" />
-          <MetricCard label="Gross Profit" value={formatMoney(currency, totalProfit)} helper="Estimated profit for the same sales period." eyebrow="Profit" />
-          <MetricCard label="Average Sale" value={formatMoney(currency, averageSale)} helper="Typical transaction value across the report." eyebrow="Efficiency" />
-        </div>
-      </section>
-
-      {loading ? (
-        <div className="grid gap-6 xl:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, index) => (
-            <div key={index} className="app-panel-soft h-96 animate-pulse rounded-lg border" />
-          ))}
-        </div>
-      ) : (
-        <div className="grid gap-6 xl:grid-cols-3">
-          <SectionCard
-            title="Sales Activity"
-            subtitle="Recent sales totals shown per transaction."
-            action={<div className="app-panel-accent rounded-2xl px-3 py-2 text-sm font-medium">{salesSummary.length} transactions</div>}
-          >
-            {salesSummary.length ? (
-              <div className="h-72">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={salesSummary} barCategoryGap="28%">
-                    <defs>
-                      <linearGradient id="reportSalesGradient" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stopColor="var(--chart-1)" stopOpacity="0.95" />
-                        <stop offset="100%" stopColor="var(--accent-hover)" stopOpacity="0.72" />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid vertical={false} stroke="var(--chart-grid)" />
-                    <XAxis dataKey="name" stroke="var(--text-muted)" tickLine={false} axisLine={false} />
-                    <YAxis stroke="var(--text-muted)" tickLine={false} axisLine={false} />
-                    <Tooltip content={<ChartTooltip currency={currency} />} />
-                    <Bar dataKey="total" fill="url(#reportSalesGradient)" radius={[12, 12, 4, 4]} maxBarSize={52} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            ) : (
-              <EmptyState title="No sales data yet" message="Sales will appear here once transactions are recorded." />
-            )}
-          </SectionCard>
-
-          <SectionCard
-            title="Best Selling Products"
-            subtitle="Top items by quantity sold."
-            action={<div className="app-panel-soft rounded-2xl border px-3 py-2 text-sm text-[var(--text-muted)]">Top {bestProductData.length || 0}</div>}
-          >
-            {bestProductData.length ? (
-              <>
+      {loading ? <SkeletonCards /> : (
+        <>
+          {/* ---------- Row 1: Sales Timeline + Best Selling ---------- */}
+          <div className="grid gap-5 xl:grid-cols-5">
+            <SectionCard
+              className="xl:col-span-3"
+              title="Sales Activity"
+              subtitle="Revenue flow by hour for today's transactions."
+              action={<span className="rounded-full bg-[var(--surface-secondary)] px-3 py-1 text-[12px] font-semibold text-[var(--text-muted)]">{dailySales.length} sales</span>}
+            >
+              {salesTimeline.length ? (
                 <div className="h-72">
                   <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie data={bestProductData} dataKey="value" nameKey="name" innerRadius={50} outerRadius={90} paddingAngle={3}>
-                        {bestProductData.map((entry) => (
-                          <Cell key={entry.name} fill={entry.fill} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
+                    <AreaChart data={salesTimeline}>
+                      <defs>
+                        <linearGradient id="salesGrad" x1="0" x2="0" y1="0" y2="1">
+                          <stop offset="0%" stopColor="#1ea7bd" stopOpacity={0.3} />
+                          <stop offset="100%" stopColor="#1ea7bd" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid vertical={false} stroke="var(--border-default)" strokeDasharray="4 4" />
+                      <XAxis dataKey="time" stroke="var(--text-muted)" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
+                      <YAxis stroke="var(--text-muted)" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} tickFormatter={formatCompact} />
+                      <Tooltip content={<ChartTooltip currency={currency} />} />
+                      <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#1ea7bd" strokeWidth={2.5} fill="url(#salesGrad)" dot={{ r: 4, fill: '#1ea7bd', strokeWidth: 0 }} activeDot={{ r: 6 }} />
+                    </AreaChart>
                   </ResponsiveContainer>
                 </div>
-                <div className="mt-4 space-y-2">
-                  {bestProductData.map((item, index) => (
-                    <div key={item.name} className="app-panel-soft flex items-center justify-between rounded-2xl border px-3 py-3 text-sm">
-                      <div className="flex items-center gap-3">
-                        <span className="flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold text-white" style={{ backgroundColor: colors[index % colors.length] }}>
-                          {index + 1}
-                        </span>
-                        <span className="text-[var(--text-primary)]">{item.name}</span>
-                      </div>
-                      <span className="font-medium text-[var(--text-muted)]">{item.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <EmptyState title="No product trends yet" message="Best-selling products will show once enough sales data is available." />
-            )}
-          </SectionCard>
+              ) : (
+                <EmptyState title="No sales yet today" message="Revenue flow will populate as transactions are recorded." />
+              )}
+            </SectionCard>
 
+            <SectionCard
+              className="xl:col-span-2"
+              title="Top Products"
+              subtitle="Best sellers by units sold."
+              action={<span className="rounded-full bg-[var(--surface-secondary)] px-3 py-1 text-[12px] font-semibold text-[var(--text-muted)]">Top {bestProductData.length}</span>}
+            >
+              {bestProductData.length ? (
+                <>
+                  <div className="h-48">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie data={bestProductData} dataKey="units" nameKey="name" innerRadius={45} outerRadius={75} paddingAngle={3} strokeWidth={0}>
+                          {bestProductData.map((e) => <Cell key={e.name} fill={e.fill} />)}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="mt-2 space-y-1.5">
+                    {bestProductData.map((item, i) => (
+                      <div key={item.name} className="flex items-center gap-3 rounded-[0.9rem] px-3 py-2 transition hover:bg-[var(--surface-secondary)]">
+                        <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: item.fill }} />
+                        <span className="min-w-0 flex-1 truncate text-[13px] text-[var(--text-primary)]">{item.name}</span>
+                        <span className="text-[13px] font-semibold tabular-nums text-[var(--text-muted)]">{item.units}</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <EmptyState title="No product data" message="Sell products to see top performers." />
+              )}
+            </SectionCard>
+          </div>
+
+          {/* ---------- Row 2: Revenue by Cashier (Line + breakdown) ---------- */}
           <SectionCard
             title="Revenue by Cashier"
-            subtitle="Compare cashier contribution by revenue."
-            action={<div className="app-panel-soft rounded-2xl border px-3 py-2 text-sm text-[var(--text-muted)]">{cashierData.length} cashiers</div>}
+            subtitle="Compare each team member's sales contribution. Bar shows total revenue; table shows breakdown."
+            action={<span className="rounded-full bg-[var(--surface-secondary)] px-3 py-1 text-[12px] font-semibold text-[var(--text-muted)]">{cashierData.length} cashier{cashierData.length !== 1 ? 's' : ''}</span>}
           >
             {cashierData.length ? (
-              <>
+              <div className="grid gap-6 xl:grid-cols-2">
                 <div className="h-72">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={cashierData} layout="vertical" margin={{ left: 8, right: 8 }}>
-                      <CartesianGrid horizontal={false} stroke="var(--chart-grid)" />
-                      <XAxis type="number" stroke="var(--text-muted)" tickLine={false} axisLine={false} />
-                      <YAxis type="category" dataKey="name" stroke="var(--text-muted)" tickLine={false} axisLine={false} width={90} />
+                    <BarChart data={cashierData} barCategoryGap="20%">
+                      <defs>
+                        {cashierData.map((c, i) => (
+                          <linearGradient key={c.name} id={`cashGrad${i}`} x1="0" x2="0" y1="0" y2="1">
+                            <stop offset="0%" stopColor={c.color} stopOpacity={0.9} />
+                            <stop offset="100%" stopColor={c.color} stopOpacity={0.5} />
+                          </linearGradient>
+                        ))}
+                      </defs>
+                      <CartesianGrid vertical={false} stroke="var(--border-default)" strokeDasharray="4 4" />
+                      <XAxis dataKey="name" stroke="var(--text-muted)" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
+                      <YAxis stroke="var(--text-muted)" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} tickFormatter={formatCompact} />
                       <Tooltip content={<ChartTooltip currency={currency} />} />
-                      <Bar dataKey="revenue" fill="var(--chart-2)" radius={[10, 10, 10, 10]} />
+                      <Bar dataKey="revenue" name="Revenue" radius={[8, 8, 3, 3]} maxBarSize={48}>
+                        {cashierData.map((c, i) => <Cell key={c.name} fill={`url(#cashGrad${i})`} />)}
+                      </Bar>
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
-                <div className="mt-4 space-y-2">
-                  {cashierData.map((item, index) => (
-                    <div key={item.name} className="app-panel-soft flex items-center justify-between rounded-2xl border px-3 py-3 text-sm">
-                      <span className="flex items-center gap-3 text-[var(--text-primary)]">
-                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--surface-tertiary)] text-xs font-semibold text-[var(--accent-strong)]">{index + 1}</span>
-                        {item.name}
-                      </span>
-                      <span className="font-medium text-[var(--text-muted)]">{formatMoney(currency, item.revenue)}</span>
+                <div className="space-y-2">
+                  <div className="grid grid-cols-[auto_1fr_auto_auto] gap-x-4 gap-y-0 rounded-[1.1rem] border border-[var(--border-default)] overflow-hidden">
+                    <div className="contents text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--text-muted)] bg-[var(--surface-secondary)]">
+                      <span className="bg-[var(--surface-secondary)] px-4 py-2.5">#</span>
+                      <span className="bg-[var(--surface-secondary)] px-4 py-2.5">Cashier</span>
+                      <span className="bg-[var(--surface-secondary)] px-4 py-2.5 text-right">Sales</span>
+                      <span className="bg-[var(--surface-secondary)] px-4 py-2.5 text-right">Revenue</span>
                     </div>
-                  ))}
+                    {cashierData.map((c, i) => (
+                      <div key={c.name} className="contents text-[13px] transition">
+                        <span className="flex items-center px-4 py-2.5 border-t border-[var(--border-default)]">
+                          <span className="flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold text-white" style={{ backgroundColor: c.color }}>{i + 1}</span>
+                        </span>
+                        <span className="flex items-center px-4 py-2.5 border-t border-[var(--border-default)] font-medium text-[var(--text-primary)]">{c.name}</span>
+                        <span className="flex items-center justify-end px-4 py-2.5 border-t border-[var(--border-default)] tabular-nums text-[var(--text-muted)]">{c.sales}</span>
+                        <span className="flex items-center justify-end px-4 py-2.5 border-t border-[var(--border-default)] font-semibold tabular-nums text-[var(--text-primary)]">{formatMoney(currency, c.revenue)}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </>
+              </div>
             ) : (
-              <EmptyState title="No cashier activity yet" message="Cashier performance will show after recorded sales are assigned." />
+              <EmptyState title="No cashier data yet" message="Revenue by cashier appears after sales are recorded." />
             )}
           </SectionCard>
-        </div>
+
+          {/* ---------- Row 3: Returns / Refunds ---------- */}
+          {returns.length > 0 && (
+            <SectionCard
+              title="Returns & Refunds"
+              subtitle="All processed returns with refund amounts. Full details available on the Returns page."
+              action={<span className="rounded-full bg-[rgba(218,106,90,0.12)] px-3 py-1 text-[12px] font-semibold text-[var(--danger)]">−{formatMoney(currency, totalRefunds)}</span>}
+            >
+              <div className="overflow-x-auto rounded-[1.1rem] border border-[var(--border-default)]">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-[var(--border-default)] bg-[var(--surface-secondary)]">
+                      {['Date', 'Sale #', 'Items', 'Refund', 'Reason', 'By'].map((h) => (
+                        <th key={h} className="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--text-muted)]">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--border-default)]">
+                    {returns.slice(0, 10).map((ret) => (
+                      <tr key={ret.id} className="transition hover:bg-[var(--surface-secondary)]">
+                        <td className="whitespace-nowrap px-4 py-2.5 text-xs text-[var(--text-muted)]">{new Date(ret.createdAt).toLocaleDateString([], { dateStyle: 'medium' })}</td>
+                        <td className="px-4 py-2.5 font-mono text-xs text-[var(--text-muted)]">#{ret.saleId}</td>
+                        <td className="px-4 py-2.5 text-[var(--text-secondary)]">{ret.items?.map((it) => `${it.product?.name || 'Item'} ×${it.quantity}`).join(', ') || '—'}</td>
+                        <td className="px-4 py-2.5 font-semibold tabular-nums text-[var(--danger)]">−{formatMoney(currency, ret.totalRefund)}</td>
+                        <td className="px-4 py-2.5 text-[var(--text-muted)]">{ret.reason || '—'}</td>
+                        <td className="px-4 py-2.5 text-[var(--text-secondary)]">{ret.processedBy?.name || '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </SectionCard>
+          )}
+        </>
       )}
 
-      {/* Date Range Report */}
-      <section className="app-panel rounded-[1.7rem] border p-5 sm:p-6">
-        <div className="border-b border-[var(--border-default)] pb-4">
-          <h3 className="text-lg font-semibold text-[var(--text-primary)]">Date Range Report</h3>
-          <p className="mt-1 text-sm text-[var(--text-muted)]">Run a detailed report for any date range with CSV export.</p>
+      {/* ---------- Date Range Report ---------- */}
+      <section className="app-panel rounded-[1.4rem] border">
+        <div className="border-b border-[var(--border-default)] px-5 py-4">
+          <h3 className="text-[15px] font-semibold tracking-tight text-[var(--text-primary)]">Custom Date Range</h3>
+          <p className="mt-0.5 text-[13px] text-[var(--text-muted)]">Generate a detailed report for any period with CSV export.</p>
         </div>
-        <div className="mt-4 flex flex-wrap items-end gap-3">
+        <div className="flex flex-wrap items-end gap-3 px-5 py-4">
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold text-[var(--text-muted)]">Start Date</label>
-            <input type="date" value={rangeStart} onChange={(e) => setRangeStart(e.target.value)} className="app-input rounded-xl border px-3 py-2 text-sm" />
+            <label className="text-[11px] font-semibold uppercase tracking-widest text-[var(--text-muted)]">From</label>
+            <input type="date" value={rangeStart} onChange={(e) => setRangeStart(e.target.value)} className="app-input rounded-[0.9rem] border px-3 py-2 text-sm" />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold text-[var(--text-muted)]">End Date</label>
-            <input type="date" value={rangeEnd} onChange={(e) => setRangeEnd(e.target.value)} className="app-input rounded-xl border px-3 py-2 text-sm" />
+            <label className="text-[11px] font-semibold uppercase tracking-widest text-[var(--text-muted)]">To</label>
+            <input type="date" value={rangeEnd} onChange={(e) => setRangeEnd(e.target.value)} className="app-input rounded-[0.9rem] border px-3 py-2 text-sm" />
           </div>
-          <button type="button" onClick={runRangeReport} disabled={!rangeStart || !rangeEnd || rangeLoading} className="app-btn-primary rounded-xl px-4 py-2 text-sm font-medium disabled:opacity-50">
+          <button type="button" onClick={runRangeReport} disabled={!rangeStart || !rangeEnd || rangeLoading} className="app-btn-primary rounded-[0.9rem] px-4 py-2 text-sm font-medium disabled:opacity-50">
             {rangeLoading ? 'Loading…' : 'Run Report'}
           </button>
           {rangeData && (
-            <button type="button" onClick={downloadCSV} className="app-btn-secondary flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="7 10 12 15 17 10" />
-                <line x1="12" y1="15" x2="12" y2="3" />
-              </svg>
+            <button type="button" onClick={downloadCSV} className="app-btn-secondary flex items-center gap-2 rounded-[0.9rem] border px-4 py-2 text-sm font-medium">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
               Export CSV
             </button>
           )}
         </div>
 
         {rangeData && (
-          <div className="mt-6 space-y-5">
-            {/* Summary metrics */}
+          <div className="space-y-5 border-t border-[var(--border-default)] px-5 py-5">
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               {[
                 { label: 'Sales', value: (rangeData.metrics?.txCount || 0).toLocaleString() },
@@ -327,17 +451,15 @@ export default function Reports() {
                 { label: 'Gross Profit', value: formatMoney(currency, rangeData.metrics?.grossProfit) },
                 { label: 'Expenses', value: formatMoney(currency, rangeData.totalExpenses) },
               ].map((m) => (
-                <div key={m.label} className="app-panel-soft rounded-[1.25rem] border p-4">
-                  <p className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">{m.label}</p>
+                <div key={m.label} className="rounded-[1.1rem] border border-[var(--border-default)] bg-[var(--surface-secondary)] p-4">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">{m.label}</p>
                   <p className="mt-2 text-xl font-bold text-[var(--text-primary)]">{m.value}</p>
                 </div>
               ))}
             </div>
 
-            {/* Profit margin + net profit */}
             {(() => {
               const revenue = Number(rangeData.metrics?.netSales || 0);
-              const cogs = Number(rangeData.metrics?.cogs || 0);
               const expenses = Number(rangeData.totalExpenses || 0);
               const grossProfit = Number(rangeData.metrics?.grossProfit || 0);
               const netProfit = grossProfit - expenses;
@@ -345,46 +467,45 @@ export default function Reports() {
               const netMargin = revenue > 0 ? ((netProfit / revenue) * 100).toFixed(1) : '0.0';
               return (
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <div className="app-panel-soft rounded-[1.25rem] border p-4">
-                    <p className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">Gross Margin</p>
+                  <div className="rounded-[1.1rem] border border-[var(--border-default)] bg-[var(--surface-secondary)] p-4">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Gross Margin</p>
                     <p className="mt-2 text-2xl font-bold text-[var(--text-primary)]">{grossMargin}%</p>
                     <p className="mt-1 text-xs text-[var(--text-muted)]">Revenue minus cost of goods sold</p>
                   </div>
-                  <div className="app-panel-soft rounded-[1.25rem] border p-4">
-                    <p className="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">Net Profit</p>
-                    <p className={`mt-2 text-2xl font-bold ${netProfit >= 0 ? 'text-[var(--text-primary)]' : 'text-red-500'}`}>{formatMoney(currency, netProfit)}</p>
+                  <div className="rounded-[1.1rem] border border-[var(--border-default)] bg-[var(--surface-secondary)] p-4">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Net Profit</p>
+                    <p className={`mt-2 text-2xl font-bold ${netProfit >= 0 ? 'text-[var(--success)]' : 'text-[var(--danger)]'}`}>{formatMoney(currency, netProfit)}</p>
                     <p className="mt-1 text-xs text-[var(--text-muted)]">Gross profit minus expenses · {netMargin}% margin</p>
                   </div>
                 </div>
               );
             })()}
 
-            {/* Sales table */}
             {rangeData.sales?.length > 0 && (
-              <div className="overflow-hidden rounded-[1.25rem] border border-[var(--border-default)]">
-                <div className="border-b border-[var(--border-default)] px-5 py-3">
-                  <p className="text-sm font-semibold text-[var(--text-primary)]">Sales in Range <span className="ml-1 text-xs text-[var(--text-muted)]">{rangeData.sales.length} transactions</span></p>
+              <div className="overflow-hidden rounded-[1.1rem] border border-[var(--border-default)]">
+                <div className="border-b border-[var(--border-default)] bg-[var(--surface-secondary)] px-4 py-2.5">
+                  <p className="text-[13px] font-semibold text-[var(--text-primary)]">Sales in range <span className="ml-1 text-xs font-normal text-[var(--text-muted)]">{rangeData.sales.length} transactions</span></p>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-[var(--border-default)] text-left">
                         {['ID', 'Date', 'Customer', 'Cashier', 'Payment', 'Total'].map((h) => (
-                          <th key={h} className="px-5 py-3 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">{h}</th>
+                          <th key={h} className="px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[var(--border-default)]">
                       {rangeData.sales.map((sale) => (
                         <tr key={sale.id} className="transition hover:bg-[var(--surface-secondary)]">
-                          <td className="px-5 py-3 text-xs text-[var(--text-muted)]">#{sale.id}</td>
-                          <td className="px-5 py-3 text-[var(--text-secondary)]">{new Date(sale.createdAt).toLocaleDateString()}</td>
-                          <td className="px-5 py-3 text-[var(--text-primary)]">{sale.customer?.name || 'Walk-in'}</td>
-                          <td className="px-5 py-3 text-[var(--text-secondary)]">{sale.cashier?.name || '—'}</td>
-                          <td className="px-5 py-3">
-                            <span className="inline-block rounded-lg bg-[var(--surface-secondary)] px-2 py-0.5 text-xs font-semibold text-[var(--text-secondary)]">{sale.paymentMethod}</span>
+                          <td className="px-4 py-2.5 font-mono text-xs text-[var(--text-muted)]">#{sale.id}</td>
+                          <td className="px-4 py-2.5 text-[var(--text-secondary)]">{new Date(sale.createdAt).toLocaleDateString()}</td>
+                          <td className="px-4 py-2.5 text-[var(--text-primary)]">{sale.customer?.name || 'Walk-in'}</td>
+                          <td className="px-4 py-2.5 text-[var(--text-secondary)]">{sale.cashier?.name || '—'}</td>
+                          <td className="px-4 py-2.5">
+                            <span className="inline-block rounded-full bg-[var(--surface-secondary)] px-2.5 py-0.5 text-[11px] font-semibold text-[var(--text-secondary)]">{sale.paymentMethod}</span>
                           </td>
-                          <td className="px-5 py-3 font-semibold text-[var(--text-primary)]">{formatMoney(currency, sale.total)}</td>
+                          <td className="px-4 py-2.5 font-semibold tabular-nums text-[var(--text-primary)]">{formatMoney(currency, sale.total)}</td>
                         </tr>
                       ))}
                     </tbody>
