@@ -32,9 +32,9 @@ function StatCard({ title, value, helper, tone = 'default', icon, eyebrow }) {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">{eyebrow || 'Overview'}</p>
-          <div className="mt-1.5 flex flex-wrap items-baseline gap-2">
+          <div className="mt-1.5">
             <p className="text-[13px] font-medium text-[var(--text-secondary)]">{title}</p>
-            <p className={`text-[1.55rem] font-bold tracking-tight leading-none whitespace-nowrap ${valueClass}`}>{value}</p>
+            <p className={`mt-0.5 text-[1.2rem] font-bold tracking-tight leading-tight break-words ${valueClass}`}>{value}</p>
           </div>
           <p className="mt-2 text-[12px] leading-4 text-[var(--text-muted)]">{helper}</p>
         </div>
@@ -430,7 +430,7 @@ export default function Dashboard() {
                       </div>
                       <div className="app-panel-soft rounded-[1rem] border p-3">
                         <p className="text-[12px] font-medium text-[var(--text-muted)]">Today's Revenue</p>
-                        <p className="mt-1.5 text-xl font-semibold text-[var(--success)]">{formatMoney(currency, todayRevenue)}</p>
+                        <p className="mt-1.5 text-[13px] font-bold leading-tight text-[var(--success)] break-words">{formatMoney(currency, todayRevenue)}</p>
                       </div>
                       <div className="app-panel-soft rounded-[1rem] border p-3">
                         <p className="text-[12px] font-medium text-[var(--text-muted)]">This Week Units</p>
