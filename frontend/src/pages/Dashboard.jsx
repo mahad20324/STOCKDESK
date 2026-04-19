@@ -34,7 +34,7 @@ function StatCard({ title, value, helper, tone = 'default', icon, eyebrow }) {
           <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">{eyebrow || 'Overview'}</p>
           <div className="mt-1.5">
             <p className="text-[13px] font-medium text-[var(--text-secondary)]">{title}</p>
-            <p className={`mt-0.5 text-[1.2rem] font-bold tracking-tight leading-tight break-words ${valueClass}`}>{value}</p>
+            <p className={`mt-0.5 text-[1.05rem] font-bold tracking-tight leading-tight whitespace-nowrap ${valueClass}`}>{value}</p>
           </div>
           <p className="mt-2 text-[12px] leading-4 text-[var(--text-muted)]">{helper}</p>
         </div>
