@@ -3,7 +3,7 @@ import { logout, updateToken } from '../utils/auth';
 import { refreshToken as refreshTokenAPI } from '../utils/api';
 
 const INACTIVITY_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes of inactivity = logout
-const TOKEN_REFRESH_INTERVAL_MS = 20 * 60 * 1000; // Refresh token every 20 minutes to keep session alive
+const TOKEN_REFRESH_INTERVAL_MS = 14 * 60 * 1000; // Refresh every 14 minutes
 const ACTIVITY_EVENTS = ['mousemove', 'keydown', 'click', 'scroll'];
 
 export default function useInactivityLogout(isAuthenticated) {
@@ -48,12 +48,10 @@ export default function useInactivityLogout(isAuthenticated) {
           updateToken(response.token, response.user);
         }
       } catch (error) {
-        console.warn('Token refresh failed:', error);
-        // If refresh fails, log out
-        logout({
-          message: 'Session expired. Please log in again.',
-          redirectTo: '/login',
-        });
+        // Silently ignore refresh failures — do NOT log out here.
+        // The user will only be logged out by the inactivity timer or
+        // an actual 401 from a protected API call.
+        console.warn('Token refresh skipped:', error?.message || error);
       }
     };
 
