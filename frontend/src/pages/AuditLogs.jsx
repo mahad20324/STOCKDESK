@@ -1,7 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import Header from '../components/Header';
-import Sidebar from '../components/Sidebar';
-import Layout from '../components/Layout';
 import { api } from '../utils/api';
 
 export default function AuditLogs() {
@@ -109,15 +106,7 @@ export default function AuditLogs() {
   };
 
   return (
-    <Layout>
-      <div className="flex flex-col h-screen bg-white dark:bg-gray-900">
-        <Header title="Audit Logs" />
-        
-        <div className="flex flex-1 overflow-hidden">
-          <Sidebar />
-          
-          <main className="flex-1 overflow-auto">
-            <div className="p-6">
+    <div className="p-6">
               {/* Stats Cards */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 {stats.map((stat) => (
@@ -287,10 +276,6 @@ export default function AuditLogs() {
                   </div>
                 </div>
               </div>
-            </div>
-          </main>
-        </div>
-      </div>
-    </Layout>
+    </div>
   );
 }

@@ -1,7 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import Header from '../components/Header';
-import Sidebar from '../components/Sidebar';
-import Layout from '../components/Layout';
 import { api } from '../utils/api';
 
 export default function StockReconciliation() {
@@ -151,17 +148,9 @@ export default function StockReconciliation() {
   };
 
   return (
-    <Layout>
-      <div className="flex flex-col h-screen bg-white dark:bg-gray-900">
-        <Header title="Stock Reconciliation" />
-        
-        <div className="flex flex-1 overflow-hidden">
-          <Sidebar />
-          
-          <main className="flex-1 overflow-auto">
-            <div className="p-6">
-              {/* View Toggle */}
-              <div className="flex gap-4 mb-6">
+    <div className="p-6">
+      {/* View Toggle */}
+      <div className="flex gap-4 mb-6">
                 <button
                   onClick={() => setView('reconcile')}
                   className={`px-6 py-2 rounded font-medium transition ${
@@ -458,7 +447,5 @@ export default function StockReconciliation() {
             </div>
           </main>
         </div>
-      </div>
-    </Layout>
   );
 }
