@@ -248,11 +248,16 @@ export default function StockReconciliation() {
         <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
           {/* Main form */}
           <section className="app-panel rounded-[1.4rem] border p-5 sm:p-6">
-            <div className="border-b border-[var(--border-default)] pb-4">
-              <h2 className="text-lg font-semibold tracking-tight text-[var(--text-primary)]">Record Stock Count</h2>
-              <p className="mt-1 text-sm text-[var(--text-muted)]">
-                Search for a product, enter the physical count you observed, and optionally note the reason for any variance.
-              </p>
+            <div className="flex items-start gap-4 border-b border-[var(--border-default)] pb-5">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.9rem] bg-[rgba(30,167,189,0.14)] text-[var(--accent)] ring-1 ring-[rgba(30,167,189,0.12)]">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path d="m3 7 9-4 9 4-9 4-9-4Z"/><path d="m3 7 9 4 9-4"/><path d="M12 11v10"/></svg>
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold tracking-tight text-[var(--text-primary)]">Record Stock Count</h2>
+                <p className="mt-0.5 text-sm text-[var(--text-muted)]">
+                  Select a product, enter the physical count you observed, and note the reason for any variance.
+                </p>
+              </div>
             </div>
 
             <form onSubmit={handleSubmit} className="mt-5 space-y-5">
@@ -260,62 +265,125 @@ export default function StockReconciliation() {
               <div>
                 <label className="mb-1.5 block text-[13px] font-medium text-[var(--text-secondary)]">Product</label>
                 {selectedProduct ? (
-                  <div className="flex items-start justify-between gap-3 rounded-[1.15rem] border border-[rgba(30,167,189,0.25)] bg-[rgba(30,167,189,0.06)] px-4 py-3.5">
-                    <div className="min-w-0">
-                      <p className="truncate font-semibold text-[var(--text-primary)]">{selectedProduct.name}</p>
-                      <p className="mt-0.5 text-xs text-[var(--text-muted)]">
-                        System quantity: <span className="font-semibold text-[var(--text-secondary)]">{selectedProduct.quantity}</span>
-                      </p>
+                  <div className="overflow-hidden rounded-[1.15rem] border border-[rgba(30,167,189,0.3)] bg-[rgba(30,167,189,0.05)]">
+                    <div className="flex items-start justify-between gap-3 px-4 py-4">
+                      <div className="flex items-start gap-3 min-w-0">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[0.8rem] bg-[rgba(30,167,189,0.15)] text-[var(--accent)]">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4.5 w-4.5"><path d="m3 7 9-4 9 4-9 4-9-4Z"/><path d="m3 7 9 4 9-4"/><path d="M12 11v10"/></svg>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="truncate font-semibold text-[var(--text-primary)]">{selectedProduct.name}</p>
+                          <div className="mt-1 flex flex-wrap items-center gap-2">
+                            {selectedProduct.category && (
+                              <span className="rounded-full bg-[var(--surface-secondary)] px-2 py-0.5 text-[10px] font-semibold text-[var(--text-muted)]">{selectedProduct.category}</span>
+                            )}
+                            <span className="text-xs text-[var(--text-muted)]">System qty: <strong className="font-bold text-[var(--text-secondary)]">{selectedProduct.quantity}</strong></span>
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => { setSelectedProduct(null); setPhysicalQuantity(''); }}
+                        className="shrink-0 rounded-full p-1.5 text-[var(--text-muted)] transition hover:bg-[rgba(218,106,90,0.12)] hover:text-[var(--danger)]"
+                        aria-label="Remove product"
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+                          <path d="M18 6 6 18M6 6l12 12" />
+                        </svg>
+                      </button>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => { setSelectedProduct(null); setPhysicalQuantity(''); }}
-                      className="shrink-0 rounded-full p-1 text-[var(--text-muted)] transition hover:text-[var(--danger)]"
-                      aria-label="Remove product"
-                    >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
-                        <path d="M18 6 6 18M6 6l12 12" />
-                      </svg>
-                    </button>
                   </div>
                 ) : (
-                  <div className="relative">
-                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-[var(--text-muted)]">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
-                        <circle cx="11" cy="11" r="7" /><path d="m21 21-4.35-4.35" />
-                      </svg>
+                  <div className="space-y-2">
+                    <div className="relative">
+                      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-[var(--text-muted)]">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
+                          <circle cx="11" cy="11" r="7" /><path d="m21 21-4.35-4.35" />
+                        </svg>
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Filter by product name…"
+                        value={searchQuery}
+                        onChange={handleSearch}
+                        className="app-input w-full rounded-[1.1rem] border py-2.5 pl-10 pr-4 text-sm"
+                      />
+                      {loading && !selectedProduct && (
+                        <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--accent)] border-t-transparent" />
+                        </div>
+                      )}
                     </div>
-                    <input
-                      type="text"
-                      placeholder="Search product by name…"
-                      value={searchQuery}
-                      onChange={handleSearch}
-                      className="app-input w-full rounded-[1.1rem] border py-2.5 pl-10 pr-4 text-sm"
-                    />
-                    {loading && !selectedProduct && searchQuery && (
-                      <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--accent)] border-t-transparent" />
+                    {products.length > 0 && (
+                      <div className="overflow-hidden rounded-[1.1rem] border border-[var(--border-default)]">
+                        <div className="border-b border-[var(--border-default)] bg-[var(--surface-secondary)] px-4 py-2 flex items-center justify-between">
+                          <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--text-muted)]">Select a product</span>
+                          <span className="text-[11px] font-semibold text-[var(--text-muted)]">{products.length} available</span>
+                        </div>
+                        <ul className="max-h-[17rem] overflow-y-auto divide-y divide-[var(--border-default)]">
+                          {products.map((product) => {
+                            const qty = Number(product.quantity || 0);
+                            const tone = qty === 0 ? 'danger' : qty <= 5 ? 'warning' : 'success';
+                            const badgeClass = {
+                              danger: 'bg-[rgba(218,106,90,0.14)] text-[var(--danger)]',
+                              warning: 'bg-[rgba(216,155,73,0.14)] text-[var(--warning)]',
+                              success: 'bg-[rgba(74,168,132,0.14)] text-[var(--success)]',
+                            }[tone];
+                            const dotClass = {
+                              danger: 'bg-[var(--danger)]',
+                              warning: 'bg-[var(--warning)]',
+                              success: 'bg-[var(--success)]',
+                            }[tone];
+                            return (
+                              <li key={product.id}>
+                                <button
+                                  type="button"
+                                  onClick={() => handleSelectProduct(product)}
+                                  className="group flex w-full items-center justify-between gap-4 px-4 py-3.5 text-left transition hover:bg-[var(--surface-secondary)]"
+                                >
+                                  <div className="flex min-w-0 items-center gap-3">
+                                    <span className={`mt-0.5 h-2 w-2 shrink-0 rounded-full ${dotClass}`} />
+                                    <div className="min-w-0">
+                                      <p className="truncate font-semibold text-[var(--text-primary)] transition group-hover:text-[var(--accent)]">
+                                        {product.name}
+                                      </p>
+                                      {product.category && (
+                                        <p className="mt-0.5 text-[11px] text-[var(--text-muted)]">{product.category}</p>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="flex shrink-0 items-center gap-2">
+                                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold ${badgeClass}`}>
+                                      {qty === 0 ? 'Out of stock' : `${qty} in stock`}
+                                    </span>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="h-3.5 w-3.5 text-[var(--text-muted)] opacity-0 transition group-hover:opacity-100">
+                                      <path d="M9 18l6-6-6-6" />
+                                    </svg>
+                                  </div>
+                                </button>
+                              </li>
+                            );
+                          })}
+                        </ul>
                       </div>
                     )}
-                    {products.length > 0 && (
-                      <ul className="absolute z-20 mt-1.5 max-h-60 w-full overflow-y-auto rounded-[1.1rem] border border-[var(--border-default)] bg-[var(--surface-primary)] shadow-xl">
-                        {products.map((product) => (
-                          <li key={product.id}>
-                            <button
-                              type="button"
-                              onClick={() => handleSelectProduct(product)}
-                              className="flex w-full items-center justify-between px-4 py-3 text-left transition hover:bg-[var(--surface-secondary)]"
-                            >
-                              <span className="font-medium text-[var(--text-primary)]">{product.name}</span>
-                              <span className="ml-4 shrink-0 text-xs text-[var(--text-muted)]">Qty {product.quantity}</span>
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
+                    {products.length === 0 && !loading && (
+                      <div className="flex flex-col items-center justify-center rounded-[1.1rem] border border-dashed border-[var(--border-default)] bg-[var(--surface-secondary)] px-4 py-8 text-center">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" className="mb-2 h-8 w-8 text-[var(--text-muted)]"><path d="m3 7 9-4 9 4-9 4-9-4Z"/><path d="m3 7 9 4 9-4"/><path d="M12 11v10"/></svg>
+                        <p className="text-sm font-medium text-[var(--text-primary)]">No products found</p>
+                        <p className="mt-1 text-xs text-[var(--text-muted)]">Try a different search term</p>
+                      </div>
                     )}
                   </div>
                 )}
               </div>
+
+              {!selectedProduct && products.length === 0 && loading && (
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <div className="h-8 w-8 animate-spin rounded-full border-[3px] border-[var(--border-default)] border-t-[var(--accent)]" />
+                  <p className="mt-3 text-sm text-[var(--text-muted)]">Loading products…</p>
+                </div>
+              )}
 
               {selectedProduct && (
                 <>
@@ -334,11 +402,26 @@ export default function StockReconciliation() {
                       placeholder="Enter actual quantity counted"
                     />
                     {variance !== null && (
-                      <div className="mt-2 flex items-center gap-2 text-sm text-[var(--text-muted)]">
-                        <span>Variance:</span>
-                        <VariancePill variance={variance} />
-                        <span className="text-xs">
-                          ({variance > 0 ? 'surplus' : variance < 0 ? 'shortage' : 'exact match'})
+                      <div className={`mt-2.5 flex items-center gap-3 rounded-[0.9rem] border px-3.5 py-2.5 text-sm ${
+                        variance === 0
+                          ? 'border-[rgba(30,167,189,0.2)] bg-[rgba(30,167,189,0.06)] text-[var(--accent)]'
+                          : variance > 0
+                          ? 'border-[rgba(74,168,132,0.2)] bg-[rgba(74,168,132,0.06)] text-[var(--success)]'
+                          : 'border-[rgba(218,106,90,0.2)] bg-[rgba(218,106,90,0.06)] text-[var(--danger)]'
+                      }`}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4 shrink-0">
+                          {variance === 0
+                            ? <path d="M20 6 9 17l-5-5" />
+                            : variance > 0
+                            ? <><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></>
+                            : <><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></>
+                          }
+                        </svg>
+                        <span className="font-semibold">
+                          Variance: {variance > 0 ? '+' : ''}{Number(variance).toFixed(2)}
+                        </span>
+                        <span className="text-xs opacity-75">
+                          ({variance > 0 ? 'surplus — more than system' : variance < 0 ? 'shortage — fewer than system' : 'exact match'})
                         </span>
                       </div>
                     )}
@@ -398,37 +481,63 @@ export default function StockReconciliation() {
           <aside className="space-y-4">
             <section className="app-panel rounded-[1.4rem] border p-5">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">Overview</p>
-              <div className="mt-4 space-y-4">
-                <div>
-                  <p className="text-[2rem] font-bold tracking-tight leading-none text-[var(--accent)]">
-                    {products.length > 0 ? products.length : '—'}
-                  </p>
-                  <p className="mt-1 text-sm text-[var(--text-muted)]">Products loaded</p>
+              <div className="mt-4 space-y-3">
+                <div className="flex items-center gap-3 rounded-[1rem] border border-[var(--border-default)] bg-[var(--surface-secondary)] p-3.5">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-[0.8rem] bg-[rgba(30,167,189,0.15)] text-[var(--accent)]">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4.5 w-4.5"><path d="m3 7 9-4 9 4-9 4-9-4Z"/><path d="m3 7 9 4 9-4"/><path d="M12 11v10"/></svg>
+                  </div>
+                  <div>
+                    <p className="text-[1.4rem] font-bold leading-none text-[var(--accent)]">
+                      {products.length > 0 ? products.length : '—'}
+                    </p>
+                    <p className="mt-0.5 text-[12px] text-[var(--text-muted)]">Products available</p>
+                  </div>
                 </div>
-                <div className="border-t border-[var(--border-default)] pt-4">
-                  <p className="text-[1.5rem] font-bold tracking-tight leading-none text-[var(--text-primary)]">
-                    {summary.reduce((sum, s) => sum + (s.reconciliationCount || 0), 0)}
-                  </p>
-                  <p className="mt-1 text-sm text-[var(--text-muted)]">Total reconciliations</p>
+                <div className="flex items-center gap-3 rounded-[1rem] border border-[var(--border-default)] bg-[var(--surface-secondary)] p-3.5">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-[0.8rem] bg-[rgba(74,168,132,0.15)] text-[var(--success)]">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4.5 w-4.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                  </div>
+                  <div>
+                    <p className="text-[1.4rem] font-bold leading-none text-[var(--text-primary)]">
+                      {summary.reduce((sum, s) => sum + (s.reconciliationCount || 0), 0)}
+                    </p>
+                    <p className="mt-0.5 text-[12px] text-[var(--text-muted)]">Total reconciliations</p>
+                  </div>
                 </div>
+                {summary.length > 0 && (
+                  <div className="flex items-center gap-3 rounded-[1rem] border border-[var(--border-default)] bg-[var(--surface-secondary)] p-3.5">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-[0.8rem] bg-[rgba(216,155,73,0.15)] text-[var(--warning)]">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4.5 w-4.5"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    </div>
+                    <div>
+                      <p className="text-[1.4rem] font-bold leading-none text-[var(--text-primary)]">
+                        {summary.filter((s) => parseFloat(s.totalVariance) < 0).length}
+                      </p>
+                      <p className="mt-0.5 text-[12px] text-[var(--text-muted)]">Products with shortages</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </section>
 
             <section className="app-panel rounded-[1.4rem] border p-5">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">How it works</p>
-              <ul className="mt-3 space-y-2.5 text-sm text-[var(--text-secondary)]">
+              <ul className="mt-4 space-y-3 text-sm">
                 {[
-                  'Search and select a product',
-                  'Enter the physical count you observed',
-                  'System calculates the variance',
-                  'Optionally note the reason',
-                  'Submit to update records',
+                  { label: 'Search and select a product', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3.5 w-3.5"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg> },
+                  { label: 'Enter the physical count you observed', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3.5 w-3.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> },
+                  { label: 'System calculates the variance', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3.5 w-3.5"><path d="M4 16l5-5 4 4 7-8"/></svg> },
+                  { label: 'Optionally note the reason', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3.5 w-3.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> },
+                  { label: 'Submit to update records', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3.5 w-3.5"><path d="M20 6 9 17l-5-5"/></svg> },
                 ].map((step, i) => (
-                  <li key={i} className="flex items-start gap-2.5">
-                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--surface-secondary)] text-[10px] font-bold text-[var(--text-muted)]">
+                  <li key={i} className="flex items-start gap-3">
+                    <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-[10px] font-bold text-white shadow-sm">
                       {i + 1}
                     </span>
-                    {step}
+                    <div className="flex items-center gap-2 text-[13px] text-[var(--text-secondary)]">
+                      <span className="text-[var(--text-muted)]">{step.icon}</span>
+                      {step.label}
+                    </div>
                   </li>
                 ))}
               </ul>

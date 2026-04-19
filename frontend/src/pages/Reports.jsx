@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { fetchReports, fetchBestSelling, fetchCashierReport, fetchDashboardSummary, fetchSettings, fetchRangeReport, fetchReturns } from '../utils/api';
+import { fetchReports, fetchBestSelling, fetchCashierReport, fetchDashboardSummary, fetchSettings, fetchRangeReport, fetchReturns, fetchSales, downloadReceipt } from '../utils/api';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, CartesianGrid, AreaChart, Area, LineChart, Line, Legend } from 'recharts';
 
 const PALETTE = ['#1ea7bd', '#4aa884', '#da6a5a', '#8e7cc3', '#e8a838', '#5b8def', '#e06fa0', '#5bceae'];
@@ -108,6 +108,11 @@ export default function Reports() {
   const [rangeEnd, setRangeEnd] = useState('');
   const [rangeData, setRangeData] = useState(null);
   const [rangeLoading, setRangeLoading] = useState(false);
+  const [allSales, setAllSales] = useState([]);
+  const [receiptsLoaded, setReceiptsLoaded] = useState(false);
+  const [receiptsLoading, setReceiptsLoading] = useState(false);
+  const [receiptSearch, setReceiptSearch] = useState('');
+  const [downloadingId, setDownloadingId] = useState(null);
 
   useEffect(() => {
     async function loadReports() {
@@ -181,6 +186,41 @@ export default function Reports() {
   const profitComparison = summary?.comparisons?.todayVsYesterday?.grossProfit;
 
   const totalRefunds = useMemo(() => returns.reduce((sum, r) => sum + Number(r.totalRefund || 0), 0), [returns]);
+
+  /* ---------- receipt archive ---------- */
+  const loadReceiptArchive = async () => {
+    if (receiptsLoaded) return;
+    setReceiptsLoading(true);
+    try {
+      const data = await fetchSales();
+      setAllSales(Array.isArray(data) ? data : []);
+      setReceiptsLoaded(true);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setReceiptsLoading(false);
+    }
+  };
+
+  const handleDownloadReceipt = async (saleId) => {
+    setDownloadingId(saleId);
+    try {
+      await downloadReceipt(saleId);
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
+  const filteredReceipts = useMemo(() => {
+    if (!receiptSearch.trim()) return allSales;
+    const q = receiptSearch.toLowerCase();
+    return allSales.filter((s) =>
+      String(s.id).includes(q) ||
+      (s.customer?.name || '').toLowerCase().includes(q) ||
+      (s.cashier?.name || '').toLowerCase().includes(q) ||
+      (s.paymentMethod || '').toLowerCase().includes(q)
+    );
+  }, [allSales, receiptSearch]);
 
   /* ---------- range report ---------- */
   const runRangeReport = async () => {
@@ -511,6 +551,122 @@ export default function Reports() {
                     </tbody>
                   </table>
                 </div>
+              </div>
+            )}
+          </div>
+        )}
+      </section>
+
+      {/* ---------- Receipt Archive ---------- */}
+      <section className="app-panel rounded-[1.4rem] border">
+        <div className="flex items-start justify-between gap-4 border-b border-[var(--border-default)] px-5 py-4">
+          <div>
+            <h3 className="text-[15px] font-semibold tracking-tight text-[var(--text-primary)]">Receipt Archive</h3>
+            <p className="mt-0.5 text-[13px] text-[var(--text-muted)]">Download a PDF receipt for any past sale. Click a row or use the download button.</p>
+          </div>
+          {!receiptsLoaded ? (
+            <button
+              type="button"
+              onClick={loadReceiptArchive}
+              disabled={receiptsLoading}
+              className="app-btn-primary flex shrink-0 items-center gap-2 rounded-[0.9rem] px-4 py-2 text-sm font-medium disabled:opacity-60"
+            >
+              {receiptsLoading ? (
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              ) : (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4"><path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0"/><path d="M12 8v4l3 3"/></svg>
+              )}
+              {receiptsLoading ? 'Loading…' : 'Load Sales'}
+            </button>
+          ) : (
+            <span className="shrink-0 rounded-full bg-[var(--surface-secondary)] px-3 py-1 text-[12px] font-semibold text-[var(--text-muted)]">
+              {filteredReceipts.length} of {allSales.length} sales
+            </span>
+          )}
+        </div>
+
+        {!receiptsLoaded && !receiptsLoading ? (
+          <div className="flex flex-col items-center justify-center px-4 py-14 text-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--surface-secondary)]">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-7 w-7 text-[var(--text-muted)]"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </div>
+            <p className="mt-3 font-semibold text-[var(--text-primary)]">Receipt archive not loaded</p>
+            <p className="mt-1 text-sm text-[var(--text-muted)]">Click "Load Sales" to browse all past transactions and download receipts.</p>
+          </div>
+        ) : receiptsLoading ? (
+          <div className="space-y-2 p-5">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="h-12 animate-pulse rounded-xl bg-[var(--surface-secondary)]" />
+            ))}
+          </div>
+        ) : (
+          <div className="p-5">
+            <div className="relative mb-4">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-[var(--text-muted)]">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
+              </div>
+              <input
+                type="text"
+                placeholder="Search by ID, customer, cashier or payment method…"
+                value={receiptSearch}
+                onChange={(e) => setReceiptSearch(e.target.value)}
+                className="app-input w-full rounded-[0.9rem] border py-2 pl-10 pr-4 text-sm"
+              />
+            </div>
+            {filteredReceipts.length === 0 ? (
+              <div className="py-8 text-center text-sm text-[var(--text-muted)]">No sales match your search.</div>
+            ) : (
+              <div className="overflow-x-auto rounded-[1.1rem] border border-[var(--border-default)]">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-[var(--border-default)] bg-[var(--surface-secondary)]">
+                      {['Receipt #', 'Date', 'Customer', 'Cashier', 'Payment', 'Total', ''].map((h, i) => (
+                        <th key={i} className={`px-4 py-2.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--text-muted)] ${i === 5 ? 'text-right' : 'text-left'}`}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--border-default)]">
+                    {filteredReceipts.slice(0, 100).map((sale) => (
+                      <tr key={sale.id} className="border-l-[3px] border-l-[var(--accent)] transition hover:bg-[var(--surface-secondary)]">
+                        <td className="px-4 py-3">
+                          <span className="font-mono text-xs font-semibold text-[var(--text-secondary)]">
+                            {sale.receipt?.receiptNumber || `SD-${String(sale.id).padStart(6, '0')}`}
+                          </span>
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3">
+                          <p className="text-xs text-[var(--text-secondary)]">{new Date(sale.createdAt).toLocaleDateString([], { dateStyle: 'medium' })}</p>
+                          <p className="text-[11px] text-[var(--text-muted)]">{new Date(sale.createdAt).toLocaleTimeString([], { timeStyle: 'short' })}</p>
+                        </td>
+                        <td className="px-4 py-3 font-medium text-[var(--text-primary)]">{sale.customer?.name || 'Walk-in'}</td>
+                        <td className="px-4 py-3 text-[var(--text-secondary)]">{sale.cashier?.name || '—'}</td>
+                        <td className="px-4 py-3">
+                          <span className="inline-flex items-center rounded-full bg-[var(--surface-secondary)] px-2.5 py-0.5 text-[11px] font-semibold text-[var(--text-muted)]">{sale.paymentMethod}</span>
+                        </td>
+                        <td className="px-4 py-3 text-right font-semibold tabular-nums text-[var(--text-primary)]">{formatMoney(currency, sale.total)}</td>
+                        <td className="px-4 py-3">
+                          <button
+                            type="button"
+                            onClick={() => handleDownloadReceipt(sale.id)}
+                            disabled={downloadingId === sale.id}
+                            className="app-btn-secondary flex items-center gap-1.5 rounded-[0.7rem] border px-3 py-1.5 text-xs font-medium transition hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:opacity-50"
+                          >
+                            {downloadingId === sale.id ? (
+                              <span className="h-3 w-3 animate-spin rounded-full border-2 border-[var(--accent)] border-t-transparent" />
+                            ) : (
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3.5 w-3.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            )}
+                            PDF
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {filteredReceipts.length > 100 && (
+                  <div className="border-t border-[var(--border-default)] bg-[var(--surface-secondary)] px-4 py-2.5 text-center text-xs text-[var(--text-muted)]">
+                    Showing first 100 of {filteredReceipts.length} results. Refine your search to find specific receipts.
+                  </div>
+                )}
               </div>
             )}
           </div>
