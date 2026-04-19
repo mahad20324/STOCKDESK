@@ -509,17 +509,6 @@ export default function Settings() {
                   className="app-input w-full rounded-lg border px-4 py-3 disabled:cursor-not-allowed"
                 />
               </label>
-              <label className="md:col-span-2 space-y-2 text-sm text-[var(--text-secondary)]">
-                Receipt Footer
-                <textarea
-                  value={settings.receiptFooter || ''}
-                  onChange={(e) => setSettings((prev) => ({ ...prev, receiptFooter: e.target.value }))}
-                  disabled={!isAdmin}
-                  placeholder="Thank you for shopping with us!"
-                  className="app-input w-full rounded-lg border px-4 py-3 disabled:cursor-not-allowed"
-                  rows="2"
-                />
-              </label>
               {isAdmin ? (
                 <div className="md:col-span-2 pt-2">
                   <button className="app-btn-primary rounded-lg px-5 py-3 text-sm font-medium transition">Save Settings</button>
