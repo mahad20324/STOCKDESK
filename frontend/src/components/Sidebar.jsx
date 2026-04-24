@@ -7,6 +7,7 @@ const links = [
   {
     to: '/app',
     label: 'Dashboard',
+    adminOnly: false,
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
         <path d="M4 13h7V4H4v9Z" />
@@ -19,6 +20,7 @@ const links = [
   {
     to: '/app/products',
     label: 'Products',
+    adminOnly: false,
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
         <path d="m3 7 9-4 9 4-9 4-9-4Z" />
@@ -31,6 +33,7 @@ const links = [
   {
     to: '/app/pos',
     label: 'Sales',
+    adminOnly: false,
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
         <path d="M4 5h16v14H4z" />
@@ -43,6 +46,7 @@ const links = [
   {
     to: '/app/customers',
     label: 'Customers',
+    adminOnly: false,
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
         <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" />
@@ -55,6 +59,7 @@ const links = [
   {
     to: '/app/returns',
     label: 'Returns',
+    adminOnly: false,
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
         <path d="M9 14l-4-4 4-4" />
@@ -65,6 +70,7 @@ const links = [
   {
     to: '/app/reports',
     label: 'Reports',
+    adminOnly: true,
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
         <path d="M4 19h16" />
@@ -77,6 +83,7 @@ const links = [
   {
     to: '/app/expenses',
     label: 'Expenses',
+    adminOnly: true,
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
@@ -87,6 +94,7 @@ const links = [
   {
     to: '/app/stock-reconciliation',
     label: 'Stock Reconciliation',
+    adminOnly: true,
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
         <path d="M9 3H5a2 2 0 0 0-2 2v4m0 0H3m2 0v2m0-6h10a2 2 0 0 1 2 2v4m0 0h2m-2 0v2m0 0v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5m0 0H3" />
@@ -97,6 +105,7 @@ const links = [
   {
     to: '/app/audit-logs',
     label: 'Audit Logs',
+    adminOnly: true,
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
@@ -107,6 +116,7 @@ const links = [
   {
     to: '/app/settings',
     label: 'Settings',
+    adminOnly: true,
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
         <path d="M12 8.5A3.5 3.5 0 1 0 12 15.5A3.5 3.5 0 1 0 12 8.5z" />
@@ -147,6 +157,7 @@ export default function Sidebar({ user: providedUser, isOpen = false, collapsed 
   const isSuperAdmin = user?.role === 'SuperAdmin';
   const shopName = isSuperAdmin ? 'Platform Console' : user?.shop?.name || 'Default Shop';
   const shopSlug = isSuperAdmin ? 'all-registered-shops' : user?.shop?.slug || 'legacy-shop';
+  const isStaff = user?.role === 'Staff';
   const visibleLinks = isSuperAdmin
     ? [
         {
@@ -155,6 +166,8 @@ export default function Sidebar({ user: providedUser, isOpen = false, collapsed 
           icon: <ShopsIcon />,
         },
       ]
+    : isStaff
+    ? links.filter((l) => !l.adminOnly)
     : links;
 
   return (

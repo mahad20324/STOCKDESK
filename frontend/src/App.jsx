@@ -28,6 +28,9 @@ function App() {
   });
   const currentUser = session.user;
   const isSuperAdmin = currentUser?.role === 'SuperAdmin';
+  const isStaff = currentUser?.role === 'Staff';
+  // Pages staff (cashiers) are NOT allowed to access
+  const staffBlocked = <Navigate to="/app" replace />;
 
   useInactivityLogout(session.isAuthenticated);
 
@@ -60,12 +63,12 @@ function App() {
         <Route path="products" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : <Products />} />
         <Route path="customers" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : <Customers />} />
         <Route path="pos" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : <POS />} />
-        <Route path="reports" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : <Reports />} />
-        <Route path="expenses" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : <Expenses />} />
-        <Route path="stock-reconciliation" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : <StockReconciliation />} />
+        <Route path="reports" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : isStaff ? staffBlocked : <Reports />} />
+        <Route path="expenses" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : isStaff ? staffBlocked : <Expenses />} />
+        <Route path="stock-reconciliation" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : isStaff ? staffBlocked : <StockReconciliation />} />
         <Route path="returns" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : <Returns />} />
-        <Route path="audit-logs" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : <AuditLogs />} />
-        <Route path="settings" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : <Settings />} />
+        <Route path="audit-logs" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : isStaff ? staffBlocked : <AuditLogs />} />
+        <Route path="settings" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : isStaff ? staffBlocked : <Settings />} />
         <Route path="users" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : <Users />} />
       </Route>
       <Route path="*" element={<Navigate to={session.isAuthenticated ? '/app' : '/login'} replace />} />
