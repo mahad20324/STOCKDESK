@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login, signup } from '../utils/api';
+import { login, signup, forgotPassword, resendVerification } from '../utils/api';
 import { consumeSessionNotice, saveSession } from '../utils/auth';
 import { useTheme } from '../components/ThemeProvider';
 import logo from '../assets/logo.png';
@@ -98,6 +98,15 @@ function KeyIcon() {
   );
 }
 
+function MailIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+      <path d="m2 7 10 7 10-7" />
+    </svg>
+  );
+}
+
 function AuthField({ label, type = 'text', value, onChange, placeholder, autoComplete, Icon }) {
   return (
     <div>
@@ -126,11 +135,13 @@ export default function Login() {
   const [loginForm, setLoginForm] = useState({ shopName: '', username: '', password: '' });
   const [signupForm, setSignupForm] = useState({
     shopName: '',
+    email: '',
     username: '',
     password: '',
     confirmPassword: '',
   });
-  const [createdCredentials, setCreatedCredentials] = useState(null);
+  const [pendingEmail, setPendingEmail] = useState('');
+  const [forgotEmail, setForgotEmail] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
@@ -145,12 +156,28 @@ export default function Login() {
           note: 'Use the exact shop name registered for your workspace.',
           action: loading ? 'Signing in...' : 'Enter Dashboard',
         }
-      : {
+      : mode === 'signup'
+      ? {
           eyebrow: 'Create Workspace',
           title: 'Launch a new shop',
-          description: 'Set up a new StockDesk workspace for your team and save the generated admin credentials carefully.',
-          note: 'The generated admin password is shown once after signup.',
+          description: 'Set up a new StockDesk workspace. A verification link will be sent to the admin email address.',
+          note: 'Check your inbox and click the link to activate your account before signing in.',
           action: loading ? 'Creating shop...' : 'Create Shop',
+        }
+      : mode === 'forgot'
+      ? {
+          eyebrow: 'Password Reset',
+          title: 'Forgot your password?',
+          description: "Enter the admin email address and we'll send you a reset link.",
+          note: '',
+          action: loading ? 'Sending...' : 'Send Reset Link',
+        }
+      : {
+          eyebrow: 'Check your inbox',
+          title: 'Verify your email',
+          description: '',
+          note: '',
+          action: '',
         };
 
   useEffect(() => {
@@ -172,6 +199,12 @@ export default function Login() {
       saveSession(data.token, data.user);
       navigate('/app');
     } catch (err) {
+      if (err.needsVerification) {
+        setPendingEmail(err.maskedEmail || '');
+        setMode('verify-pending');
+        setLoading(false);
+        return;
+      }
       setError(err.message || 'Login failed. Please try again.');
       setLoading(false);
     }
@@ -188,19 +221,42 @@ export default function Login() {
         throw new Error('Passwords do not match');
       }
       const data = await signup(signupForm);
-      setCreatedCredentials(data);
-      setSuccess(data.message || 'Shop created successfully.');
-      setSignupForm({
-        shopName: '',
-        username: '',
-        password: '',
-        confirmPassword: '',
-      });
+      setPendingEmail(data.email || '');
+      setSignupForm({ shopName: '', email: '', username: '', password: '', confirmPassword: '' });
+      setMode('verify-pending');
       setLoading(false);
     } catch (err) {
       setError(err.message || 'Sign up failed. Please try again.');
       setLoading(false);
     }
+  };
+
+  const handleForgotPassword = async (event) => {
+    event.preventDefault();
+    setError('');
+    setSuccess('');
+    setLoading(true);
+    try {
+      await forgotPassword({ email: forgotEmail });
+      setSuccess('If that email is registered, a reset link has been sent to your inbox.');
+      setForgotEmail('');
+    } catch (err) {
+      setError(err.message || 'Request failed. Please try again.');
+    }
+    setLoading(false);
+  };
+
+  const handleResendVerification = async () => {
+    setError('');
+    setSuccess('');
+    setLoading(true);
+    try {
+      await resendVerification({ email: pendingEmail });
+      setSuccess('A new verification link has been sent.');
+    } catch (err) {
+      setError(err.message || 'Failed to resend. Please try again.');
+    }
+    setLoading(false);
   };
 
   return (
@@ -309,38 +365,51 @@ export default function Login() {
             </div>
 
             <h2 className="mt-1 text-[1.9rem] font-bold tracking-tight text-[var(--text-primary)] sm:text-[2rem]">{panelCopy.title}</h2>
-            <p className="mt-2 max-w-lg text-sm leading-6 text-[var(--text-soft)] sm:text-[15px]">{panelCopy.description}</p>
+            {panelCopy.description ? (
+              <p className="mt-2 max-w-lg text-sm leading-6 text-[var(--text-soft)] sm:text-[15px]">{panelCopy.description}</p>
+            ) : null}
 
-            <div className="mt-4 grid grid-cols-2 rounded-[1.1rem] bg-[var(--surface-secondary)] p-1.5">
+            {mode === 'login' || mode === 'signup' ? (
+              <div className="mt-4 grid grid-cols-2 rounded-[1.1rem] bg-[var(--surface-secondary)] p-1.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode('login');
+                    setError('');
+                    setSuccess('');
+                  }}
+                  className={`inline-flex items-center justify-center rounded-[1rem] px-4 py-3 text-sm font-semibold leading-none transition ${
+                    mode === 'login' ? 'app-panel text-[var(--accent-strong)]' : 'text-[var(--text-muted)]'
+                  }`}
+                >
+                  Sign In
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode('signup');
+                    setError('');
+                    setSuccess('');
+                  }}
+                  className={`inline-flex items-center justify-center rounded-[1rem] px-4 py-3 text-sm font-semibold leading-none transition ${
+                    mode === 'signup' ? 'app-panel text-[var(--accent-strong)]' : 'text-[var(--text-muted)]'
+                  }`}
+                >
+                  Create Shop
+                </button>
+              </div>
+            ) : (
               <button
                 type="button"
-                onClick={() => {
-                  setMode('login');
-                  setError('');
-                  setSuccess('');
-                  setCreatedCredentials(null);
-                }}
-                className={`inline-flex items-center justify-center rounded-[1rem] px-4 py-3 text-sm font-semibold leading-none transition ${
-                  mode === 'login' ? 'app-panel text-[var(--accent-strong)]' : 'text-[var(--text-muted)]'
-                }`}
+                onClick={() => { setMode('login'); setError(''); setSuccess(''); }}
+                className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-[var(--accent-strong)] hover:underline"
               >
-                Sign In
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5">
+                  <path d="m15 18-6-6 6-6" />
+                </svg>
+                Back to Sign In
               </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setMode('signup');
-                  setError('');
-                  setSuccess('');
-                  setCreatedCredentials(null);
-                }}
-                className={`inline-flex items-center justify-center rounded-[1rem] px-4 py-3 text-sm font-semibold leading-none transition ${
-                  mode === 'signup' ? 'app-panel text-[var(--accent-strong)]' : 'text-[var(--text-muted)]'
-                }`}
-              >
-                Create Shop
-              </button>
-            </div>
+            )}
 
             <div className="app-panel-soft mt-4 rounded-[1.35rem] border p-4 sm:p-4.5">
               {mode === 'login' ? (
@@ -372,8 +441,17 @@ export default function Login() {
                     Icon={LockIcon}
                   />
 
-                  <div className="rounded-[1.1rem] border border-[var(--border-default)] bg-[var(--surface-primary)] px-4 py-2.5 text-sm text-[var(--text-muted)]">
-                    {panelCopy.note}
+                  <div className="flex items-center justify-between">
+                    <div className="rounded-[1.1rem] border border-[var(--border-default)] bg-[var(--surface-primary)] px-4 py-2.5 text-sm text-[var(--text-muted)] flex-1 mr-3">
+                      {panelCopy.note}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => { setMode('forgot'); setError(''); setSuccess(''); }}
+                      className="shrink-0 text-sm font-medium text-[var(--accent-strong)] hover:underline"
+                    >
+                      Forgot password?
+                    </button>
                   </div>
 
                   {error ? <div className="app-alert-danger rounded-[1.1rem] px-4 py-2.5 text-sm">{error}</div> : null}
@@ -389,43 +467,67 @@ export default function Login() {
                     {panelCopy.action}
                   </button>
                 </form>
-              ) : createdCredentials ? (
-                <div className="space-y-3.5">
-                  <div className="app-alert-success rounded-[1.1rem] px-4 py-2.5 text-sm">
-                    Shop created successfully. Save these credentials now. They are shown once.
-                  </div>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-[1.1rem] border border-[var(--border-default)] bg-[var(--surface-primary)] px-4 py-3.5">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">Shop Name</p>
-                      <p className="mt-2 text-sm font-semibold text-[var(--text-primary)] sm:text-base">{createdCredentials.shopName}</p>
+              ) : mode === 'verify-pending' ? (
+                <div className="space-y-4">
+                  <div className="flex flex-col items-center gap-3 py-2 text-center">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--surface-secondary)] text-[var(--accent-strong)]">
+                      <MailIcon />
                     </div>
-                    <div className="rounded-[1.1rem] border border-[var(--border-default)] bg-[var(--surface-primary)] px-4 py-3.5">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">Admin Username</p>
-                      <p className="mt-2 text-sm font-semibold text-[var(--text-primary)] sm:text-base">{createdCredentials.username}</p>
+                    <div>
+                      <p className="text-sm font-semibold text-[var(--text-primary)]">Check your inbox</p>
+                      {pendingEmail ? (
+                        <p className="mt-1 text-sm text-[var(--text-soft)]">
+                          We sent a verification link to <span className="font-medium text-[var(--text-primary)]">{pendingEmail}</span>
+                        </p>
+                      ) : (
+                        <p className="mt-1 text-sm text-[var(--text-soft)]">We sent a verification link to your email address.</p>
+                      )}
                     </div>
                   </div>
-                  <div className="rounded-[1.1rem] border border-[var(--border-default)] bg-[var(--surface-primary)] px-4 py-3.5">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">Password</p>
-                    <p className="mt-2 rounded-[1rem] bg-[var(--surface-secondary)] px-4 py-2.5 font-mono text-sm text-[var(--text-primary)]">
-                      {createdCredentials.password}
-                    </p>
+
+                  <div className="rounded-[1.1rem] border border-[var(--border-default)] bg-[var(--surface-primary)] px-4 py-3 text-[13px] text-[var(--text-muted)]">
+                    Click the link in the email to activate your account, then come back and sign in.
                   </div>
-                  <div className="app-alert-warning rounded-[1.1rem] px-4 py-2.5 text-sm">
-                    Save this password before leaving this screen. For security, StockDesk does not show stored passwords again.
-                  </div>
+
+                  {error ? <div className="app-alert-danger rounded-[1.1rem] px-4 py-2.5 text-sm">{error}</div> : null}
+                  {success ? <div className="app-alert-success rounded-[1.1rem] px-4 py-2.5 text-sm">{success}</div> : null}
+
                   <button
                     type="button"
-                    onClick={() => {
-                      setMode('login');
-                      setLoginForm({ shopName: createdCredentials.shopName, username: createdCredentials.username, password: '' });
-                      setCreatedCredentials(null);
-                      setSuccess('Shop created. Use the saved credentials to sign in.');
-                    }}
-                    className="app-btn-primary inline-flex w-full items-center justify-center rounded-[1.1rem] px-4 py-3 text-sm font-semibold leading-none text-white transition"
+                    disabled={loading}
+                    onClick={handleResendVerification}
+                    className={`inline-flex w-full items-center justify-center rounded-[1.1rem] border border-[var(--border-default)] bg-[var(--surface-primary)] px-4 py-2.5 text-sm font-medium text-[var(--text-primary)] transition hover:bg-[var(--surface-secondary)] ${
+                      loading ? 'cursor-not-allowed opacity-60' : ''
+                    }`}
                   >
-                    I Saved These Details
+                    {loading ? 'Sending...' : 'Resend verification email'}
                   </button>
                 </div>
+              ) : mode === 'forgot' ? (
+                <form className="space-y-3.5" onSubmit={handleForgotPassword}>
+                  <AuthField
+                    label="Admin Email Address"
+                    type="email"
+                    value={forgotEmail}
+                    onChange={(event) => setForgotEmail(event.target.value)}
+                    placeholder="Enter the admin email address"
+                    autoComplete="email"
+                    Icon={MailIcon}
+                  />
+
+                  {error ? <div className="app-alert-danger rounded-[1.1rem] px-4 py-2.5 text-sm">{error}</div> : null}
+                  {success ? <div className="app-alert-success rounded-[1.1rem] px-4 py-2.5 text-sm">{success}</div> : null}
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className={`inline-flex w-full items-center justify-center rounded-[1.1rem] px-4 py-3 text-sm font-semibold leading-none text-white transition ${
+                      loading ? 'cursor-not-allowed bg-gray-400' : 'app-btn-primary'
+                    }`}
+                  >
+                    {panelCopy.action}
+                  </button>
+                </form>
               ) : (
                 <form className="grid gap-3 md:grid-cols-2" onSubmit={handleSignup}>
                   <AuthField
@@ -435,6 +537,15 @@ export default function Login() {
                     placeholder="Choose a shop name"
                     autoComplete="organization"
                     Icon={ShopIcon}
+                  />
+                  <AuthField
+                    label="Admin Email"
+                    type="email"
+                    value={signupForm.email}
+                    onChange={(event) => setSignupForm((prev) => ({ ...prev, email: event.target.value }))}
+                    placeholder="Admin email address"
+                    autoComplete="email"
+                    Icon={MailIcon}
                   />
                   <AuthField
                     label="Admin Username"
@@ -452,14 +563,16 @@ export default function Login() {
                     autoComplete="new-password"
                     Icon={LockIcon}
                   />
-                  <AuthField
-                    label="Confirm Password"
-                    type="password"
-                    value={signupForm.confirmPassword}
-                    onChange={(event) => setSignupForm((prev) => ({ ...prev, confirmPassword: event.target.value }))}
-                    autoComplete="new-password"
-                    Icon={KeyIcon}
-                  />
+                  <div className="md:col-span-2">
+                    <AuthField
+                      label="Confirm Password"
+                      type="password"
+                      value={signupForm.confirmPassword}
+                      onChange={(event) => setSignupForm((prev) => ({ ...prev, confirmPassword: event.target.value }))}
+                      autoComplete="new-password"
+                      Icon={KeyIcon}
+                    />
+                  </div>
 
                   <div className="app-alert-warning md:col-span-2 rounded-[1.1rem] px-4 py-2.5 text-sm">
                     {panelCopy.note}

@@ -11,6 +11,8 @@ function setSessionNotice(message) {
   sessionStorage.setItem(SESSION_NOTICE_KEY, message);
 }
 
+export const saveSessionNotice = (message) => setSessionNotice(message);
+
 function parseTokenPayload(token) {
   try {
     const payload = token.split('.')[1];

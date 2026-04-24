@@ -78,6 +78,13 @@ async function request(path, options = {}) {
     throw new Error(sessionMessage);
   }
 
+  if (response.status === 403 && data?.needsVerification) {
+    const err = new Error(data.message);
+    err.needsVerification = true;
+    err.maskedEmail = data.email;
+    throw err;
+  }
+
   if (!response.ok) {
     throw new Error(data?.error || data?.message || 'Request failed');
   }
@@ -120,6 +127,10 @@ async function printerRequest(path, options = {}) {
 export const login = (body) => request('/auth/login', { method: 'POST', body: JSON.stringify(body) });
 export const signup = (body) => request('/auth/signup', { method: 'POST', body: JSON.stringify(body) });
 export const refreshToken = () => request('/auth/refresh', { method: 'POST' });
+export const verifyEmail = (body) => request('/auth/verify-email', { method: 'POST', body: JSON.stringify(body) });
+export const resendVerification = (body) => request('/auth/resend-verification', { method: 'POST', body: JSON.stringify(body) });
+export const forgotPassword = (body) => request('/auth/forgot-password', { method: 'POST', body: JSON.stringify(body) });
+export const resetPassword = (body) => request('/auth/reset-password', { method: 'POST', body: JSON.stringify(body) });
 export const fetchUsers = () => request('/users');
 export const createUser = (body) => request('/users', { method: 'POST', body: JSON.stringify(body) });
 export const resetUserPassword = (id, body) => request(`/users/${id}/reset-password`, { method: 'POST', body: JSON.stringify(body) });
