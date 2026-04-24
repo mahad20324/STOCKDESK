@@ -87,6 +87,26 @@ function LockIcon() {
   );
 }
 
+function EyeIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+function EyeOffIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+      <path d="m1 1 22 22" />
+      <path d="M10.73 10.73a3 3 0 0 0 4.1 4.1" />
+    </svg>
+  );
+}
+
 function KeyIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
@@ -108,6 +128,8 @@ function MailIcon() {
 }
 
 function AuthField({ label, type = 'text', value, onChange, placeholder, autoComplete, Icon }) {
+  const [showPw, setShowPw] = useState(false);
+  const inputType = type === 'password' ? (showPw ? 'text' : 'password') : type;
   return (
     <div>
       <label className="block text-[13px] font-medium text-[var(--text-secondary)]">{label}</label>
@@ -116,13 +138,23 @@ function AuthField({ label, type = 'text', value, onChange, placeholder, autoCom
           <Icon />
         </div>
         <input
-          type={type}
+          type={inputType}
           value={value}
           onChange={onChange}
           placeholder={placeholder}
           autoComplete={autoComplete}
-          className="app-input w-full rounded-[1.15rem] border py-2.5 pl-12 pr-4 text-sm shadow-sm"
+          className={`app-input w-full rounded-[1.15rem] border py-2.5 pl-12 text-sm shadow-sm ${type === 'password' ? 'pr-11' : 'pr-4'}`}
         />
+        {type === 'password' && (
+          <button
+            type="button"
+            onClick={() => setShowPw((v) => !v)}
+            className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition"
+            aria-label={showPw ? 'Hide password' : 'Show password'}
+          >
+            {showPw ? <EyeOffIcon /> : <EyeIcon />}
+          </button>
+        )}
       </div>
     </div>
   );
@@ -219,6 +251,10 @@ export default function Login() {
     try {
       if (signupForm.password !== signupForm.confirmPassword) {
         throw new Error('Passwords do not match');
+      }
+      const strongPw = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/;
+      if (!strongPw.test(signupForm.password)) {
+        throw new Error('Password must be at least 8 characters and include letters, numbers, and a special character.');
       }
       const data = await signup(signupForm);
       setPendingEmail(data.email || '');
@@ -424,10 +460,10 @@ export default function Login() {
                   />
 
                   <AuthField
-                    label="Username"
+                    label="Username or Email"
                     value={loginForm.username}
                     onChange={(event) => setLoginForm((prev) => ({ ...prev, username: event.target.value }))}
-                    placeholder="Enter admin or staff username"
+                    placeholder="Enter username or email address"
                     autoComplete="username"
                     Icon={UserIcon}
                   />

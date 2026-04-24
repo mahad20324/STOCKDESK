@@ -5,6 +5,26 @@ import { getUser } from '../utils/auth';
 const ROLE_OPTIONS = ['Admin', 'Manager', 'Cashier'];
 const initialForm = { name: '', username: '', password: '', displayRole: 'Cashier' };
 
+function EyeIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
+      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+function EyeOffIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+      <path d="m1 1 22 22" />
+      <path d="M10.73 10.73a3 3 0 0 0 4.1 4.1" />
+    </svg>
+  );
+}
+
 function StatCard({ label, value, helper, tone = 'default' }) {
   const valueClass = {
     default: 'text-[var(--text-primary)]',
@@ -37,6 +57,7 @@ export default function Users() {
   const [newUserName, setNewUserName] = useState('');
   const [newUserDisplayRole, setNewUserDisplayRole] = useState('');
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const currentUser = getUser();
   const adminCount = users.filter((user) => (user.displayRole || user.role) === 'Admin').length;
   const managerCount = users.filter((user) => (user.displayRole || user.role) === 'Manager').length;
@@ -57,6 +78,11 @@ export default function Users() {
 
   const handleCreate = async (event) => {
     event.preventDefault();
+    const strongPw = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/;
+    if (!strongPw.test(form.password)) {
+      setMessage('Password must be at least 8 characters and include letters, numbers, and a special character.');
+      return;
+    }
     try {
       const response = await createUser(form);
       setNewUserPassword(response.plainPassword);
@@ -181,12 +207,22 @@ export default function Users() {
               ))}
             </select>
             <label className="block text-sm text-[var(--text-secondary)]">Password</label>
-            <input
-              type="password"
-              value={form.password}
-              onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
-              className="app-input w-full rounded-3xl border px-4 py-3"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={form.password}
+                onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
+                className="app-input w-full rounded-3xl border px-4 py-3 pr-11"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute inset-y-0 right-0 flex items-center pr-4 text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+              </button>
+            </div>
             <button className="app-btn-primary w-full rounded-3xl px-4 py-3 transition">Create User</button>
           </form>
 

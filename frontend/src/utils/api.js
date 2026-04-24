@@ -137,6 +137,7 @@ export const resetUserPassword = (id, body) => request(`/users/${id}/reset-passw
 export const deleteUser = (id) => request(`/users/${id}`, { method: 'DELETE' });
 export const fetchPlatformOverview = () => request('/admin/overview');
 export const fetchPlatformShops = () => request('/admin/shops');
+export const deleteShop = (id) => request(`/admin/shops/${id}`, { method: 'DELETE' });
 export const fetchCustomers = (query = '') => request(`/customers${query}`);
 export const createCustomer = (body) => request('/customers', { method: 'POST', body: JSON.stringify(body) });
 export const updateCustomer = (id, body) => request(`/customers/${id}`, { method: 'PUT', body: JSON.stringify(body) });

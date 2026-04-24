@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { fetchPlatformOverview } from '../utils/api';
+import { fetchPlatformOverview, deleteShop } from '../utils/api';
 import { getUser } from '../utils/auth';
 
 function StatCard({ label, value, helper, eyebrow = 'Platform' }) {
@@ -45,6 +45,7 @@ export default function Shops() {
   const [overview, setOverview] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -97,8 +98,24 @@ export default function Shops() {
     return {
       adminAccounts,
       recentlyActiveShops,
+      liveShopRows: recentlyActiveShops,
     };
   }, [overview?.activityWindowHours, shops]);
+
+  const handleDeleteShop = async (shopId, shopName) => {
+    if (!window.confirm(`Permanently delete "${shopName}" and ALL its data? This cannot be undone.`)) return;
+    setDeletingId(shopId);
+    try {
+      await deleteShop(shopId);
+      setOverview((prev) =>
+        prev ? { ...prev, shops: prev.shops.filter((s) => s.id !== shopId) } : prev
+      );
+    } catch (err) {
+      setError(err.message || 'Failed to delete shop.');
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   if (currentUser?.role !== 'SuperAdmin') {
     return <Navigate to="/app" replace />;
@@ -283,6 +300,7 @@ export default function Shops() {
                   <th className="px-4 py-3 font-medium">Users</th>
                   <th className="px-4 py-3 font-medium">Activity</th>
                   <th className="px-4 py-3 font-medium">Created</th>
+                  <th className="px-4 py-3 font-medium">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--border-default)] bg-[var(--surface-primary)]">
@@ -326,6 +344,15 @@ export default function Shops() {
                       </div>
                     </td>
                     <td className="px-4 py-4 text-[var(--text-muted)]">{new Date(shop.createdAt).toLocaleDateString()}</td>
+                    <td className="px-4 py-4">
+                      <button
+                        onClick={() => handleDeleteShop(shop.id, shop.name)}
+                        disabled={deletingId === shop.id}
+                        className="app-btn-danger rounded-lg px-3 py-1.5 text-sm transition disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {deletingId === shop.id ? 'Deleting…' : 'Delete'}
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
