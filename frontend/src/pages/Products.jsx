@@ -38,7 +38,7 @@ export default function Products() {
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
   const [message, setMessage] = useState('');
-  const [currency, setCurrency] = useState('USD');
+  const [currency, setCurrency] = useState('UGX');
   const [loading, setLoading] = useState(true);
   const [restockmodal, setRestockModal] = useState(null); // product being restocked
   const [restockForm, setRestockForm] = useState({ quantity: '', costPrice: '', supplier: '', notes: '' });
@@ -54,7 +54,7 @@ export default function Products() {
     try {
       setLoading(true);
       const settings = await fetchSettings();
-      setCurrency(settings.currency || 'USD');
+      setCurrency(settings.currency || 'UGX');
       const data = await fetchProducts();
       setProducts(data);
     } catch (error) {

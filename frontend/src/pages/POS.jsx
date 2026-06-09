@@ -27,7 +27,7 @@ export default function POS() {
   const [cart, setCart] = useState([]);
   const [customerId, setCustomerId] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('Cash');
-  const [currency, setCurrency] = useState('USD');
+  const [currency, setCurrency] = useState('UGX');
   const [message, setMessage] = useState('');
   const [lastSaleId, setLastSaleId] = useState(null);
   const [lastSale, setLastSale] = useState(null);
@@ -62,7 +62,7 @@ export default function POS() {
     try {
       const settingsData = await fetchSettings();
       setSettingsState(settingsData);
-      setCurrency(settingsData.currency || 'USD');
+      setCurrency(settingsData.currency || 'UGX');
       setAutoPrint(false);
     } catch (error) {
       console.error('Error loading settings:', error);

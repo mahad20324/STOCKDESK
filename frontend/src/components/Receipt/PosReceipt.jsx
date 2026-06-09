@@ -48,7 +48,7 @@ export default function PosReceipt({ sale, settings, cashierName, onClose }) {
       total: parseFloat(sale.total),
       vat: Number(vatAmount),
       vatPercent: settings.vat || 0,
-      currency: sale.currency || settings.currency || 'USD',
+      currency: sale.currency || settings.currency || 'UGX',
     });
   }, [sale, settings]);
 

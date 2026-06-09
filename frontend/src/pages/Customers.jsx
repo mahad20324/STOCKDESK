@@ -42,7 +42,7 @@ export default function Customers() {
   const [loading, setLoading] = useState(true);
   const currentUser = getUser();
   const canDelete = currentUser?.role === 'Admin';
-  const [currency, setCurrency] = useState('USD');
+  const [currency, setCurrency] = useState('UGX');
   const [historyCustomer, setHistoryCustomer] = useState(null);
   const [historyData, setHistoryData] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -52,7 +52,7 @@ export default function Customers() {
 
   useEffect(() => {
     loadCustomers();
-    fetchSettings().then((s) => setCurrency(s?.currency || 'USD')).catch(() => {});
+    fetchSettings().then((s) => setCurrency(s?.currency || 'UGX')).catch(() => {});
   }, []);
 
   const filteredCustomers = useMemo(() => {

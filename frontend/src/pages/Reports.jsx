@@ -102,7 +102,7 @@ export default function Reports() {
   const [cashierReport, setCashierReport] = useState([]);
   const [summary, setSummary] = useState(null);
   const [returns, setReturns] = useState([]);
-  const [currency, setCurrency] = useState('USD');
+  const [currency, setCurrency] = useState('UGX');
   const [loading, setLoading] = useState(true);
   const [rangeStart, setRangeStart] = useState('');
   const [rangeEnd, setRangeEnd] = useState('');
@@ -131,7 +131,7 @@ export default function Reports() {
         setCashierReport(cashierData);
         setSummary(summaryData);
         setReturns(returnsData);
-        setCurrency(settings.currency || 'USD');
+        setCurrency(settings.currency || 'UGX');
       } catch (error) {
         console.error(error);
       } finally {

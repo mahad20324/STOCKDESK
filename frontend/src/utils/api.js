@@ -31,7 +31,7 @@ function buildPrinterPayloadFromSale(sale, settings) {
       discount: Number(sale.discount || 0),
       discountType: sale.discountType || 'fixed',
       total: Number(sale.total || 0),
-      currency: sale.currency || settings?.currency || 'USD',
+      currency: sale.currency || settings?.currency || 'UGX',
       paymentMethod: sale.paymentMethod || 'Cash',
       cashierName: sale.cashier?.name || 'Unknown',
     },

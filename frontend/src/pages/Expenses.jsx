@@ -9,7 +9,7 @@ const emptyForm = { id: null, category: CATEGORIES[0], description: '', amount: 
 export default function Expenses() {
   const currentUser = getUser();
   const isAdmin = currentUser?.role === 'Admin';
-  const [currency, setCurrency] = useState('USD');
+  const [currency, setCurrency] = useState('UGX');
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState(emptyForm);
@@ -30,7 +30,7 @@ export default function Expenses() {
   };
 
   useEffect(() => {
-    fetchSettings().then((s) => setCurrency(s?.currency || 'USD')).catch(() => {});
+    fetchSettings().then((s) => setCurrency(s?.currency || 'UGX')).catch(() => {});
     loadExpenses();
   }, []);
 

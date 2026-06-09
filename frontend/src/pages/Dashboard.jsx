@@ -92,7 +92,7 @@ export default function Dashboard() {
   const [sales, setSales] = useState([]);
   const [bestSelling, setBestSelling] = useState([]);
   const [summary, setSummary] = useState(null);
-  const [currency, setCurrency] = useState('USD');
+  const [currency, setCurrency] = useState('UGX');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -109,7 +109,7 @@ export default function Dashboard() {
         setSales(saleData);
         setBestSelling(bestSellingData);
         setSummary(summaryData);
-        setCurrency(settings.currency || 'USD');
+        setCurrency(settings.currency || 'UGX');
       } catch (error) {
         console.error(error);
       } finally {
