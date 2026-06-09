@@ -192,6 +192,7 @@ export const updateExpense = (id, body) => request(`/expenses/${id}`, { method: 
 export const deleteExpense = (id) => request(`/expenses/${id}`, { method: 'DELETE' });
 export const restockProduct = (id, body) => request(`/products/${id}/restock`, { method: 'POST', body: JSON.stringify(body) });
 export const fetchStockHistory = (id) => request(`/products/${id}/stock-history`);
+export const restockCategory = (body) => request('/products/restock-category', { method: 'POST', body: JSON.stringify(body) });
 export const fetchPrinterStatus = () => printerRequest('/printer/status');
 export const configurePrinter = (body) => printerRequest('/printer/configure', { method: 'POST', body: JSON.stringify(body) });
 export const testPrinter = () => printerRequest('/printer/test', { method: 'POST' });

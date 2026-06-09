@@ -35,6 +35,7 @@ export default function Products() {
   const isAdmin = getUser()?.role === 'Admin';
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
   const [message, setMessage] = useState('');
@@ -45,6 +46,9 @@ export default function Products() {
   const [restockMessage, setRestockMessage] = useState('');
   const [stockHistory, setStockHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [restockCategoryModal, setRestockCategoryModal] = useState(false);
+  const [restockCategoryForm, setRestockCategoryForm] = useState({ category: '', quantity: '', costPrice: '', supplier: '', notes: '' });
+  const [restockCategoryMessage, setRestockCategoryMessage] = useState('');
 
   useEffect(() => {
     loadData();
@@ -69,7 +73,9 @@ export default function Products() {
     const handle = setTimeout(async () => {
       try {
         setLoading(true);
-        const q = search ? `?search=${encodeURIComponent(search)}` : '';
+        let q = '';
+        if (search) q = `?search=${encodeURIComponent(search)}`;
+        if (categoryFilter) q += `${q ? '&' : '?'}category=${encodeURIComponent(categoryFilter)}`;
         const data = await fetchProducts(q);
         setProducts(data);
       } catch (err) {
@@ -80,7 +86,7 @@ export default function Products() {
     }, 350);
 
     return () => clearTimeout(handle);
-  }, [search]);
+  }, [search, categoryFilter]);
 
   const saveProduct = async (event) => {
     event.preventDefault();
@@ -149,6 +155,31 @@ export default function Products() {
       setStockHistory([]);
     } finally {
       setHistoryLoading(false);
+    }
+  };
+
+  const openRestockCategory = () => {
+    setRestockCategoryForm((prev) => ({ ...prev, category: categoryFilter || '' }));
+    setRestockCategoryMessage('');
+    setRestockCategoryModal(true);
+  };
+
+  const handleRestockCategory = async (e) => {
+    e.preventDefault();
+    try {
+      const body = {
+        category: restockCategoryForm.category || categoryFilter,
+        quantity: Number(restockCategoryForm.quantity),
+        costPrice: restockCategoryForm.costPrice || undefined,
+        supplier: restockCategoryForm.supplier || undefined,
+        notes: restockCategoryForm.notes || undefined,
+      };
+      const result = await restockCategory(body);
+      setRestockCategoryMessage(`Restocked ${result.updated} products in category.`);
+      setRestockCategoryModal(false);
+      await loadData();
+    } catch (err) {
+      setRestockCategoryMessage(err.message);
     }
   };
 
@@ -297,6 +328,13 @@ export default function Products() {
               <button className="app-btn-primary rounded-lg px-5 py-3 text-sm font-medium transition">
                 {editingId ? 'Update Product' : 'Add Product'}
               </button>
+              <button
+                type="button"
+                onClick={openRestockCategory}
+                className="app-btn-secondary rounded-lg border px-5 py-3 text-sm font-medium transition"
+              >
+                Restock Category
+              </button>
               {editingId ? (
                 <button
                   type="button"
@@ -321,6 +359,20 @@ export default function Products() {
             <p className="mt-1 text-sm text-[var(--text-muted)]">Current stock, pricing, and reorder thresholds.</p>
           </div>
           <div className="flex items-center gap-3">
+            <div>
+              <select
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="app-input rounded-xl border px-3 py-2 text-sm"
+              >
+                <option value="">All categories</option>
+                {uniqueCategories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div className="relative">
               <input
                 placeholder="Search products by name..."
@@ -480,6 +532,55 @@ export default function Products() {
                 </div>
               </div>
             ) : null}
+          </div>
+        </div>
+      )}
+
+      {/* Restock Category Modal */}
+      {restockCategoryModal && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4 sm:items-center" onClick={(e) => { if (e.target === e.currentTarget) setRestockCategoryModal(false); }}>
+          <div className="app-panel w-full max-w-lg rounded-[1.5rem] border p-6">
+            <div className="flex items-center justify-between border-b border-[var(--border-default)] pb-4">
+              <div>
+                <h3 className="text-lg font-semibold text-[var(--text-primary)]">Restock Category</h3>
+                <p className="mt-1 text-sm text-[var(--text-muted)]">Add stock to all products in a category.</p>
+              </div>
+              <button type="button" onClick={() => setRestockCategoryModal(false)} className="app-btn-subtle rounded-full p-2">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><path d="M6 6l12 12M18 6L6 18" /></svg>
+              </button>
+            </div>
+            {restockCategoryMessage && (
+              <div className={`mt-4 rounded-xl px-4 py-3 text-sm ${restockCategoryMessage.includes('Restocked') ? 'app-alert-success' : 'app-alert-danger'}`}>{restockCategoryMessage}</div>
+            )}
+            <form className="mt-4 grid gap-4 sm:grid-cols-2" onSubmit={handleRestockCategory}>
+              <label className="space-y-2 text-sm text-[var(--text-secondary)]">
+                Category *
+                <select required value={restockCategoryForm.category || categoryFilter} onChange={(e) => setRestockCategoryForm((prev) => ({ ...prev, category: e.target.value }))} className="app-input w-full rounded-lg border px-4 py-3">
+                  <option value="">Select category</option>
+                  {uniqueCategories.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
+                </select>
+              </label>
+              <label className="space-y-2 text-sm text-[var(--text-secondary)]">
+                Quantity to add *
+                <input required type="number" min="1" value={restockCategoryForm.quantity} onChange={(e) => setRestockCategoryForm((prev) => ({ ...prev, quantity: e.target.value }))} className="app-input w-full rounded-lg border px-4 py-3" />
+              </label>
+              <label className="space-y-2 text-sm text-[var(--text-secondary)]">
+                Cost price (optional)
+                <input type="number" step="0.01" min="0" value={restockCategoryForm.costPrice} onChange={(e) => setRestockCategoryForm((prev) => ({ ...prev, costPrice: e.target.value }))} className="app-input w-full rounded-lg border px-4 py-3" />
+              </label>
+              <label className="space-y-2 text-sm text-[var(--text-secondary)]">
+                Supplier
+                <input type="text" value={restockCategoryForm.supplier} onChange={(e) => setRestockCategoryForm((prev) => ({ ...prev, supplier: e.target.value }))} className="app-input w-full rounded-lg border px-4 py-3" />
+              </label>
+              <label className="space-y-2 text-sm text-[var(--text-secondary)] sm:col-span-2">
+                Notes
+                <input type="text" value={restockCategoryForm.notes} onChange={(e) => setRestockCategoryForm((prev) => ({ ...prev, notes: e.target.value }))} className="app-input w-full rounded-lg border px-4 py-3" />
+              </label>
+              <div className="sm:col-span-2 flex gap-3">
+                <button type="submit" className="app-btn-primary rounded-xl px-5 py-3 text-white transition">Restock Category</button>
+                <button type="button" onClick={() => setRestockCategoryModal(false)} className="app-btn-secondary rounded-xl border px-5 py-3 transition">Close</button>
+              </div>
+            </form>
           </div>
         </div>
       )}
