@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "sync": "node src/utils/syncDb.js"
+    "sync": "node src/utils/syncDb.js",
+    "migrate:fk-cascade": "node src/utils/alterFkCascade.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.0",
