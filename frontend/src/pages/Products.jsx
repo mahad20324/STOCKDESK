@@ -34,6 +34,7 @@ function StatTile({ label, value, tone = 'default', eyebrow = 'Inventory' }) {
 export default function Products() {
   const isAdmin = getUser()?.role === 'Admin';
   const [products, setProducts] = useState([]);
+  const [search, setSearch] = useState('');
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
   const [message, setMessage] = useState('');
@@ -62,6 +63,24 @@ export default function Products() {
       setLoading(false);
     }
   };
+
+  // Debounced search effect — calls server with ?search= when user types
+  useEffect(() => {
+    const handle = setTimeout(async () => {
+      try {
+        setLoading(true);
+        const q = search ? `?search=${encodeURIComponent(search)}` : '';
+        const data = await fetchProducts(q);
+        setProducts(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }, 350);
+
+    return () => clearTimeout(handle);
+  }, [search]);
 
   const saveProduct = async (event) => {
     event.preventDefault();
@@ -301,7 +320,27 @@ export default function Products() {
             <h3 className="text-lg font-semibold text-[var(--text-primary)]">Inventory List</h3>
             <p className="mt-1 text-sm text-[var(--text-muted)]">Current stock, pricing, and reorder thresholds.</p>
           </div>
-          <div className="app-panel-soft rounded-2xl border px-3 py-2 text-sm text-[var(--text-muted)]">{currency} pricing shown per item</div>
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <input
+                placeholder="Search products by name..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="app-input w-64 rounded-xl border px-4 py-2 text-sm"
+              />
+              {search ? (
+                <button
+                  type="button"
+                  onClick={() => setSearch('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                  aria-label="Clear search"
+                >
+                  ✕
+                </button>
+              ) : null}
+            </div>
+            <div className="app-panel-soft rounded-2xl border px-3 py-2 text-sm text-[var(--text-muted)]">{currency} pricing shown per item</div>
+          </div>
         </div>
 
         {loading ? (
