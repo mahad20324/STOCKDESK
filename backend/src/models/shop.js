@@ -24,6 +24,32 @@ Shop.init(
       allowNull: false,
       defaultValue: true,
     },
+    // WhatsApp settings per shop (optional)
+    whatsapp_enabled: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    whatsapp_provider: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: null,
+    },
+    whatsapp_sender_number: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: null,
+    },
+    whatsapp_sender_id: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: null,
+    },
+    whatsapp_opt_in_text: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      defaultValue: null,
+    },
   },
   {
     sequelize,

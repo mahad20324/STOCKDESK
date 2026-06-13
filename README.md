@@ -74,6 +74,40 @@ Create an empty GitHub repository, then connect and push:
 
 ```bash
 git remote add origin https://github.com/<your-user>/<your-repo>.git
+
+## WhatsApp receipts (Twilio + S3)
+
+This project supports sending receipts over WhatsApp using Twilio (server global credentials) and storing generated PDFs on S3 (or any public URL).
+
+Required environment variables (backend):
+
+- `TWILIO_ACCOUNT_SID` — Twilio Account SID
+- `TWILIO_AUTH_TOKEN` — Twilio Auth Token
+- `TWILIO_WHATSAPP_NUMBER` — Twilio-provisioned WhatsApp sender (e.g. whatsapp:+1415xxxxxxx)
+- `S3_BUCKET` — S3 bucket name for hosted PDFs (or set `MEDIA_BASE_URL` to a public host)
+- `S3_REGION` — S3 region (required if `S3_BUCKET` set)
+- `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` — AWS credentials for S3
+- Optional: `MEDIA_BASE_URL` — public base URL to use instead of S3-generated URL
+
+Quick setup steps:
+
+1. Create a Twilio account and enable the WhatsApp sandbox or request WhatsApp access. Copy `Account SID`, `Auth Token`, and the WhatsApp-enabled Twilio number.
+2. Create an S3 bucket, make objects public (or use a presigned URL flow), and note `S3_BUCKET` and `S3_REGION`. Set AWS credentials in the environment.
+3. Install backend deps and run the DB migration to add WhatsApp columns:
+
+```bash
+cd backend
+npm install
+node scripts/add-whatsapp-columns.js
+```
+
+4. Start the backend and frontend. In the app Settings (Admin), save the shop WhatsApp sender number and click "Verify & Enable" to send a test message to the configured shop phone.
+5. From the POS receipt, click "Send via WhatsApp" and enter the customer's phone number.
+
+Notes:
+- The migration script uses `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` and is safe to run multiple times. For production, prefer a proper migration tool.
+- Messages sent to customers may require WhatsApp template approval depending on your Twilio/Meta configuration.
+- Monitor Twilio usage and message costs.
 git push -u origin main
 ```
 

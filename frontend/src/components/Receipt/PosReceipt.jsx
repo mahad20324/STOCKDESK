@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { sendWhatsappReceipt } from '../../utils/api';
 
 /**
  * POS Receipt Component
@@ -27,6 +28,9 @@ function formatMoney(currency, value) {
 
 export default function PosReceipt({ sale, settings, cashierName, onClose }) {
   const [receiptData, setReceiptData] = useState(null);
+  const [showWhatsappModal, setShowWhatsappModal] = useState(false);
+  const [whatsappPhone, setWhatsappPhone] = useState('');
+  const [sendingWhatsapp, setSendingWhatsapp] = useState(false);
   const shopName = settings?.shop?.name || settings?.shopName || 'StockDesk';
   const shopSlug = settings?.shop?.slug || `shop-${settings?.shopId || 'legacy'}`;
 
@@ -414,12 +418,43 @@ export default function PosReceipt({ sale, settings, cashierName, onClose }) {
             Close
           </button>
           <button
+            onClick={() => setShowWhatsappModal(true)}
+            className="rounded-2xl bg-green-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-green-700"
+          >
+            Send via WhatsApp
+          </button>
+          <button
             onClick={handlePrint}
             className="rounded-2xl bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
           >
             Print Receipt
           </button>
         </div>
+
+        {showWhatsappModal && (
+          <div className="fixed inset-0 z-60 flex items-center justify-center p-4" style={{ background: 'var(--overlay)' }}>
+            <div className="w-full max-w-md rounded-2xl border bg-white p-6">
+              <h3 className="text-lg font-bold">Send receipt via WhatsApp</h3>
+              <p className="mt-2 text-sm text-slate-500">Enter the customer's phone number (E.164 format)</p>
+              <input value={whatsappPhone} onChange={(e) => setWhatsappPhone(e.target.value)} placeholder="+15551234567" className="mt-4 w-full rounded-lg border px-4 py-3" />
+              <div className="mt-4 flex gap-2 justify-end">
+                <button onClick={() => setShowWhatsappModal(false)} className="app-btn-subtle rounded-lg px-4 py-2">Cancel</button>
+                <button onClick={async () => {
+                  try {
+                    setSendingWhatsapp(true);
+                    await sendWhatsappReceipt(sale.id, whatsappPhone);
+                    setSendingWhatsapp(false);
+                    setShowWhatsappModal(false);
+                    alert('Receipt sent via WhatsApp');
+                  } catch (err) {
+                    setSendingWhatsapp(false);
+                    alert('Failed to send: ' + (err.message || err));
+                  }
+                }} disabled={sendingWhatsapp} className="app-btn-primary rounded-lg px-4 py-2">{sendingWhatsapp ? 'Sending…' : 'Send'}</button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Print Styles */}
         <style>{`

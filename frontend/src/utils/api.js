@@ -173,6 +173,9 @@ export const updateProduct = (id, body) => request(`/products/${id}`, { method: 
 export const deleteProduct = (id) => request(`/products/${id}`, { method: 'DELETE' });
 export const fetchSettings = () => request('/settings');
 export const saveSettings = (body) => request('/settings', { method: 'PUT', body: JSON.stringify(body) });
+export const fetchMyShop = () => request('/shops/me');
+export const updateMyShop = (body) => request('/shops/me', { method: 'PUT', body: JSON.stringify(body) });
+export const verifyMyShopWhatsapp = (body) => request('/shops/me/whatsapp/verify', { method: 'POST', body: JSON.stringify(body) });
 export const fetchReports = () => request('/reports/daily');
 export const fetchSales = () => request('/sales');
 export const fetchSale = (id) => request(`/sales/${id}`);
@@ -210,6 +213,8 @@ export const printReceiptToPrinter = async (saleId) => {
     body: JSON.stringify(payload),
   });
 };
+
+export const sendWhatsappReceipt = (saleId, to) => printerRequest('/printer/send-whatsapp', { method: 'POST', body: JSON.stringify({ saleId, to }) });
 
 // Generic api object for pages that need flexible GET/POST calls
 export const api = {

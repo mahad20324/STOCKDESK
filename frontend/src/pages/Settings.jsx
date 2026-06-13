@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { closeBusinessDay, configurePrinter, disconnectPrinter, fetchDayClosures, fetchPrinterStatus, fetchSettings, fetchUsers, resetUserPassword, saveSettings, testPrinter } from '../utils/api';
+import { closeBusinessDay, configurePrinter, disconnectPrinter, fetchDayClosures, fetchPrinterStatus, fetchSettings, fetchUsers, resetUserPassword, saveSettings, testPrinter, fetchMyShop, updateMyShop, verifyMyShopWhatsapp } from '../utils/api';
 import { getUser } from '../utils/auth';
 import ThemeToggleButton from '../components/ThemeToggleButton';
 
@@ -204,6 +204,10 @@ export default function Settings() {
   const [revealedCredentials, setRevealedCredentials] = useState(null);
   const [printerStatus, setPrinterStatus] = useState('Not connected');
   const [testingPrinter, setTestingPrinter] = useState(false);
+  const [shopInfo, setShopInfo] = useState(null);
+  const [whatsappStatus, setWhatsappStatus] = useState('');
+  const [whatsappSender, setWhatsappSender] = useState('');
+  const [verifyingWhatsapp, setVerifyingWhatsapp] = useState(false);
   const [closingDay, setClosingDay] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -213,6 +217,13 @@ export default function Settings() {
         setLoading(true);
         const data = await fetchSettings();
         setSettings(data);
+        if (isAdmin) {
+          try {
+            const s = await fetchMyShop();
+            setShopInfo(s);
+            setWhatsappSender(s.whatsapp_sender_number || '');
+          } catch (e) {}
+        }
       } finally {
         setLoading(false);
       }
@@ -296,6 +307,35 @@ export default function Settings() {
       setStatus('Settings saved successfully.');
     } catch (error) {
       setStatus(error.message);
+    }
+  };
+
+  const handleSaveWhatsapp = async () => {
+    try {
+      setWhatsappStatus('Saving...');
+      const body = { whatsapp_sender_number: whatsappSender };
+      const resp = await updateMyShop(body);
+      setShopInfo(resp.shop);
+      setWhatsappStatus('Saved. Verify to enable sending.');
+    } catch (err) {
+      setWhatsappStatus(err.message || 'Failed to save');
+    }
+  };
+
+  const handleVerifyWhatsapp = async () => {
+    if (!whatsappSender) return setWhatsappStatus('Enter sender number');
+    const adminPhone = settings.phone || '';
+    if (!adminPhone) return setWhatsappStatus('Set shop phone first');
+    try {
+      setVerifyingWhatsapp(true);
+      setWhatsappStatus('Sending verification...');
+      const resp = await verifyMyShopWhatsapp({ senderNumber: whatsappSender, adminPhone });
+      setWhatsappStatus('Verification sent — WhatsApp enabled');
+      setShopInfo((prev) => ({ ...(prev || {}), whatsapp_enabled: true, whatsapp_sender_number: whatsappSender }));
+    } catch (err) {
+      setWhatsappStatus(err.message || 'Verification failed');
+    } finally {
+      setVerifyingWhatsapp(false);
     }
   };
 
@@ -515,6 +555,28 @@ export default function Settings() {
                 </div>
               ) : null}
             </form>
+
+            {isAdmin ? (
+              <div className="mt-6">
+                <h4 className="text-base font-semibold text-[var(--text-primary)]">WhatsApp Sending</h4>
+                <p className="mt-1 text-sm text-[var(--text-muted)]">Configure a WhatsApp sender number for sending receipts.</p>
+
+                <div className="mt-4 grid gap-3 md:grid-cols-2">
+                  <input
+                    value={whatsappSender}
+                    onChange={(e) => setWhatsappSender(e.target.value)}
+                    placeholder="E.164 format e.g. +15551234567"
+                    className="app-input w-full rounded-lg border px-4 py-3"
+                  />
+                  <div className="flex gap-2">
+                    <button type="button" onClick={handleSaveWhatsapp} className="app-btn-secondary rounded-lg px-4 py-3">Save</button>
+                    <button type="button" onClick={handleVerifyWhatsapp} disabled={verifyingWhatsapp} className="app-btn-primary rounded-lg px-4 py-3">{verifyingWhatsapp ? 'Verifying…' : 'Verify & Enable'}</button>
+                  </div>
+                </div>
+
+                {whatsappStatus ? <div className={`mt-3 rounded-xl px-4 py-3 text-sm ${statusClasses(whatsappStatus)}`}>{whatsappStatus}</div> : null}
+              </div>
+            ) : null}
           </SectionCard>
 
           {isAdmin ? (
