@@ -3,7 +3,14 @@ const nodemailer = require('nodemailer');
 // ── Provider selection ────────────────────────────────────────────────────────
 
 function getProvider() {
-  return process.env.BREVO_API_KEY ? 'brevo' : 'smtp';
+  if (process.env.BREVO_API_KEY) {
+    return 'brevo';
+  }
+  const hasSmtp = process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASSWORD && process.env.SMTP_FROM_EMAIL;
+  if (hasSmtp) {
+    return 'smtp';
+  }
+  throw new Error('No email provider is configured. Set BREVO_API_KEY or SMTP_HOST/SMTP_USER/SMTP_PASSWORD/SMTP_FROM_EMAIL.');
 }
 
 // ── URL helpers ───────────────────────────────────────────────────────────────
@@ -23,13 +30,22 @@ function buildResetUrl(token) {
 // ── SMTP transport ────────────────────────────────────────────────────────────
 
 function createSmtpTransporter() {
+  const host = process.env.SMTP_HOST;
+  const port = parseInt(process.env.SMTP_PORT || '587', 10);
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASSWORD;
+
+  if (!host || !user || !pass) {
+    throw new Error('SMTP is not fully configured. Please set SMTP_HOST, SMTP_USER, and SMTP_PASSWORD.');
+  }
+
   return nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT || '587', 10),
+    host,
+    port,
     secure: process.env.SMTP_SECURE === 'true',
     auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASSWORD,
+      user,
+      pass,
     },
   });
 }
@@ -37,6 +53,11 @@ function createSmtpTransporter() {
 async function sendViaSmtp({ to, subject, html, text }) {
   const fromName = process.env.SMTP_FROM_NAME || 'StockDesk';
   const fromEmail = process.env.SMTP_FROM_EMAIL;
+
+  if (!fromEmail) {
+    throw new Error('SMTP_FROM_EMAIL is required for SMTP email delivery.');
+  }
+
   const transporter = createSmtpTransporter();
   await transporter.sendMail({
     from: `"${fromName}" <${fromEmail}>`,
@@ -53,6 +74,13 @@ async function sendViaBrevo({ to, subject, html, text }) {
   const apiKey = process.env.BREVO_API_KEY;
   const fromName = process.env.SMTP_FROM_NAME || 'StockDesk';
   const fromEmail = process.env.SMTP_FROM_EMAIL;
+
+  if (!apiKey) {
+    throw new Error('BREVO_API_KEY is required for Brevo email delivery.');
+  }
+  if (!fromEmail) {
+    throw new Error('SMTP_FROM_EMAIL is required for Brevo email delivery.');
+  }
 
   const response = await fetch('https://api.brevo.com/v3/smtp/email', {
     method: 'POST',
@@ -85,8 +113,10 @@ async function sendEmail(payload) {
   console.log(`[emailService] Sending via ${provider} to ${payload.to}`);
   if (provider === 'brevo') {
     await sendViaBrevo(payload);
-  } else {
+  } else if (provider === 'smtp') {
     await sendViaSmtp(payload);
+  } else {
+    throw new Error(`Unsupported email provider: ${provider}`);
   }
 }
 
