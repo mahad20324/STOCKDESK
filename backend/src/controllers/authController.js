@@ -224,7 +224,11 @@ exports.signup = async (req, res, next) => {
       });
     } catch (emailError) {
       console.error('Failed to send verification email:', emailError.message);
-      // User was created; they can request a resend later
+      return res.status(502).json({
+        message: 'Account created, but we could not send the verification email. Please try resending the email or contact support.',
+        email: normalizedEmail,
+        shopName: shop.name,
+      });
     }
 
     res.status(201).json({
@@ -277,7 +281,14 @@ exports.resendVerification = async (req, res, next) => {
 
     const verificationToken = crypto.randomBytes(32).toString('hex');
     await user.update({ verificationToken });
-    await sendVerificationEmail(normalizedEmail, verificationToken);
+    try {
+      await sendVerificationEmail(normalizedEmail, verificationToken);
+    } catch (emailError) {
+      console.error('Failed to resend verification email:', emailError.message);
+      return res.status(502).json({
+        message: 'Unable to send the verification email right now. Please try again later.',
+      });
+    }
 
     res.json({ message: 'A new verification link has been sent to your email address.' });
   } catch (error) {
