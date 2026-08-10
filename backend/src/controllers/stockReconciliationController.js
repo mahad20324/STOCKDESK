@@ -1,5 +1,5 @@
 const { StockReconciliation, Product, User } = require('../models');
-const { auditController } = require('./index');
+const auditController = require('./auditController');
 const { Op } = require('sequelize');
 
 // Create stock reconciliation record
