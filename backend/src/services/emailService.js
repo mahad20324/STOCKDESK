@@ -1,5 +1,20 @@
 const nodemailer = require('nodemailer');
 
+// Ensure `fetch` is available (Node 18+). Fallback to `node-fetch` when running on older Node.
+let fetchFn = global.fetch;
+if (!fetchFn) {
+  try {
+    // node-fetch v3 is ESM; when required from CommonJS it may be the default export.
+    // Guard with (module.default || module) to handle both shapes.
+    // eslint-disable-next-line global-require
+    const nodeFetch = require('node-fetch');
+    fetchFn = nodeFetch.default || nodeFetch;
+  } catch (err) {
+    // leave fetchFn undefined; we'll surface a helpful error if it's needed at runtime
+    fetchFn = undefined;
+  }
+}
+
 // ── Provider selection ────────────────────────────────────────────────────────
 
 function getProvider() {
@@ -82,7 +97,11 @@ async function sendViaResend({ to, subject, html, text }) {
     throw new Error('SMTP_FROM_EMAIL is required for Resend email delivery.');
   }
 
-  const response = await fetch('https://api.resend.com/emails', {
+  if (!fetchFn) {
+    throw new Error('Global `fetch` is not available. Use Node 18+ or install `node-fetch`.');
+  }
+
+  const response = await fetchFn('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
