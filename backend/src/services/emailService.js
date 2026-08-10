@@ -3,14 +3,14 @@ const nodemailer = require('nodemailer');
 // ── Provider selection ────────────────────────────────────────────────────────
 
 function getProvider() {
-  if (process.env.BREVO_API_KEY) {
-    return 'brevo';
+  if (process.env.RESEND_API_KEY) {
+    return 'resend';
   }
   const hasSmtp = process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASSWORD && process.env.SMTP_FROM_EMAIL;
   if (hasSmtp) {
     return 'smtp';
   }
-  throw new Error('No email provider is configured. Set BREVO_API_KEY or SMTP_HOST/SMTP_USER/SMTP_PASSWORD/SMTP_FROM_EMAIL.');
+  throw new Error('No email provider is configured. Set RESEND_API_KEY or SMTP_HOST/SMTP_USER/SMTP_PASSWORD/SMTP_FROM_EMAIL.');
 }
 
 // ── URL helpers ───────────────────────────────────────────────────────────────
@@ -70,49 +70,47 @@ async function sendViaSmtp({ to, subject, html, text }) {
 
 // ── Brevo API transport ───────────────────────────────────────────────────────
 
-async function sendViaBrevo({ to, subject, html, text }) {
-  const apiKey = process.env.BREVO_API_KEY;
+async function sendViaResend({ to, subject, html, text }) {
+  const apiKey = process.env.RESEND_API_KEY;
   const fromName = process.env.SMTP_FROM_NAME || 'StockDesk';
   const fromEmail = process.env.SMTP_FROM_EMAIL;
 
   if (!apiKey) {
-    throw new Error('BREVO_API_KEY is required for Brevo email delivery.');
+    throw new Error('RESEND_API_KEY is required for Resend email delivery.');
   }
   if (!fromEmail) {
-    throw new Error('SMTP_FROM_EMAIL is required for Brevo email delivery.');
+    throw new Error('SMTP_FROM_EMAIL is required for Resend email delivery.');
   }
 
-  const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+  const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
-      'api-key': apiKey,
+      Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      sender: { name: fromName, email: fromEmail },
-      to: [{ email: to }],
+      from: `${fromName} <${fromEmail}>`,
+      to: [to],
       subject,
-      htmlContent: html,
-      ...(text ? { textContent: text } : {}),
+      html,
+      ...(text ? { text } : {}),
     }),
   });
 
   if (!response.ok) {
     const body = await response.text();
-    const err = new Error(`Brevo API error ${response.status}: ${body}`);
+    const err = new Error(`Resend API error ${response.status}: ${body}`);
     err.status = 502;
     throw err;
   }
 }
 
-// ── Dispatch ──────────────────────────────────────────────────────────────────
-
 async function sendEmail(payload) {
   const provider = getProvider();
   console.log(`[emailService] Sending via ${provider} to ${payload.to}`);
-  if (provider === 'brevo') {
-    await sendViaBrevo(payload);
+  if (provider === 'resend') {
+    await sendViaResend(payload);
   } else if (provider === 'smtp') {
     await sendViaSmtp(payload);
   } else {

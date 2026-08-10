@@ -145,9 +145,9 @@ Recommended email configuration on Railway:
 
 - `SMTP_FROM_EMAIL=<your verified sender email>`
 - `SMTP_FROM_NAME=StockDesk`
-- `BREVO_API_KEY=<your Brevo API key>`
+- `RESEND_API_KEY=<your Resend API key>`
 
-If `BREVO_API_KEY` is present, the backend sends verification emails through Brevo's HTTP API instead of SMTP. This is recommended on Railway if SMTP connections time out.
+If `RESEND_API_KEY` is present, the backend sends verification emails through Resend's HTTP API instead of SMTP. If `RESEND_API_KEY` is absent but `BREVO_API_KEY` is present, it will fall back to Brevo. This is recommended on Railway if SMTP connections time out.
 
 Optional for temporary hosting with existing profiles only:
 
