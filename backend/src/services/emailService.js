@@ -68,7 +68,7 @@ async function sendViaSmtp({ to, subject, html, text }) {
   });
 }
 
-// ── Brevo API transport ───────────────────────────────────────────────────────
+// ── Resend API transport ───────────────────────────────────────────────────────
 
 async function sendViaResend({ to, subject, html, text }) {
   const apiKey = process.env.RESEND_API_KEY;
