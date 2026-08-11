@@ -154,7 +154,7 @@ exports.signup = async (req, res, next) => {
       return res.status(409).json({ message: 'Shop name is already in use' });
     }
 
-    const existingEmail = await User.findOne({ where: { email: normalizedEmail }, transaction });
+    const existingEmail = await User.findOne({ where: { email: { [Op.iLike]: normalizedEmail } }, transaction });
     if (existingEmail) {
       // Check whether the user's shop still exists — if the shop was deleted but the
       // user row wasn't cleaned up (orphaned record), free the email and continue.
@@ -215,19 +215,18 @@ exports.signup = async (req, res, next) => {
       { transaction }
     );
 
-    await transaction.commit();
-
     try {
       await sendVerificationEmail(normalizedEmail, verificationToken, {
         name: normalizedUsername,
         shopName: shop.name,
       });
+      await transaction.commit();
     } catch (emailError) {
       console.error('Failed to send verification email:', emailError.message);
+      await transaction.rollback();
+
       return res.status(502).json({
-        message: 'Account created, but we could not send the verification email. Please try resending the email or contact support.',
-        email: normalizedEmail,
-        shopName: shop.name,
+        message: 'Account creation failed because the verification email could not be sent. Please try again.',
       });
     }
 
@@ -272,7 +271,7 @@ exports.resendVerification = async (req, res, next) => {
     }
 
     const normalizedEmail = String(email).trim().toLowerCase();
-    const user = await User.findOne({ where: { email: normalizedEmail } });
+    const user = await User.findOne({ where: { email: { [Op.iLike]: normalizedEmail } } });
 
     // Always respond with success to avoid email enumeration
     if (!user || user.isVerified) {
@@ -304,7 +303,7 @@ exports.forgotPassword = async (req, res, next) => {
     }
 
     const normalizedEmail = String(email).trim().toLowerCase();
-    const user = await User.findOne({ where: { email: normalizedEmail } });
+    const user = await User.findOne({ where: { email: { [Op.iLike]: normalizedEmail } } });
 
     // Always respond with success to avoid email enumeration
     if (user) {
