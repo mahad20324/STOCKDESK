@@ -49,14 +49,22 @@ async function start() {
     await sequelize.sync({ alter: true });
     await initAppData();
 
+    // Start HTTP server immediately so platform healthchecks succeed.
     app.listen(PORT, '0.0.0.0', () => {
       console.log(`StockDesk backend running on port ${PORT}`);
     });
 
-  } catch (error) {
-    console.error('Unable to start the server:', error);
-    process.exit(1);
-  }
+    // Initialize database asynchronously. Failures will be logged but
+    // will not stop the process so the container can become healthy.
+    try {
+      await sequelize.authenticate();
+      await runMigrations();
+      await sequelize.sync({ alter: true });
+      await initAppData();
+      console.log('Database initialized');
+    } catch (error) {
+      console.error('Database initialization failed:', error);
+    }
 }
 
 start();
