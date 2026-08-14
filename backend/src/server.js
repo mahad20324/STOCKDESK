@@ -2,18 +2,15 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-const app = require('./app');
-const { sequelize, initAppData } = require('./models');
-
 const PORT = process.env.PORT || 4000;
 
-// Railway health check
-app.get('/api', (req, res) => {
-  res.status(200).json({
-    status: 'ok',
-    service: 'StockDesk backend'
-  });
-});
+if (!process.env.JWT_SECRET) {
+  console.error('JWT_SECRET is required. Set it in your backend environment before starting StockDesk.');
+  process.exit(1);
+}
+
+const app = require('./app');
+const { sequelize, initAppData } = require('./models');
 
 async function runMigrations() {
   // Add 'Split' to paymentMethod enum if it doesn't exist yet
@@ -43,21 +40,19 @@ async function runMigrations() {
 }
 
 async function start() {
-  // Start HTTP server immediately so platform healthchecks succeed.
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`StockDesk backend running on port ${PORT}`);
-  });
-
-  // Initialize database asynchronously. Failures will be logged but
-  // will not stop the process so the container can become healthy.
   try {
     await sequelize.authenticate();
     await runMigrations();
     await sequelize.sync({ alter: true });
     await initAppData();
     console.log('Database initialized');
+
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`StockDesk backend running on port ${PORT}`);
+    });
   } catch (error) {
     console.error('Database initialization failed:', error);
+    process.exit(1);
   }
 }
 

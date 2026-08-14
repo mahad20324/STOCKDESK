@@ -58,7 +58,7 @@ exports.createReconciliation = async (req, res) => {
     if (variance !== 0) {
       await Product.update(
         { quantity: physicalQuantity },
-        { where: { id: productId } }
+        { where: { id: productId, shopId } }
       );
 
       if (auditController && auditController.logAction) {

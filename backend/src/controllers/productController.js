@@ -32,8 +32,8 @@ exports.getProduct = async (req, res, next) => {
 
 exports.createProduct = async (req, res, next) => {
   try {
-    const { name, category, buyPrice, sellPrice, quantity, lowStock } = req.body;
-    const product = await Product.create({ name, category, buyPrice, sellPrice, quantity, lowStock, shopId: req.user.shopId });
+    const { name, sku, category, buyPrice, sellPrice, quantity, lowStock } = req.body;
+    const product = await Product.create({ name, sku: sku || null, category, buyPrice, sellPrice, quantity, lowStock, shopId: req.user.shopId });
     res.status(201).json(product);
   } catch (error) {
     next(error);

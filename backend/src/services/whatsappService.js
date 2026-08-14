@@ -54,16 +54,6 @@ async function sendReceiptViaTwilio({ fromNumber, toNumber, sale, settings }) {
     throw new Error('Media hosting not configured. Set S3_BUCKET or MEDIA_BASE_URL');
   }
 
-
-async function sendTextViaTwilio({ fromNumber, toNumber, body }) {
-  if (!twilioClient) throw new Error('Twilio not configured. Set TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN');
-
-  const from = fromNumber.startsWith('whatsapp:') ? fromNumber : `whatsapp:${fromNumber}`;
-  const to = toNumber.startsWith('whatsapp:') ? toNumber : `whatsapp:${toNumber}`;
-
-  const message = await twilioClient.messages.create({ from, to, body });
-  return message;
-}
   const buffer = await generateReceiptBuffer(sale, settings);
   const filename = `receipts/${Date.now()}-${crypto.randomBytes(6).toString('hex')}.pdf`;
   const url = await uploadBufferToS3(buffer, filename, 'application/pdf');
@@ -80,6 +70,15 @@ async function sendTextViaTwilio({ fromNumber, toNumber, body }) {
   });
 
   return message;
+}
+
+async function sendTextViaTwilio({ fromNumber, toNumber, body }) {
+  if (!twilioClient) throw new Error('Twilio not configured. Set TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN');
+
+  const from = fromNumber.startsWith('whatsapp:') ? fromNumber : `whatsapp:${fromNumber}`;
+  const to = toNumber.startsWith('whatsapp:') ? toNumber : `whatsapp:${toNumber}`;
+
+  return twilioClient.messages.create({ from, to, body });
 }
 
 module.exports = {

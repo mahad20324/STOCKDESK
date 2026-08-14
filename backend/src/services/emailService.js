@@ -19,6 +19,14 @@ if (!fetchFn) {
 // ── Provider selection ────────────────────────────────────────────────────────
 
 function getProvider() {
+  const configured = String(process.env.EMAIL_PROVIDER || '').trim().toLowerCase();
+  if (configured) {
+    if (['resend', 'smtp'].includes(configured)) {
+      return configured;
+    }
+    throw new Error(`Unsupported EMAIL_PROVIDER "${configured}". Use "resend" or "smtp".`);
+  }
+
   if (process.env.RESEND_API_KEY) {
     return 'resend';
   }
@@ -66,9 +74,22 @@ function createSmtpTransporter() {
   });
 }
 
+function getFromName() {
+  return process.env.RESEND_FROM_NAME || process.env.SMTP_FROM_NAME || 'StockDesk';
+}
+
+function getFromEmail(provider) {
+  return (
+    process.env.RESEND_FROM_EMAIL ||
+    process.env.EMAIL_FROM ||
+    process.env.SMTP_FROM_EMAIL ||
+    (provider === 'resend' ? 'onboarding@resend.dev' : '')
+  );
+}
+
 async function sendViaSmtp({ to, subject, html, text }) {
-  const fromName = process.env.SMTP_FROM_NAME || 'StockDesk';
-  const fromEmail = process.env.SMTP_FROM_EMAIL;
+  const fromName = getFromName();
+  const fromEmail = getFromEmail('smtp');
 
   if (!fromEmail) {
     throw new Error('SMTP_FROM_EMAIL is required for SMTP email delivery.');
@@ -88,14 +109,14 @@ async function sendViaSmtp({ to, subject, html, text }) {
 
 async function sendViaResend({ to, subject, html, text }) {
   const apiKey = process.env.RESEND_API_KEY;
-  const fromName = process.env.SMTP_FROM_NAME || 'StockDesk';
-  const fromEmail = process.env.SMTP_FROM_EMAIL;
+  const fromName = getFromName();
+  const fromEmail = getFromEmail('resend');
 
   if (!apiKey) {
     throw new Error('RESEND_API_KEY is required for Resend email delivery.');
   }
   if (!fromEmail) {
-    throw new Error('SMTP_FROM_EMAIL is required for Resend email delivery.');
+    throw new Error('RESEND_FROM_EMAIL, EMAIL_FROM, or SMTP_FROM_EMAIL is required for Resend email delivery.');
   }
 
   const resend = new Resend(apiKey);

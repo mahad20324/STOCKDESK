@@ -11,7 +11,10 @@ const Shop = require('../models/shop');
 const whatsappService = require('../services/whatsappService');
 const rateLimit = require('express-rate-limit');
 const Audit = require('../models/audit');
-const { getPrinterService } = require('../services/printerService');
+
+function getPrinterService() {
+  return require('../services/printerService').getPrinterService();
+}
 
 /**
  * Configure printer connection
@@ -110,9 +113,13 @@ router.post('/test', authenticate, authorize(['Admin']), async (req, res) => {
 router.post('/print-receipt', authenticate, async (req, res) => {
   try {
     const { saleId } = req.body;
+    const { shopId } = req.user;
 
     if (!saleId) {
       return res.status(400).json({ error: 'saleId is required' });
+    }
+    if (!shopId) {
+      return res.status(403).json({ error: 'Shop-scoped user required' });
     }
 
     const printerService = getPrinterService();
@@ -125,10 +132,13 @@ router.post('/print-receipt', authenticate, async (req, res) => {
     }
 
     // Fetch sale with items and product details
-    const sale = await Sale.findByPk(saleId, {
+    const sale = await Sale.findOne({
+      where: { id: saleId, shopId },
       include: [
         {
           association: 'items',
+          where: { shopId },
+          required: false,
           attributes: ['productId', 'price', 'quantity'],
           include: [
             {
@@ -150,12 +160,12 @@ router.post('/print-receipt', authenticate, async (req, res) => {
 
     // Fetch receipt number
     const receipt = await Receipt.findOne({
-      where: { saleId },
+      where: { saleId, shopId },
       attributes: ['receiptNumber'],
     });
 
     // Fetch settings for shop info
-    const settings = await Setting.findOne();
+    const settings = await Setting.findOne({ where: { shopId } });
 
     // Prepare print data
     const printData = {
@@ -232,15 +242,22 @@ const sendWhatsappLimiter = rateLimit({
 router.post('/send-whatsapp', authenticate, sendWhatsappLimiter, async (req, res) => {
   try {
     const { saleId, to } = req.body;
+    const { shopId } = req.user;
 
     if (!saleId || !to) {
       return res.status(400).json({ error: 'saleId and to (phone) are required' });
     }
+    if (!shopId) {
+      return res.status(403).json({ error: 'Shop-scoped user required' });
+    }
 
-    const sale = await Sale.findByPk(saleId, {
+    const sale = await Sale.findOne({
+      where: { id: saleId, shopId },
       include: [
         {
           association: 'items',
+          where: { shopId },
+          required: false,
           attributes: ['productId', 'price', 'quantity'],
           include: [
             {
@@ -258,9 +275,9 @@ router.post('/send-whatsapp', authenticate, sendWhatsappLimiter, async (req, res
 
     if (!sale) return res.status(404).json({ error: 'Sale not found' });
 
-    const receipt = await Receipt.findOne({ where: { saleId }, attributes: ['receiptNumber'] });
-    const settings = (await Setting.findOne()) || {};
-    const shop = sale.shopId ? await Shop.findByPk(sale.shopId) : null;
+    const receipt = await Receipt.findOne({ where: { saleId, shopId }, attributes: ['receiptNumber'] });
+    const settings = (await Setting.findOne({ where: { shopId } })) || {};
+    const shop = await Shop.findByPk(shopId);
 
     const provider = shop?.whatsapp_provider || 'twilio';
     const fromNumber = shop?.whatsapp_sender_number || process.env.TWILIO_WHATSAPP_NUMBER;
@@ -289,7 +306,7 @@ router.post('/send-whatsapp', authenticate, sendWhatsappLimiter, async (req, res
     try {
       await Audit.create({
         userId: req.user.id,
-        shopId: sale.shopId || req.user.shopId || null,
+        shopId,
         action: 'SEND_WHATSAPP',
         entityType: 'SALE',
         entityId: sale.id,

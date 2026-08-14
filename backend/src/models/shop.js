@@ -24,7 +24,6 @@ Shop.init(
       allowNull: false,
       defaultValue: true,
     },
-    // WhatsApp settings per shop (optional)
     whatsapp_enabled: {
       type: DataTypes.BOOLEAN,
       allowNull: false,

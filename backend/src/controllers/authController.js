@@ -13,6 +13,10 @@ function maskEmail(email) {
 }
 
 function signToken(user) {
+  if (!process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET is required.');
+  }
+
   return jwt.sign(
     { id: user.id, role: user.role, shopId: user.shopId },
     process.env.JWT_SECRET,
@@ -351,6 +355,42 @@ exports.resetPassword = async (req, res, next) => {
 
     res.json({ message: 'Password reset successfully. You can now sign in.' });
   } catch (error) {
+    next(error);
+  }
+};
+
+exports.refreshToken = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+
+    const payload = jwt.verify(authHeader.split(' ')[1], process.env.JWT_SECRET);
+    const user = await User.findByPk(payload.id, {
+      include: [{ model: Shop, as: 'shop', attributes: ['id', 'name', 'slug'], required: false }],
+    });
+
+    if (!user || !user.isVerified) {
+      return res.status(401).json({ message: 'Invalid session' });
+    }
+
+    const token = signToken(user);
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        username: user.username,
+        role: user.role,
+        shopId: user.shopId,
+        shop: user.shop || null,
+      },
+    });
+  } catch (error) {
+    if (error.name === 'TokenExpiredError' || error.name === 'JsonWebTokenError') {
+      return res.status(401).json({ message: 'Invalid session' });
+    }
     next(error);
   }
 };
