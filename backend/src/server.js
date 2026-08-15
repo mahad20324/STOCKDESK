@@ -51,7 +51,7 @@ async function initializeDatabase() {
     console.log('[db-init] Starting background database initialization...');
     await runMigrations();
     console.log('[db-init] Running Sequelize sync...');
-    await sequelize.sync({ alter: true });
+    await sequelize.sync({ alter: { drop: false } });
     console.log('[db-init] Initializing application data...');
     await initAppData();
     console.log('[db-init] Database initialization completed successfully');
