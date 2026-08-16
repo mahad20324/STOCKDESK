@@ -143,11 +143,12 @@ Recommended production values:
 
 Recommended email configuration on Railway:
 
-- `SMTP_FROM_EMAIL=<your verified sender email>`
-- `SMTP_FROM_NAME=StockDesk`
+- `EMAIL_PROVIDER=resend`
 - `RESEND_API_KEY=<your Resend API key>`
+- `RESEND_FROM_EMAIL=<your verified Resend sender email>`
+- `RESEND_FROM_NAME=StockDesk`
 
-If `RESEND_API_KEY` is present, the backend sends verification emails through Resend's HTTP API instead of SMTP. This is recommended on Railway if SMTP connections time out.
+If `EMAIL_PROVIDER=resend` is set, the backend sends verification and password reset emails through Resend's HTTP API. Use a verified Resend sender/domain for `RESEND_FROM_EMAIL`; `onboarding@resend.dev` is only suitable for limited testing.
 
 Optional for temporary hosting with existing profiles only:
 
