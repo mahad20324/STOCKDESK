@@ -17,6 +17,7 @@ import StockReconciliation from './pages/StockReconciliation';
 import Returns from './pages/Returns';
 import VerifyEmail from './pages/VerifyEmail';
 import ResetPassword from './pages/ResetPassword';
+import Profile from './pages/Profile';
 import ProtectedRoute from './components/ProtectedRoute';
 import { getUser, hasActiveSession } from './utils/auth';
 import useInactivityLogout from './hooks/useInactivityLogout';
@@ -70,6 +71,7 @@ function App() {
         <Route path="audit-logs" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : isStaff ? staffBlocked : <AuditLogs />} />
         <Route path="settings" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : isStaff ? staffBlocked : <Settings />} />
         <Route path="users" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : <Users />} />
+        <Route path="profile" element={<Profile />} />
       </Route>
       <Route path="*" element={<Navigate to={session.isAuthenticated ? '/app' : '/login'} replace />} />
     </Routes>

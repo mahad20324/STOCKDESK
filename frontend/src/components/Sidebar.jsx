@@ -149,6 +149,15 @@ function ShopsIcon() {
   );
 }
 
+function ProfileIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 21c0-4 3.6-6 8-6s8 2 8 6" />
+    </svg>
+  );
+}
+
 export default function Sidebar({ user: providedUser, isOpen = false, collapsed = false, onClose = () => {}, onLogout = () => {} }) {
   const user = providedUser || getUser();
   const { resolvedTheme, setThemeMode, themeMode } = useTheme();
@@ -164,6 +173,11 @@ export default function Sidebar({ user: providedUser, isOpen = false, collapsed 
           to: '/app/shops',
           label: 'Platform',
           icon: <ShopsIcon />,
+        },
+        {
+          to: '/app/profile',
+          label: 'Profile',
+          icon: <ProfileIcon />,
         },
       ]
     : isStaff
@@ -246,6 +260,22 @@ export default function Sidebar({ user: providedUser, isOpen = false, collapsed 
               <span>Users</span>
             </NavLink>
           )}
+          {!isSuperAdmin && (
+            <NavLink
+              to="/app/profile"
+              onClick={onClose}
+              className={({ isActive }) =>
+                `app-sidebar-link flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition ${
+                  isActive
+                    ? 'app-sidebar-link-active'
+                    : ''
+                }`
+              }
+            >
+              <ProfileIcon />
+              <span>Profile</span>
+            </NavLink>
+          )}
         </nav>
 
         <div className="app-sidebar-card mt-auto rounded-2xl border p-4">
@@ -253,9 +283,17 @@ export default function Sidebar({ user: providedUser, isOpen = false, collapsed 
             {isSuperAdmin ? 'Platform User' : 'Current User'}
           </p>
           <div className="mt-3 flex items-center gap-3 rounded-2xl bg-[var(--sidebar-hover)] px-3 py-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--sidebar-active-bg)] text-sm font-semibold text-[var(--sidebar-active-text)] shadow-[var(--sidebar-active-shadow)]">
-              {String(user?.name || 'S').slice(0, 1).toUpperCase()}
-            </div>
+            {user?.avatarUrl ? (
+              <img
+                src={user.avatarUrl}
+                alt="Profile avatar"
+                className="h-11 w-11 rounded-xl object-cover shadow-[var(--sidebar-active-shadow)]"
+              />
+            ) : (
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--sidebar-active-bg)] text-sm font-semibold text-[var(--sidebar-active-text)] shadow-[var(--sidebar-active-shadow)]">
+                {String(user?.name || 'S').slice(0, 1).toUpperCase()}
+              </div>
+            )}
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold text-[var(--sidebar-text)]">{user?.name || 'Staff'}</p>
               <p className="truncate text-xs text-[var(--sidebar-muted)]">{user?.displayRole || user?.role || 'User'}</p>
