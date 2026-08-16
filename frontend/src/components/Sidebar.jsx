@@ -186,7 +186,7 @@ export default function Sidebar({ user: providedUser, isOpen = false, collapsed 
         <div className="flex items-center justify-between lg:block">
           <div>
               <div className="flex items-center gap-3.5">
-                <img src={logo} alt="StockDesk logo" className="h-14 w-14 object-contain" />
+                <img src={logo} alt="StockDesk logo" className="h-16 w-16 object-contain" />
               <div className="pt-0.5">
                 <p className="text-[1.9rem] font-semibold leading-none tracking-tight text-[var(--sidebar-text)]">StockDesk</p>
                 <p className="mt-2 text-sm font-medium tracking-[0.02em] text-[var(--sidebar-muted)]">Business overview</p>

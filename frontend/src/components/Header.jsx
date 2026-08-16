@@ -57,7 +57,7 @@ export default function Header({ onOpenSidebar, onToggleSidebar, sidebarCollapse
         </button>
         <div className="min-w-0">
             <div className="mb-1 flex items-center gap-2 lg:hidden">
-              <img src={logo} alt="StockDesk logo" className="h-10 w-10 object-contain" />
+              <img src={logo} alt="StockDesk logo" className="h-12 w-12 object-contain" />
             <span className="truncate text-base font-semibold tracking-tight text-[var(--text-primary)]">StockDesk</span>
           </div>
           <p className="text-[13px] font-medium tracking-tight text-[var(--text-muted)]">Overview</p>

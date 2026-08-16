@@ -335,7 +335,7 @@ export default function Login() {
 
           <div className="relative flex h-full flex-col justify-between gap-4">
               <div className="flex items-center gap-3">
-                <img src={logo} alt="StockDesk logo" className="h-16 w-16 object-contain" />
+                <img src={logo} alt="StockDesk logo" className="h-20 w-20 object-contain" />
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/70">StockDesk</p>
                 <p className="mt-0.5 text-base font-semibold tracking-tight text-white xl:text-lg">Inventory and POS control</p>
@@ -385,7 +385,7 @@ export default function Login() {
           <div className="mx-auto max-w-xl lg:flex lg:h-full lg:flex-col lg:justify-center">
             <div className="mb-5 lg:hidden">
               <div className="flex items-center gap-3">
-                <img src={logo} alt="StockDesk logo" className="h-11 w-11 object-contain" />
+                <img src={logo} alt="StockDesk logo" className="h-12 w-12 object-contain" />
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent-strong)]">StockDesk</p>
                   <p className="mt-1 text-lg font-semibold tracking-tight text-[var(--text-primary)]">Business workspace</p>

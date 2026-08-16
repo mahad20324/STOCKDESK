@@ -43,7 +43,7 @@ export default function VerifyEmail() {
     >
       <div className="app-modal w-full max-w-md overflow-hidden rounded-[2rem] border p-8 text-center">
         <div className="mb-6 flex justify-center">
-          <img src={logo} alt="StockDesk" className="h-10 w-10 object-contain" />
+          <img src={logo} alt="StockDesk" className="h-12 w-12 object-contain" />
         </div>
 
         {status === 'loading' && (
