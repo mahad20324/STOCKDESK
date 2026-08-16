@@ -84,7 +84,14 @@ export default function Users() {
       return;
     }
     try {
-      const response = await createUser(form);
+      const response = await createUser({
+        name: form.name,
+        username: form.username,
+        password: form.password,
+        confirmPassword: form.password,
+        role: form.displayRole,
+        displayRole: form.displayRole,
+      });
       setNewUserPassword(response.plainPassword);
       setNewUserUsername(response.username || '');
       setNewUserName(response.name || '');
