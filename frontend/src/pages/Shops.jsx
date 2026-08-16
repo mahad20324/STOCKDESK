@@ -222,6 +222,8 @@ export default function Shops() {
   const [refreshing, setRefreshing] = useState(false);
   const [shopToDelete, setShopToDelete] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [sortKey, setSortKey] = useState('joined');
+  const [sortDir, setSortDir] = useState('desc');
   const mountedRef = useRef(true);
 
   const load = async (isInitial = false) => {
@@ -282,6 +284,78 @@ export default function Shops() {
       .slice(0, 4);
     return { totalProducts, totalSales, topShops, recentlyActive, atRisk, latestSignups, windowHours };
   }, [shops, overview?.activityWindowHours]);
+
+  const handleSort = (key) => {
+    if (sortKey === key) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortKey(key);
+      setSortDir(key === 'name' || key === 'ownerName' ? 'asc' : 'desc');
+    }
+  };
+
+  const sortedShops = useMemo(() => {
+    const arr = [...shops];
+    arr.sort((a, b) => {
+      let va, vb;
+      switch (sortKey) {
+        case 'name':
+          va = String(a.name || '').toLowerCase();
+          vb = String(b.name || '').toLowerCase();
+          return sortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+        case 'ownerName':
+          va = String(a.owner?.name || '').toLowerCase();
+          vb = String(b.owner?.name || '').toLowerCase();
+          return sortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+        case 'status':
+          va = a.isActive ? 1 : 0;
+          vb = b.isActive ? 1 : 0;
+          break;
+        case 'users':
+          va = Number(a.metrics?.userCount || 0);
+          vb = Number(b.metrics?.userCount || 0);
+          break;
+        case 'products':
+          va = Number(a.metrics?.productCount || 0);
+          vb = Number(b.metrics?.productCount || 0);
+          break;
+        case 'sales':
+          va = Number(a.metrics?.saleCount || 0);
+          vb = Number(b.metrics?.saleCount || 0);
+          break;
+        case 'lastLogin':
+          va = a.activity?.lastLoginAt ? new Date(a.activity.lastLoginAt).getTime() : 0;
+          vb = b.activity?.lastLoginAt ? new Date(b.activity.lastLoginAt).getTime() : 0;
+          break;
+        case 'joined':
+        default:
+          va = new Date(a.createdAt).getTime();
+          vb = new Date(b.createdAt).getTime();
+      }
+      if (va === vb) return 0;
+      return sortDir === 'asc' ? (va > vb ? 1 : -1) : va < vb ? 1 : -1;
+    });
+    return arr;
+  }, [shops, sortKey, sortDir]);
+
+  const sortHeader = (key, label, className = '') => (
+    <button
+      type="button"
+      onClick={() => handleSort(key)}
+      className={`group inline-flex items-center gap-1 font-semibold transition hover:text-[var(--accent-strong)] ${className}`}
+    >
+      {label}
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        className={`h-3 w-3 transition ${sortKey === key ? 'opacity-100 text-[var(--accent-strong)]' : 'opacity-40 group-hover:opacity-80'} ${sortKey === key && sortDir === 'asc' ? 'rotate-180' : ''}`}
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    </button>
+  );
 
   const handleDeleteClick = (shop) => setShopToDelete(shop);
 
@@ -598,19 +672,19 @@ export default function Shops() {
               <table className="min-w-full text-left text-sm">
                 <thead className="app-table-head">
                   <tr>
-                    <th className="px-4 py-3 font-semibold">Shop</th>
-                    <th className="px-4 py-3 font-semibold">Admin</th>
-                    <th className="px-4 py-3 font-semibold">Status</th>
-                    <th className="px-4 py-3 text-center font-semibold">Users</th>
-                    <th className="px-4 py-3 text-center font-semibold">Products</th>
-                    <th className="px-4 py-3 text-center font-semibold">Sales</th>
-                    <th className="px-4 py-3 font-semibold">Last Login</th>
-                    <th className="px-4 py-3 font-semibold">Joined</th>
+                    <th className="px-4 py-3">{sortHeader('name', 'Shop')}</th>
+                    <th className="px-4 py-3">{sortHeader('ownerName', 'Admin')}</th>
+                    <th className="px-4 py-3">{sortHeader('status', 'Status')}</th>
+                    <th className="px-4 py-3 text-center">{sortHeader('users', 'Users', 'justify-center')}</th>
+                    <th className="px-4 py-3 text-center">{sortHeader('products', 'Products', 'justify-center')}</th>
+                    <th className="px-4 py-3 text-center">{sortHeader('sales', 'Sales', 'justify-center')}</th>
+                    <th className="px-4 py-3">{sortHeader('lastLogin', 'Last Login')}</th>
+                    <th className="px-4 py-3">{sortHeader('joined', 'Joined')}</th>
                     <th className="px-4 py-3 text-center font-semibold">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--border-default)] bg-[var(--surface-primary)]">
-                  {shops.map((shop) => (
+                  {sortedShops.map((shop) => (
                     <tr key={shop.id} className="app-row-hover transition">
                       <td className="px-4 py-3.5">
                         <div className="flex items-center gap-2.5">
@@ -627,7 +701,10 @@ export default function Shops() {
                         {shop.owner ? (
                           <div>
                             <p className="font-medium text-[var(--text-primary)]">{shop.owner.name}</p>
-                            <p className="text-xs text-[var(--text-muted)]">@{shop.owner.username}</p>
+                            <p className="text-xs text-[var(--text-muted)]">
+                              @{shop.owner.username}
+                              {shop.owner.email ? <span className="font-medium text-[var(--accent-strong)]"> · {shop.owner.email}</span> : null}
+                            </p>
                           </div>
                         ) : (
                           <span className="text-[var(--text-muted)]">—</span>

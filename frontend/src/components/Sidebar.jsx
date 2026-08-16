@@ -170,6 +170,18 @@ export default function Sidebar({ user: providedUser, isOpen = false, collapsed 
   const visibleLinks = isSuperAdmin
     ? [
         {
+          to: '/app/owner',
+          label: 'Dashboard',
+          icon: (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+              <path d="M4 13h7V4H4v9Z" />
+              <path d="M13 20h7v-5h-7v5Z" />
+              <path d="M13 13h7V4h-7v9Z" />
+              <path d="M4 20h7v-5H4v5Z" />
+            </svg>
+          ),
+        },
+        {
           to: '/app/shops',
           label: 'Platform',
           icon: <ShopsIcon />,

@@ -19,7 +19,7 @@ export default function OwnerLogin() {
   }, []);
 
   if (getToken()) {
-    return <Navigate to="/app/shops" replace />;
+    return <Navigate to="/app/owner" replace />;
   }
 
   const handleSubmit = async (event) => {
@@ -30,7 +30,7 @@ export default function OwnerLogin() {
     try {
       const data = await login({ shopName: '', username: form.username, password: form.password });
       saveSession(data.token, data.user);
-      navigate('/app/shops');
+      navigate('/app/owner');
     } catch (err) {
       setError(err.message || 'Platform sign in failed.');
       setLoading(false);

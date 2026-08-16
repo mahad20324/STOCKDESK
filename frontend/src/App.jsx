@@ -11,6 +11,8 @@ import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 import Users from './pages/Users';
 import Shops from './pages/Shops';
+import OwnerDashboard from './pages/OwnerDashboard';
+import ShopDetail from './pages/ShopDetail';
 import Expenses from './pages/Expenses';
 import AuditLogs from './pages/AuditLogs';
 import StockReconciliation from './pages/StockReconciliation';
@@ -57,10 +59,12 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/owner-login" element={session.isAuthenticated ? <Navigate to={isSuperAdmin ? '/app/shops' : '/app'} replace /> : <OwnerLogin />} />
+      <Route path="/owner-login" element={session.isAuthenticated ? <Navigate to={isSuperAdmin ? '/app/owner' : '/app'} replace /> : <OwnerLogin />} />
       <Route path="/app" element={session.isAuthenticated ? <Layout /> : <Navigate to="/login" replace />}>
-        <Route index element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : <Dashboard />} />
+        <Route index element={isSuperAdmin ? <Navigate to="/app/owner" replace /> : <Dashboard />} />
+        <Route path="owner" element={isSuperAdmin ? <OwnerDashboard /> : <Navigate to="/app" replace />} />
         <Route path="shops" element={isSuperAdmin ? <Shops /> : <Navigate to="/app" replace />} />
+        <Route path="shops/:id" element={isSuperAdmin ? <ShopDetail /> : <Navigate to="/app" replace />} />
         <Route path="products" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : <Products />} />
         <Route path="customers" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : <Customers />} />
         <Route path="pos" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : <POS />} />
