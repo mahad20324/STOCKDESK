@@ -247,7 +247,30 @@ export default function Profile() {
                 <p className="mt-1 text-xs text-[var(--text-muted)]">Username cannot be changed.</p>
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-[var(--text-primary)]">Email</label>
+                <div className="mb-1.5 flex items-center gap-2">
+                  <label className="text-sm font-medium text-[var(--text-primary)]">Email</label>
+                  {profile?.isVerified ? (
+                    <span className="inline-flex items-center gap-1 rounded-full border border-[var(--success-border)] bg-[var(--success-soft)] px-2 py-0.5 text-[11px] font-semibold text-[var(--success)]">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="h-3 w-3">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                      Verified
+                    </span>
+                  ) : email ? (
+                    <span className="inline-flex items-center gap-1 rounded-full border border-[var(--warning-border)] bg-[var(--warning-soft)] px-2 py-0.5 text-[11px] font-semibold text-[var(--warning)]">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3 w-3">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="8" x2="12" y2="12" />
+                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                      </svg>
+                      Not verified
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center rounded-full border border-[var(--border-default)] bg-[var(--surface-secondary)] px-2 py-0.5 text-[11px] font-semibold text-[var(--text-muted)]">
+                      No email set
+                    </span>
+                  )}
+                </div>
                 <input
                   type="email"
                   value={email}
