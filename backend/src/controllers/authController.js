@@ -82,10 +82,22 @@ exports.login = async (req, res, next) => {
     }
 
     if (!user.isVerified) {
-      return res.status(403).json({
-        needsVerification: true,
-        email: user.email || '',
-        message: 'Please verify your email address before signing in.',
+      // Legacy accounts created before email verification was introduced: allow
+      // sign-in so the admin can add/verify their email from the Profile page.
+      // New accounts never exist unverified (they are created only after the
+      // verification link is clicked), so no new shop can sign in this way.
+      return res.status(200).json({
+        token: signToken(user),
+        user: {
+          id: user.id,
+          name: user.name,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+          shopId: user.shopId,
+          shop: null,
+          isVerified: false,
+        },
       });
     }
 
@@ -101,9 +113,11 @@ exports.login = async (req, res, next) => {
         id: user.id,
         name: user.name,
         username: user.username,
+        email: user.email,
         role: user.role,
         shopId: user.shopId,
         shop,
+        isVerified: true,
       },
     });
   } catch (error) {

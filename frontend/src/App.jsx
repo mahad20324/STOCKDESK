@@ -71,7 +71,7 @@ function App() {
         <Route path="audit-logs" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : isStaff ? staffBlocked : <AuditLogs />} />
         <Route path="settings" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : isStaff ? staffBlocked : <Settings />} />
         <Route path="users" element={isSuperAdmin ? <Navigate to="/app/shops" replace /> : <Users />} />
-        <Route path="profile" element={<Profile />} />
+        <Route path="profile" element={isStaff ? staffBlocked : <Profile />} />
       </Route>
       <Route path="*" element={<Navigate to={session.isAuthenticated ? '/app' : '/login'} replace />} />
     </Routes>

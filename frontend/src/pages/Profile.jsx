@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { fetchProfile, updateProfile } from '../utils/api';
+import { fetchProfile, updateProfile, resendVerification } from '../utils/api';
 import { getToken, updateToken } from '../utils/auth';
 
 function resizeImage(file, maxSize = 256) {
@@ -34,6 +34,7 @@ export default function Profile() {
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [avatarChanged, setAvatarChanged] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [resending, setResending] = useState(false);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('success');
   const fileInputRef = useRef(null);
@@ -102,14 +103,40 @@ export default function Profile() {
         ...(JSON.parse(localStorage.getItem('stockdesk_user') || 'null') || {}),
         name: data.name,
         avatarUrl: data.avatarUrl,
+        isVerified: data.isVerified,
       });
-      setMessage('Profile updated successfully.');
-      setMessageType('success');
+      if (data.verificationPending) {
+        setMessage(
+          data.verificationEmailSent
+            ? 'Email updated. A verification link has been sent to your new address — click it to verify your email.'
+            : data.message || 'Email updated but the verification link could not be sent. You can resend it below.'
+        );
+        setMessageType('success');
+      } else {
+        setMessage('Profile updated successfully.');
+        setMessageType('success');
+      }
     } catch (error) {
       setMessage(error.message);
       setMessageType('error');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleResend = async () => {
+    if (!email) return;
+    setResending(true);
+    setMessage('');
+    try {
+      await resendVerification({ email });
+      setMessage('A new verification link has been sent to your email address.');
+      setMessageType('success');
+    } catch (error) {
+      setMessage(error.message);
+      setMessageType('error');
+    } finally {
+      setResending(false);
     }
   };
 
@@ -134,6 +161,23 @@ export default function Profile() {
             : 'border-[var(--success-border)] bg-[var(--success-soft)] text-[var(--success)]'
         }`}>
           {message}
+        </div>
+      )}
+
+      {profile && email && !profile.isVerified && (
+        <div className="app-panel flex flex-col gap-3 rounded-[1.2rem] border border-[var(--warning-border)] bg-[var(--warning-soft)] px-4 py-3 text-sm text-[var(--warning)] sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            Your email <strong className="font-semibold">{email}</strong> is not verified yet. Click the link we sent to
+            your inbox to complete verification.
+          </p>
+          <button
+            type="button"
+            onClick={handleResend}
+            disabled={resending}
+            className="app-btn-secondary shrink-0 rounded-xl border px-4 py-2 text-sm font-medium transition disabled:opacity-50"
+          >
+            {resending ? 'Sending...' : 'Resend verification link'}
+          </button>
         </div>
       )}
 

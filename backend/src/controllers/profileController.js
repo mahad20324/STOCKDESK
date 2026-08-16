@@ -1,11 +1,13 @@
-const { User, Shop } = require('../models');
+const crypto = require('crypto');
+const { User, Shop, PendingSignup } = require('../models');
 const { Op } = require('sequelize');
+const { sendVerificationEmail } = require('../services/emailService');
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const DATA_URL_REGEX = /^data:image\/(png|jpeg|webp|gif);base64,/;
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024; // 2 MB decoded
 
-function toProfile(user, shop) {
+function toProfile(user, shop, extra = {}) {
   return {
     id: user.id,
     name: user.name,
@@ -19,6 +21,7 @@ function toProfile(user, shop) {
     avatarUrl: user.avatarUrl,
     isVerified: user.isVerified,
     createdAt: user.createdAt,
+    ...extra,
   };
 }
 
@@ -60,18 +63,33 @@ exports.updateProfile = async (req, res, next) => {
     if (email !== undefined) {
       if (email === null || String(email).trim() === '') {
         updates.email = null;
+        updates.isVerified = false;
+        updates.verificationToken = null;
       } else {
         const normalizedEmail = String(email).trim().toLowerCase();
         if (!EMAIL_REGEX.test(normalizedEmail)) {
           return res.status(400).json({ message: 'Please enter a valid email address' });
         }
+
         const existing = await User.findOne({
           where: { email: { [Op.iLike]: normalizedEmail }, id: { [Op.ne]: user.id } },
         });
         if (existing) {
           return res.status(409).json({ message: 'An account with this email already exists' });
         }
-        updates.email = normalizedEmail;
+
+        const pendingEmail = await PendingSignup.findOne({ where: { email: { [Op.iLike]: normalizedEmail } } });
+        if (pendingEmail) {
+          return res.status(409).json({ message: 'That email is pending verification on another signup. Please try a different email.' });
+        }
+
+        // Only (re)verify when the address actually changes.
+        const currentEmail = user.email ? String(user.email).toLowerCase() : '';
+        if (normalizedEmail !== currentEmail) {
+          updates.email = normalizedEmail;
+          updates.isVerified = false;
+          updates.verificationToken = crypto.randomBytes(32).toString('hex');
+        }
       }
     }
 
@@ -103,7 +121,32 @@ exports.updateProfile = async (req, res, next) => {
       ? await Shop.findByPk(user.shopId, { attributes: ['id', 'name', 'slug'] })
       : null;
 
-    res.json(toProfile(user, shop));
+    let verificationEmailSent = false;
+    let verificationWarning = null;
+    if (updates.email !== undefined && updates.email !== null && updates.verificationToken) {
+      try {
+        await sendVerificationEmail(updates.email, updates.verificationToken, {
+          name: user.name,
+          shopName: shop?.name,
+        });
+        verificationEmailSent = true;
+      } catch (emailError) {
+        console.error('Failed to send profile verification email:', emailError.message);
+        verificationWarning =
+          'Your email was saved, but the verification link could not be sent right now. You can resend it from the Profile page.';
+      }
+    }
+
+    const profile = toProfile(user, shop, {
+      emailVerified: user.isVerified,
+      verificationPending: Boolean(updates.verificationToken),
+      verificationEmailSent,
+    });
+    if (verificationWarning) {
+      profile.message = verificationWarning;
+    }
+
+    res.json(profile);
   } catch (error) {
     next(error);
   }

@@ -260,7 +260,7 @@ export default function Sidebar({ user: providedUser, isOpen = false, collapsed 
               <span>Users</span>
             </NavLink>
           )}
-          {!isSuperAdmin && (
+          {!isSuperAdmin && isAdmin && (
             <NavLink
               to="/app/profile"
               onClick={onClose}
