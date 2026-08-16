@@ -119,9 +119,7 @@ export default function ResetPassword() {
     >
       <div className="app-modal w-full max-w-md overflow-hidden rounded-[2rem] border p-8">
         <div className="mb-6 flex justify-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-[1.3rem] bg-[var(--surface-secondary)] p-2.5 shadow-sm">
-            <img src={logo} alt="StockDesk" className="h-10 w-10 object-contain" />
-          </div>
+          <img src={logo} alt="StockDesk" className="h-10 w-10 object-contain" />
         </div>
 
         {done ? (
