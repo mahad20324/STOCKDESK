@@ -51,10 +51,10 @@ async function getMetricsForRange(shopId, start, end) {
   try {
     const rows = await sequelize.query(
       `SELECT
-         COALESCE(SUM(s."total"), 0) AS "netSales",
-         COALESCE(SUM(s."total" + s."discount"), 0) AS "grossSales",
+         COALESCE(SUM(s."total" - s."taxAmount"), 0) AS "netSales",
+         COALESCE(SUM(s."total" + s."discount" - s."taxAmount"), 0) AS "grossSales",
          COALESCE(SUM(si."costOfGoods"), 0) AS "costOfGoods",
-         COALESCE(si_sum."itemsSold", 0) AS "itemsSold",
+         COALESCE(SUM(si."itemsSold"), 0) AS "itemsSold",
          COUNT(s.id)::int AS "orderCount",
          COALESCE(SUM(s."discount"), 0) AS "discountTotal"
        FROM "sales" s
@@ -67,11 +67,6 @@ async function getMetricsForRange(shopId, start, end) {
          WHERE si2."shopId" = :shopId
          GROUP BY si2."saleId"
        ) si ON si."saleId" = s.id
-       LEFT JOIN (
-         SELECT SUM("quantity") AS "itemsSold"
-         FROM "sale_items"
-         WHERE "shopId" = :shopId
-       ) si_sum ON true
        WHERE s."shopId" = :shopId
          AND s."createdAt" >= :start
          AND s."createdAt" <= :end`,
