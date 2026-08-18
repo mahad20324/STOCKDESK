@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { fetchPlatformDashboard } from '../utils/api';
@@ -12,6 +12,13 @@ const ACTION_META = {
   LOGOUT: { label: 'Logout', text: 'text-zinc-400', bg: 'bg-zinc-400/10', dot: 'bg-zinc-400' },
 };
 
+const RANGE_OPTIONS = [
+  { value: 7, label: '7D' },
+  { value: 14, label: '14D' },
+  { value: 30, label: '30D' },
+  { value: 90, label: '90D' },
+];
+
 function formatRelativeTime(value) {
   if (!value) return '—';
   const date = new Date(value);
@@ -21,6 +28,52 @@ function formatRelativeTime(value) {
   const diffHr = Math.round(diffMin / 60);
   if (diffHr < 24) return `${diffHr}h ago`;
   return date.toLocaleDateString();
+}
+
+function exportToCSV(data, summary) {
+  const rows = [
+    ['Platform Dashboard Export'],
+    ['Generated', new Date().toLocaleString()],
+    [],
+    ['--- KPIs ---'],
+    ['Metric', 'Value'],
+    ['Total Shops', summary.totalShops],
+    ['Active Shops', summary.activeShops],
+    ['Recently Active', summary.recentlyActiveShops],
+    ['New Today', summary.newShopsToday],
+    ['Total Users', summary.totalUsers],
+    ['Total Products', summary.totalProducts],
+    ['Total Sales', summary.totalSales],
+    ['Pending Signups', summary.pendingSignups],
+    ['Unverified Users', summary.unverifiedUsers],
+    [],
+    ['--- Top Shops ---'],
+    ['Shop Name', 'Users', 'Products', 'Sales'],
+    ...(data.topShops || []).map((shop) => [
+      shop.name,
+      shop.metrics?.userCount || 0,
+      shop.metrics?.productCount || 0,
+      shop.metrics?.saleCount || 0,
+    ]),
+    [],
+    ['--- Sales Trend ---'],
+    ['Date', 'Sales'],
+    ...(data.salesTrend || []).map((d) => [d.day, d.count]),
+    [],
+    ['--- Signup Trend ---'],
+    ['Date', 'Signups'],
+    ...(data.signupsTrend || []).map((d) => [d.day, d.count]),
+  ];
+  const csv = rows.map((r) => r.join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `platform-dashboard-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  URL.revokeObjectURL(url);
+  document.body.removeChild(a);
 }
 
 function GlassCard({ children, className = '', accent = false, hover = true }) {
@@ -73,13 +126,15 @@ export default function OwnerDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [refreshing, setRefreshing] = useState(false);
+  const [trendDays, setTrendDays] = useState(14);
+  const [shopSearch, setShopSearch] = useState('');
   const mountedRef = useRef(true);
 
   const load = async (isInitial = false) => {
     try {
       if (isInitial) setLoading(true);
       else setRefreshing(true);
-      const result = await fetchPlatformDashboard();
+      const result = await fetchPlatformDashboard(trendDays);
       if (mountedRef.current) {
         setData(result);
         setError('');
@@ -102,7 +157,7 @@ export default function OwnerDashboard() {
       mountedRef.current = false;
       window.clearInterval(intervalId);
     };
-  }, []);
+  }, [trendDays]);
 
   const s = data?.summary || {
     totalShops: 0, activeShops: 0, recentlyActiveShops: 0, newShopsToday: 0,
@@ -112,7 +167,14 @@ export default function OwnerDashboard() {
   const totalSalesSeries = (data?.salesTrend || []).map((d) => ({ ...d, sales: d.count }));
   const maxSales = Math.max(1, ...totalSalesSeries.map((d) => d.sales));
 
-  const shopActivityData = (data?.topShops || []).slice(0, 6).map((shop) => ({
+  const filteredTopShops = useMemo(() => {
+    const shops = data?.topShops || [];
+    if (!shopSearch.trim()) return shops;
+    const q = shopSearch.toLowerCase();
+    return shops.filter((shop) => shop.name.toLowerCase().includes(q));
+  }, [data?.topShops, shopSearch]);
+
+  const shopActivityData = filteredTopShops.slice(0, 6).map((shop) => ({
     name: shop.name.length > 12 ? shop.name.slice(0, 12) + '…' : shop.name,
     sales: shop.metrics?.saleCount || 0,
     products: shop.metrics?.productCount || 0,
@@ -164,6 +226,14 @@ export default function OwnerDashboard() {
               >
                 {refreshing ? 'Refreshing…' : `Updated ${formatRelativeTime(data?.generatedAt)}`}
               </button>
+              <button
+                type="button"
+                onClick={() => data && exportToCSV(data, s)}
+                className="rounded-2xl border border-white/15 bg-white/[0.08] px-4 py-2.5 text-xs font-medium text-white/50 backdrop-blur-md transition hover:border-white/25 hover:bg-white/[0.12] hover:text-white"
+                title="Export dashboard data as CSV"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+              </button>
             </div>
           </div>
         </div>
@@ -200,11 +270,29 @@ export default function OwnerDashboard() {
         </GlassCard>
       )}
 
+      {/* ── DATE RANGE SELECTOR ───────────────────────────────────── */}
+      <div className="flex items-center gap-2">
+        {RANGE_OPTIONS.map((opt) => (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => setTrendDays(opt.value)}
+            className={`rounded-xl px-4 py-2 text-xs font-semibold transition ${
+              trendDays === opt.value
+                ? 'border border-teal-400/30 bg-teal-400/15 text-teal-300 shadow-[0_2px_8px_rgba(45,212,191,0.15)]'
+                : 'border border-white/10 bg-white/[0.05] text-white/40 hover:border-white/20 hover:bg-white/[0.08] hover:text-white/60'
+            }`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+
       {/* ── TRENDS ───────────────────────────────────────────────── */}
       <div className="grid gap-6 xl:grid-cols-2">
         <GlassCard className="p-5 sm:p-6">
           <div className="border-b border-white/10 pb-4">
-            <h3 className="font-semibold text-white">Sales activity · last 14 days</h3>
+            <h3 className="font-semibold text-white">Sales activity · last {trendDays} days</h3>
             <p className="mt-0.5 text-sm text-white/40">Transactions recorded across all shops</p>
           </div>
           {loading ? (
@@ -232,7 +320,7 @@ export default function OwnerDashboard() {
 
         <GlassCard className="p-5 sm:p-6">
           <div className="border-b border-white/10 pb-4">
-            <h3 className="font-semibold text-white">Shop signups · last 14 days</h3>
+            <h3 className="font-semibold text-white">Shop signups · last {trendDays} days</h3>
             <p className="mt-0.5 text-sm text-white/40">New tenants joining the platform</p>
           </div>
           {loading ? (
@@ -326,8 +414,27 @@ export default function OwnerDashboard() {
         <div className="flex flex-col gap-6">
           <GlassCard className="p-5">
             <div className="border-b border-white/10 pb-4">
-              <h3 className="font-semibold text-white">Top shops by activity</h3>
-              <p className="mt-0.5 text-sm text-white/40">Ranked by recorded sales</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold text-white">Top shops by activity</h3>
+                  <p className="mt-0.5 text-sm text-white/40">Ranked by recorded sales</p>
+                </div>
+                <span className="rounded-full border border-white/10 bg-white/[0.06] px-2.5 py-1 text-[10px] font-semibold text-white/40">
+                  {filteredTopShops.length}
+                </span>
+              </div>
+              <div className="relative mt-3">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-white/30">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+                </div>
+                <input
+                  type="text"
+                  value={shopSearch}
+                  onChange={(e) => setShopSearch(e.target.value)}
+                  placeholder="Search shops…"
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.05] py-2 pl-9 pr-3 text-xs text-white/80 placeholder-white/25 backdrop-blur-md transition focus:border-white/25 focus:bg-white/[0.08] focus:outline-none"
+                />
+              </div>
             </div>
             {loading ? (
               <div className="mt-4 space-y-2">
@@ -335,11 +442,11 @@ export default function OwnerDashboard() {
                   <div key={i} className="h-12 animate-pulse rounded-xl bg-white/[0.04]" />
                 ))}
               </div>
-            ) : (data?.topShops || []).length === 0 ? (
-              <p className="mt-4 text-sm text-white/40">No data yet</p>
+            ) : filteredTopShops.length === 0 ? (
+              <p className="mt-4 text-sm text-white/40">{shopSearch ? 'No shops match your search' : 'No data yet'}</p>
             ) : (
               <div className="mt-4 space-y-2">
-                {(data?.topShops || []).map((shop, i) => (
+                {filteredTopShops.map((shop, i) => (
                   <Link
                     key={shop.id}
                     to={`/app/shops/${shop.id}`}

@@ -22,6 +22,48 @@ const {
 const ACTIVITY_WINDOW_HOURS = 24;
 const TREND_DAYS = 14;
 
+exports.getAllShops = async (req, res, next) => {
+  try {
+    const shops = await Shop.findAll({
+      attributes: ['id', 'name', 'slug', 'isActive', 'createdAt'],
+      include: [{ model: Setting, as: 'settings', attributes: ['currency'], required: false }],
+      order: [['createdAt', 'DESC']],
+    });
+
+    const shopMetricsRows = await sequelize.query(
+      `SELECT
+         s.id AS "shopId",
+         COALESCE(u.cnt, 0) AS "userCount",
+         COALESCE(p.cnt, 0) AS "productCount",
+         COALESCE(sale.cnt, 0) AS "saleCount"
+       FROM "shops" s
+       LEFT JOIN (SELECT "shopId", COUNT(*) AS cnt FROM "users" GROUP BY "shopId") u ON u."shopId" = s.id
+       LEFT JOIN (SELECT "shopId", COUNT(*) AS cnt FROM "products" GROUP BY "shopId") p ON p."shopId" = s.id
+       LEFT JOIN (SELECT "shopId", COUNT(*) AS cnt FROM "sales" GROUP BY "shopId") sale ON sale."shopId" = s.id
+       ORDER BY s."createdAt" DESC`,
+      { type: sequelize.QueryTypes.SELECT }
+    );
+
+    const metricsMap = new Map(shopMetricsRows.map((m) => [m.shopId, m]));
+    const results = shops.map((shop) => {
+      const m = metricsMap.get(shop.id) || {};
+      return {
+        id: shop.id,
+        name: shop.name,
+        slug: shop.slug,
+        isActive: shop.isActive,
+        createdAt: shop.createdAt,
+        currency: shop.settings?.currency || 'USD',
+        metrics: { userCount: Number(m.userCount) || 0, productCount: Number(m.productCount) || 0, saleCount: Number(m.saleCount) || 0 },
+      };
+    });
+
+    res.json({ shops: results, generatedAt: new Date().toISOString() });
+  } catch (error) {
+    next(error);
+  }
+};
+
 exports.getOverview = async (req, res, next) => {
   try {
     const now = new Date();
@@ -108,11 +150,12 @@ exports.getOverview = async (req, res, next) => {
 
 exports.getDashboard = async (req, res, next) => {
   try {
+    const trendDays = Math.min(90, Math.max(1, parseInt(req.query.days, 10) || TREND_DAYS));
     const now = new Date();
     const todayStart = new Date(now);
     todayStart.setHours(0, 0, 0, 0);
     const trendStart = new Date(now);
-    trendStart.setDate(trendStart.getDate() - (TREND_DAYS - 1));
+    trendStart.setDate(trendStart.getDate() - (trendDays - 1));
     trendStart.setHours(0, 0, 0, 0);
     const activityCutoff = new Date(now.getTime() - ACTIVITY_WINDOW_HOURS * 60 * 60 * 1000);
 
@@ -149,20 +192,20 @@ exports.getDashboard = async (req, res, next) => {
       ),
       Sale.findAll({
         attributes: [
-          [sequelize.fn('DATE', sequelize.col('Sale.createdAt')), 'day'],
+          [sequelize.fn('to_char', sequelize.col('Sale.createdAt'), 'YYYY-MM-DD'), 'day'],
           [sequelize.fn('COUNT', sequelize.col('Sale.id')), 'count'],
         ],
         where: { createdAt: { [Op.gte]: trendStart } },
-        group: [sequelize.fn('DATE', sequelize.col('Sale.createdAt'))],
+        group: [sequelize.fn('to_char', sequelize.col('Sale.createdAt'), 'YYYY-MM-DD')],
         raw: true,
       }),
       Shop.findAll({
         attributes: [
-          [sequelize.fn('DATE', sequelize.col('Shop.createdAt')), 'day'],
+          [sequelize.fn('to_char', sequelize.col('Shop.createdAt'), 'YYYY-MM-DD'), 'day'],
           [sequelize.fn('COUNT', sequelize.col('Shop.id')), 'count'],
         ],
         where: { createdAt: { [Op.gte]: trendStart } },
-        group: [sequelize.fn('DATE', sequelize.col('Shop.createdAt'))],
+        group: [sequelize.fn('to_char', sequelize.col('Shop.createdAt'), 'YYYY-MM-DD')],
         raw: true,
       }),
       Audit.findAll({
@@ -188,7 +231,7 @@ exports.getDashboard = async (req, res, next) => {
     const signupByDay = new Map(signupsTrend.map((r) => [String(r.day), Number(r.count)]));
     const salesSeries = [];
     const signupsSeries = [];
-    for (let i = 0; i < TREND_DAYS; i += 1) {
+    for (let i = 0; i < trendDays; i += 1) {
       const date = new Date(trendStart);
       date.setDate(date.getDate() + i);
       const key = date.toISOString().slice(0, 10);
@@ -242,6 +285,7 @@ exports.getDashboard = async (req, res, next) => {
         shopName: a.shop?.name || null,
       })),
       activityWindowHours: ACTIVITY_WINDOW_HOURS,
+      trendDays,
       generatedAt: now.toISOString(),
     });
   } catch (error) {

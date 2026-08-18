@@ -139,7 +139,7 @@ export const fetchProfile = () => request('/profile');
 export const updateProfile = (body) => request('/profile', { method: 'PUT', body: JSON.stringify(body) });
 export const changePassword = (body) => request('/profile/change-password', { method: 'POST', body: JSON.stringify(body) });
 export const fetchPlatformOverview = () => request('/admin/overview');
-export const fetchPlatformDashboard = () => request('/admin/dashboard');
+export const fetchPlatformDashboard = (days) => request(`/admin/dashboard${days ? `?days=${days}` : ''}`);
 export const fetchPlatformShops = () => request('/admin/shops');
 export const fetchShopDetail = (id) => request(`/admin/shops/${id}`);
 export const deleteShop = (id) => request(`/admin/shops/${id}`, { method: 'DELETE' });
