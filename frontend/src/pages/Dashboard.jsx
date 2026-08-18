@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { fetchBestSelling, fetchDashboardSummary, fetchProducts, fetchSales, fetchSettings } from '../utils/api';
+import { fetchBestSelling, fetchDashboardStats, fetchDashboardSummary } from '../utils/api';
 import { getUser } from '../utils/auth';
 
 function formatMoney(currency, value) {
@@ -88,28 +88,22 @@ function SalesTooltip({ active, payload, label, currency }) {
 
 export default function Dashboard() {
   const user = getUser();
-  const [products, setProducts] = useState([]);
-  const [sales, setSales] = useState([]);
+  const [dashboardStats, setDashboardStats] = useState(null);
   const [bestSelling, setBestSelling] = useState([]);
   const [summary, setSummary] = useState(null);
-  const [currency, setCurrency] = useState('UGX');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadStats() {
       try {
-        const [productData, saleData, settings, bestSellingData, summaryData] = await Promise.all([
-          fetchProducts(),
-          fetchSales(),
-          fetchSettings(),
+        const [statsData, bestSellingData, summaryData] = await Promise.all([
+          fetchDashboardStats(),
           fetchBestSelling(),
           fetchDashboardSummary(),
         ]);
-        setProducts(productData);
-        setSales(saleData);
+        setDashboardStats(statsData);
         setBestSelling(bestSellingData);
         setSummary(summaryData);
-        setCurrency(settings.currency || 'UGX');
       } catch (error) {
         console.error(error);
       } finally {
@@ -119,46 +113,34 @@ export default function Dashboard() {
     loadStats();
   }, []);
 
-  const totalProducts = products.length;
-  const totalStock = products.reduce((sum, product) => sum + Number(product.quantity || 0), 0);
-  const lowStockItems = useMemo(
-    () => products.filter((product) => Number(product.quantity || 0) < Math.max(5, Number(product.lowStock || 0))).slice(0, 5),
-    [products]
-  );
-  const lowStockCount = lowStockItems.length;
+  const currency = summary?.periods?.thisMonth?.netSales !== undefined ? (user?.shop?.currency || 'UGX') : 'UGX';
+  const totalProducts = dashboardStats?.products?.totalProducts || 0;
+  const totalStock = dashboardStats?.products?.totalStock || 0;
+  const lowStockCount = dashboardStats?.products?.lowStockCount || 0;
   const todaysSales = Number(summary?.periods?.today?.orderCount || 0);
-  const totalRevenue = Number(summary?.periods?.thisMonth?.netSales || sales.reduce((sum, sale) => sum + parseFloat(sale.total || 0), 0));
+  const totalRevenue = Number(summary?.periods?.thisMonth?.netSales || 0);
   const totalProfit = Number(summary?.periods?.thisMonth?.grossProfit || 0);
 
   const salesTrend = useMemo(() => {
     const today = new Date();
     const days = [];
-
     for (let index = 6; index >= 0; index -= 1) {
       const date = new Date(today);
       date.setHours(0, 0, 0, 0);
       date.setDate(today.getDate() - index);
-
       days.push({
         key: date.toISOString().slice(0, 10),
         label: date.toLocaleDateString([], { weekday: 'short' }),
         sales: 0,
       });
     }
-
     const dayMap = new Map(days.map((day) => [day.key, day]));
-    sales.forEach((sale) => {
-      const saleDate = new Date(sale.createdAt);
-      saleDate.setHours(0, 0, 0, 0);
-      const key = saleDate.toISOString().slice(0, 10);
-      const bucket = dayMap.get(key);
-      if (bucket) {
-        bucket.sales += Number(sale.total || 0);
-      }
+    (dashboardStats?.salesTrend || []).forEach((row) => {
+      const bucket = dayMap.get(row.day);
+      if (bucket) bucket.sales = Number(row.sales || 0);
     });
-
     return days;
-  }, [sales]);
+  }, [dashboardStats]);
 
   const bestProductData = useMemo(
     () => bestSelling.slice(0, 5).map((item) => ({
@@ -169,17 +151,15 @@ export default function Dashboard() {
   );
   const shopName = user?.shop?.name || 'StockDesk Shop';
   const todayRevenue = Number(summary?.periods?.today?.netSales || 0);
-  const lowStockProducts = products.filter((product) => Number(product.quantity || 0) < Math.max(5, Number(product.lowStock || 0)));
   const weeklySalesTotal = useMemo(() => salesTrend.reduce((sum, item) => sum + Number(item.sales || 0), 0), [salesTrend]);
   const weeklyAverageSales = salesTrend.length ? weeklySalesTotal / salesTrend.length : 0;
-  const lowStockPreview = lowStockItems.slice(0, 3);
   const topProductsPreview = bestProductData.slice(0, 4);
   const bestDay = salesTrend.length ? salesTrend.reduce((best, current) => (current.sales > best.sales ? current : best), salesTrend[0]).label : '-';
 
   return (
     <div className="space-y-4">
       {/* Low-stock alert banner */}
-      {!loading && lowStockProducts.length > 0 && (
+      {!loading && lowStockCount > 0 && (
         <div className="flex items-start gap-3 rounded-[1.25rem] border border-amber-400/30 bg-amber-400/10 px-4 py-3">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="mt-0.5 h-5 w-5 shrink-0 text-amber-500">
             <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
@@ -188,12 +168,10 @@ export default function Dashboard() {
           </svg>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold text-amber-600 dark:text-amber-400">
-              {lowStockProducts.length} product{lowStockProducts.length !== 1 ? 's' : ''} running low on stock
+              {lowStockCount} product{lowStockCount !== 1 ? 's' : ''} running low on stock
             </p>
             <p className="mt-0.5 text-xs text-amber-600/80 dark:text-amber-400/80">
-              {lowStockProducts.slice(0, 3).map((p) => p.name).join(', ')}
-              {lowStockProducts.length > 3 && ` and ${lowStockProducts.length - 3} more`}
-              {' — '}restock via Products &rsaquo; Restock.
+              Restock via Products &rsaquo; Restock.
             </p>
           </div>
         </div>
@@ -233,39 +211,21 @@ export default function Dashboard() {
               value={totalProducts.toLocaleString()}
               helper="Products currently in catalog"
               eyebrow="Inventory"
-              icon={
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
-                  <path d="m3 7 9-4 9 4-9 4-9-4Z" />
-                  <path d="m3 7 9 4 9-4" />
-                  <path d="M12 11v10" />
-                </svg>
-              }
+              icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path d="m3 7 9-4 9 4-9 4-9-4Z" /><path d="m3 7 9 4 9-4" /><path d="M12 11v10" /></svg>}
             />
             <StatCard
               title="Total Stock"
               value={totalStock.toLocaleString()}
               helper="Units available for sale"
               eyebrow="Stock Level"
-              icon={
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
-                  <path d="M4 7h16v10H4z" />
-                  <path d="M8 11h8" />
-                </svg>
-              }
+              icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path d="M4 7h16v10H4z" /><path d="M8 11h8" /></svg>}
             />
             <StatCard
-              title="Today's Sales"
+              title="Today's Orders"
               value={todaysSales.toLocaleString()}
               helper="Orders recorded today"
               eyebrow="Daily Activity"
-              icon={
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
-                  <path d="M4 19h16" />
-                  <path d="M7 15V9" />
-                  <path d="M12 15V5" />
-                  <path d="M17 15v-2" />
-                </svg>
-              }
+              icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path d="M4 19h16" /><path d="M7 15V9" /><path d="M12 15V5" /><path d="M17 15v-2" /></svg>}
             />
             <StatCard
               title="Total Revenue"
@@ -273,12 +233,7 @@ export default function Dashboard() {
               helper="This month net sales"
               tone="success"
               eyebrow="Revenue"
-              icon={
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
-                  <path d="M12 1v22" />
-                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7H14.5a3.5 3.5 0 0 1 0 7H6" />
-                </svg>
-              }
+              icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path d="M12 1v22" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7H14.5a3.5 3.5 0 0 1 0 7H6" /></svg>}
             />
             <StatCard
               title="Gross Profit"
@@ -286,26 +241,15 @@ export default function Dashboard() {
               helper="This month estimated gross profit"
               tone="warning"
               eyebrow="Profit"
-              icon={
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
-                  <path d="M4 16l5-5 4 4 7-8" />
-                  <path d="M14 7h6v6" />
-                </svg>
-              }
+              icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path d="M4 16l5-5 4 4 7-8" /><path d="M14 7h6v6" /></svg>}
             />
             <StatCard
               title="Low Stock Items"
-              value={lowStockProducts.length.toLocaleString()}
+              value={lowStockCount.toLocaleString()}
               helper="Products below safe stock level"
               tone="danger"
               eyebrow="Attention"
-              icon={
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
-                  <path d="M12 9v4" />
-                  <path d="M12 17h.01" />
-                  <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />
-                </svg>
-              }
+              icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path d="M12 9v4" /><path d="M12 17h.01" /><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" /></svg>}
             />
           </section>
 
@@ -355,8 +299,8 @@ export default function Dashboard() {
 
             <SectionCard
               title="Operations Snapshot"
-              subtitle="Low stock, top products, and inventory health in one compact view."
-              action={<div className="app-panel-soft rounded-[1rem] border px-3 py-2 text-sm text-[var(--text-muted)]">{sales.length} total sales</div>}
+              subtitle="Top products, and inventory health in one compact view."
+              action={<div className="app-panel-soft rounded-[1rem] border px-3 py-2 text-sm text-[var(--text-muted)]">{summary?.periods?.thisMonth?.orderCount || 0} orders this month</div>}
             >
               <div className="space-y-4">
                 <div>
@@ -364,27 +308,10 @@ export default function Dashboard() {
                     <h3 className="text-sm font-semibold text-[var(--text-primary)]">Low Stock</h3>
                     <span className="text-xs font-medium text-[var(--text-muted)]">{lowStockCount} flagged</span>
                   </div>
-                  {lowStockPreview.length ? (
-                    <div className="space-y-2.5">
-                      {lowStockPreview.map((product) => (
-                        <div key={product.id} className="flex items-start gap-3 rounded-[1rem] border border-[var(--danger-border)] bg-[var(--danger-soft)] px-3 py-3 transition hover:border-[var(--danger)] hover:shadow-md">
-                          <DashboardIcon tone={Number(product.quantity || 0) === 0 ? 'danger' : 'warning'}>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
-                              <path d="M12 9v4" />
-                              <path d="M12 17h.01" />
-                              <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />
-                            </svg>
-                          </DashboardIcon>
-                          <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-medium text-[var(--text-primary)]">{product.name}</p>
-                            <p className="mt-0.5 text-xs text-[var(--text-muted)]">{product.category || 'Uncategorized'}</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-sm font-semibold text-[var(--danger)]">{product.quantity} left</p>
-                            <p className="mt-0.5 text-xs text-[var(--text-muted)]">Min {Math.max(5, Number(product.lowStock || 0))}</p>
-                          </div>
-                        </div>
-                      ))}
+                  {lowStockCount > 0 ? (
+                    <div className="app-panel-soft rounded-[1rem] border border-amber-400/20 bg-amber-400/5 px-4 py-4 text-center">
+                      <p className="text-sm font-medium text-amber-600">{lowStockCount} products need restocking</p>
+                      <p className="mt-1 text-xs text-amber-600/70">Visit Products &rsaquo; Restock to replenish inventory.</p>
                     </div>
                   ) : (
                     <EmptyState title="Inventory looks healthy" message="No products are currently below the low stock threshold." />

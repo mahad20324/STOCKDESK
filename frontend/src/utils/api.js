@@ -192,6 +192,7 @@ export const fetchReturns = () => request('/sales/returns');
 export const fetchBestSelling = () => request('/reports/best-selling');
 export const fetchCashierReport = () => request('/reports/by-cashier');
 export const fetchDashboardSummary = () => request('/reports/summary');
+export const fetchDashboardStats = () => request('/reports/dashboard-stats');
 export const fetchRangeReport = (start, end) => request(`/reports/range?start=${start}&end=${end}`);
 export const fetchCustomerSales = (customerId) => request(`/reports/customer/${customerId}`);
 export const fetchExpenses = (start, end) => request(`/expenses${start && end ? `?start=${start}&end=${end}` : ''}`);

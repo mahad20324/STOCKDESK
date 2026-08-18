@@ -24,56 +24,64 @@ const TREND_DAYS = 14;
 
 exports.getOverview = async (req, res, next) => {
   try {
-    const shops = await Shop.findAll({
-      attributes: ['id', 'name', 'slug', 'isActive', 'createdAt'],
-      include: [{ model: Setting, as: 'settings', attributes: ['currency'], required: false }],
-      order: [['createdAt', 'DESC']],
-    });
-
     const now = new Date();
     const todayStart = new Date(now);
     todayStart.setHours(0, 0, 0, 0);
     const activityCutoff = new Date(now.getTime() - ACTIVITY_WINDOW_HOURS * 60 * 60 * 1000);
 
-    const results = await Promise.all(
-      shops.map(async (shop) => {
-        const [owner, userCount, productCount, saleCount, lastSale] = await Promise.all([
-          User.findOne({
-            where: { shopId: shop.id, role: 'Admin' },
-            attributes: ['id', 'name', 'username', 'email', 'isVerified', 'createdAt'],
-            order: [['createdAt', 'ASC']],
-          }),
-          User.count({ where: { shopId: shop.id } }),
-          Product.count({ where: { shopId: shop.id } }),
-          Sale.count({ where: { shopId: shop.id } }),
-          Sale.findOne({
-            where: { shopId: shop.id },
-            order: [['createdAt', 'DESC']],
-            attributes: ['id', 'createdAt', 'cashierId'],
-            include: [{ model: User, as: 'cashier', attributes: ['username', 'role'], required: false }],
-          }),
-        ]);
+    const [shops, shopMetrics] = await Promise.all([
+      Shop.findAll({
+        attributes: ['id', 'name', 'slug', 'isActive', 'createdAt'],
+        include: [{ model: Setting, as: 'settings', attributes: ['currency'], required: false }],
+        order: [['createdAt', 'DESC']],
+      }),
+      sequelize.query(
+        `SELECT
+           s.id AS "shopId",
+           COALESCE(u.user_count, 0) AS "userCount",
+           COALESCE(p.product_count, 0) AS "productCount",
+           COALESCE(sale.sale_count, 0) AS "saleCount",
+           la."lastSaleAt",
+           la."lastCashierName",
+           la."lastCashierRole"
+         FROM "shops" s
+         LEFT JOIN (SELECT "shopId", COUNT(*) AS user_count FROM "users" GROUP BY "shopId") u ON u."shopId" = s.id
+         LEFT JOIN (SELECT "shopId", COUNT(*) AS product_count FROM "products" GROUP BY "shopId") p ON p."shopId" = s.id
+         LEFT JOIN (SELECT "shopId", COUNT(*) AS sale_count FROM "sales" GROUP BY "shopId") sale ON sale."shopId" = s.id
+         LEFT JOIN (
+           SELECT
+             sl."shopId",
+             sl."createdAt" AS "lastSaleAt",
+             u2."username" AS "lastCashierName",
+             u2."role" AS "lastCashierRole"
+           FROM "sales" sl
+           LEFT JOIN "users" u2 ON u2.id = sl."cashierId"
+           WHERE sl.id IN (SELECT MAX(id) FROM "sales" GROUP BY "shopId")
+         ) la ON la."shopId" = s.id
+         ORDER BY s."createdAt" DESC`,
+        { type: sequelize.QueryTypes.SELECT }
+      ),
+    ]);
 
-        const lastLoginAt = lastSale?.createdAt || null;
-        const lastActiveUser = lastSale?.cashier
-          ? { username: lastSale.cashier.username, role: lastSale.cashier.role }
-          : null;
+    const metricsMap = new Map(shopMetrics.map((m) => [m.shopId, m]));
 
-        return {
-          id: shop.id,
-          name: shop.name,
-          slug: shop.slug,
-          isActive: shop.isActive,
-          createdAt: shop.createdAt,
-          currency: shop.settings?.currency || 'USD',
-          owner: owner
-            ? { id: owner.id, name: owner.name, username: owner.username, email: owner.email, isVerified: owner.isVerified, createdAt: owner.createdAt }
-            : null,
-          metrics: { userCount, productCount, saleCount },
-          activity: { lastLoginAt, lastActiveUser },
-        };
-      })
-    );
+    const results = shops.map((shop) => {
+      const m = metricsMap.get(shop.id) || {};
+      return {
+        id: shop.id,
+        name: shop.name,
+        slug: shop.slug,
+        isActive: shop.isActive,
+        createdAt: shop.createdAt,
+        currency: shop.settings?.currency || 'USD',
+        owner: null,
+        metrics: { userCount: Number(m.userCount) || 0, productCount: Number(m.productCount) || 0, saleCount: Number(m.saleCount) || 0 },
+        activity: {
+          lastLoginAt: m.lastSaleAt || null,
+          lastActiveUser: m.lastCashierName ? { username: m.lastCashierName, role: m.lastCashierRole } : null,
+        },
+      };
+    });
 
     const totalUsers = await User.count({ where: { shopId: { [Op.not]: null } } });
     const newShopsToday = results.filter((s) => new Date(s.createdAt) >= todayStart).length;
@@ -110,6 +118,7 @@ exports.getDashboard = async (req, res, next) => {
 
     const [
       shops,
+      shopMetricsRows,
       salesTrend,
       signupsTrend,
       recentAudits,
@@ -125,6 +134,19 @@ exports.getDashboard = async (req, res, next) => {
         include: [{ model: Setting, as: 'settings', attributes: ['currency'], required: false }],
         order: [['createdAt', 'DESC']],
       }),
+      sequelize.query(
+        `SELECT
+           s.id AS "shopId",
+           COALESCE(u.cnt, 0) AS "userCount",
+           COALESCE(p.cnt, 0) AS "productCount",
+           COALESCE(sale.cnt, 0) AS "saleCount"
+         FROM "shops" s
+         LEFT JOIN (SELECT "shopId", COUNT(*) AS cnt FROM "users" GROUP BY "shopId") u ON u."shopId" = s.id
+         LEFT JOIN (SELECT "shopId", COUNT(*) AS cnt FROM "products" GROUP BY "shopId") p ON p."shopId" = s.id
+         LEFT JOIN (SELECT "shopId", COUNT(*) AS cnt FROM "sales" GROUP BY "shopId") sale ON sale."shopId" = s.id
+         ORDER BY s."createdAt" DESC`,
+        { type: sequelize.QueryTypes.SELECT }
+      ),
       Sale.findAll({
         attributes: [
           [sequelize.fn('DATE', sequelize.col('Sale.createdAt')), 'day'],
@@ -144,7 +166,7 @@ exports.getDashboard = async (req, res, next) => {
         raw: true,
       }),
       Audit.findAll({
-        limit: 40,
+        limit: 20,
         order: [['createdAt', 'DESC']],
         attributes: ['id', 'shopId', 'action', 'entityType', 'entityId', 'details', 'ipAddress', 'createdAt'],
         include: [
@@ -160,6 +182,8 @@ exports.getDashboard = async (req, res, next) => {
       Shop.count({ where: { createdAt: { [Op.gte]: todayStart } } }),
     ]);
 
+    const metricsMap = new Map(shopMetricsRows.map((m) => [m.shopId, m]));
+
     const saleByDay = new Map(salesTrend.map((r) => [String(r.day), Number(r.count)]));
     const signupByDay = new Map(signupsTrend.map((r) => [String(r.day), Number(r.count)]));
     const salesSeries = [];
@@ -172,24 +196,18 @@ exports.getDashboard = async (req, res, next) => {
       signupsSeries.push({ day: key, label: date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }), count: signupByDay.get(key) || 0 });
     }
 
-    const shopsWithMetrics = await Promise.all(
-      shops.map(async (shop) => {
-        const [userCount, productCount, saleCount] = await Promise.all([
-          User.count({ where: { shopId: shop.id } }),
-          Product.count({ where: { shopId: shop.id } }),
-          Sale.count({ where: { shopId: shop.id } }),
-        ]);
-        return {
-          id: shop.id,
-          name: shop.name,
-          slug: shop.slug,
-          isActive: shop.isActive,
-          createdAt: shop.createdAt,
-          currency: shop.settings?.currency || 'USD',
-          metrics: { userCount, productCount, saleCount },
-        };
-      })
-    );
+    const shopsWithMetrics = shops.map((shop) => {
+      const m = metricsMap.get(shop.id) || {};
+      return {
+        id: shop.id,
+        name: shop.name,
+        slug: shop.slug,
+        isActive: shop.isActive,
+        createdAt: shop.createdAt,
+        currency: shop.settings?.currency || 'USD',
+        metrics: { userCount: Number(m.userCount) || 0, productCount: Number(m.productCount) || 0, saleCount: Number(m.saleCount) || 0 },
+      };
+    });
 
     const recentlyActiveShops = shopsWithMetrics.filter((s) => {
       const audits = recentAudits.filter((a) => a.shopId === s.id && new Date(a.createdAt) >= activityCutoff);

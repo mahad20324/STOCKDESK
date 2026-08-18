@@ -1,6 +1,7 @@
 const { Sale, SaleItem, Product, User, Expense } = require('../models');
-const { fn, col, Op } = require('sequelize');
+const { fn, col, Op, literal } = require('sequelize');
 const { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, getMetricsForRange } = require('../utils/businessMetrics');
+const sequelize = require('../config/db');
 
 function buildComparison(currentValue, previousValue) {
   const delta = currentValue - previousValue;
@@ -73,6 +74,46 @@ exports.summary = async (req, res, next) => {
           itemsSold: buildComparison(thisMonth.itemsSold, lastMonth.itemsSold),
         },
       },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.dashboardStats = async (req, res, next) => {
+  try {
+    const shopId = req.user.shopId;
+    const now = new Date();
+    const sevenDaysAgo = new Date(now);
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+
+    const [productStats, salesTrend] = await Promise.all([
+      sequelize.query(
+        `SELECT
+           COUNT(*)::int AS "totalProducts",
+           COALESCE(SUM("quantity"), 0)::int AS "totalStock",
+           COUNT(*) FILTER (WHERE "quantity" < GREATEST(5, COALESCE("lowStock", 5)))::int AS "lowStockCount"
+         FROM "products"
+         WHERE "shopId" = :shopId`,
+        { replacements: { shopId }, type: sequelize.QueryTypes.SELECT }
+      ),
+      sequelize.query(
+        `SELECT
+           to_char(s."createdAt", 'YYYY-MM-DD') AS "day",
+           COALESCE(SUM(s."total"), 0) AS "sales",
+           COUNT(s.id)::int AS "orders"
+         FROM "sales" s
+         WHERE s."shopId" = :shopId AND s."createdAt" >= :start
+         GROUP BY to_char(s."createdAt", 'YYYY-MM-DD')
+         ORDER BY day`,
+        { replacements: { shopId, start: sevenDaysAgo }, type: sequelize.QueryTypes.SELECT }
+      ),
+    ]);
+
+    res.json({
+      products: productStats[0] || { totalProducts: 0, totalStock: 0, lowStockCount: 0 },
+      salesTrend: salesTrend,
     });
   } catch (error) {
     next(error);

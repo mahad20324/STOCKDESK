@@ -12,6 +12,14 @@ function formatDate(raw) {
   return String(raw).slice(0, 10);
 }
 
+function getYesterdayDate() {
+  const now = new Date();
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+  yesterday.setHours(0, 0, 0, 0);
+  return yesterday;
+}
+
 async function closeMissingDaysForShop(shopId, existingDates, now) {
   const admin = await User.findOne({
     where: { shopId, role: { [Op.in]: ['SuperAdmin', 'Admin'] } },
@@ -51,19 +59,66 @@ async function closeMissingDaysForShop(shopId, existingDates, now) {
   return created;
 }
 
+async function closeYesterdayForShop(shopId, existingDates, yesterday) {
+  const admin = await User.findOne({
+    where: { shopId, role: { [Op.in]: ['SuperAdmin', 'Admin'] } },
+    order: [['id', 'ASC']],
+    attributes: ['id'],
+  });
+  if (!admin) return false;
+
+  const dateStr = formatDate(yesterday);
+  if (existingDates.has(dateStr)) return false;
+
+  const hasSales = await sequelize.query(
+    `SELECT 1 FROM "sales" WHERE "shopId" = :shopId AND "createdAt" >= :start AND "createdAt" <= :end LIMIT 1`,
+    {
+      replacements: { shopId, start: startOfDay(yesterday), end: endOfDay(yesterday) },
+      type: QueryTypes.SELECT,
+    }
+  );
+
+  if (!hasSales.length) return false;
+
+  const metrics = await getMetricsForRange(shopId, startOfDay(yesterday), endOfDay(yesterday));
+
+  try {
+    await DayClosure.create({
+      closedForDate: dateStr,
+      closedByUserId: admin.id,
+      shopId,
+      ...metrics,
+    });
+    console.log(`[auto-close] Auto-closed ${dateStr} for shop ${shopId}`);
+    return true;
+  } catch (error) {
+    if (error.name === 'SequelizeUniqueConstraintError') return false;
+    throw error;
+  }
+}
+
 async function autoCloseBusinessDays() {
   if (running) return 0;
   running = true;
   let totalCreated = 0;
   try {
     const now = new Date();
+    const yesterday = getYesterdayDate();
     const shops = await Shop.findAll({ attributes: ['id'] });
+
     for (const shop of shops) {
       const closures = await DayClosure.findAll({
         where: { shopId: shop.id },
         attributes: ['closedForDate'],
       });
       const existing = new Set(closures.map((c) => formatDate(c.closedForDate)));
+
+      const closedYesterday = await closeYesterdayForShop(shop.id, existing, yesterday);
+      if (closedYesterday) {
+        totalCreated += 1;
+        existing.add(formatDate(yesterday));
+      }
+
       totalCreated += await closeMissingDaysForShop(shop.id, existing, now);
     }
     if (totalCreated > 0) {
@@ -77,11 +132,11 @@ async function autoCloseBusinessDays() {
   return totalCreated;
 }
 
-function startAutoCloseScheduler({ intervalMs = 5 * 60 * 1000 } = {}) {
+function startAutoCloseScheduler({ intervalMs = 60 * 1000 } = {}) {
   const run = () => {
     autoCloseBusinessDays().catch(() => {});
   };
-  setTimeout(run, 10 * 1000);
+  setTimeout(run, 5 * 1000);
   const timer = setInterval(run, intervalMs);
   if (timer.unref) timer.unref();
   console.log(`[auto-close] Scheduler started (every ${Math.round(intervalMs / 1000)}s)`);
