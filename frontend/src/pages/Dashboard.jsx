@@ -92,23 +92,40 @@ export default function Dashboard() {
   const [bestSelling, setBestSelling] = useState([]);
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadErrors, setLoadErrors] = useState([]);
 
   useEffect(() => {
     async function loadStats() {
-      try {
-        const [statsData, bestSellingData, summaryData] = await Promise.all([
-          fetchDashboardStats(),
-          fetchBestSelling(),
-          fetchDashboardSummary(),
-        ]);
-        setDashboardStats(statsData);
-        setBestSelling(bestSellingData);
-        setSummary(summaryData);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
+      const errors = [];
+      const [statsResult, bestResult, summaryResult] = await Promise.allSettled([
+        fetchDashboardStats(),
+        fetchBestSelling(),
+        fetchDashboardSummary(),
+      ]);
+
+      if (statsResult.status === 'fulfilled') {
+        setDashboardStats(statsResult.value);
+      } else {
+        console.error('Dashboard stats failed:', statsResult.reason);
+        errors.push('Stats: ' + (statsResult.reason?.message || 'Unknown error'));
       }
+
+      if (bestResult.status === 'fulfilled') {
+        setBestSelling(bestResult.value);
+      } else {
+        console.error('Best selling failed:', bestResult.reason);
+        errors.push('Best Selling: ' + (bestResult.reason?.message || 'Unknown error'));
+      }
+
+      if (summaryResult.status === 'fulfilled') {
+        setSummary(summaryResult.value);
+      } else {
+        console.error('Dashboard summary failed:', summaryResult.reason);
+        errors.push('Summary: ' + (summaryResult.reason?.message || 'Unknown error'));
+      }
+
+      if (errors.length) setLoadErrors(errors);
+      setLoading(false);
     }
     loadStats();
   }, []);
@@ -158,6 +175,17 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-4">
+      {/* Error banner */}
+      {!loading && loadErrors.length > 0 && (
+        <div className="rounded-[1.25rem] border border-red-400/30 bg-red-400/10 px-4 py-3">
+          <p className="text-sm font-semibold text-red-600 dark:text-red-400">Some dashboard data failed to load</p>
+          {loadErrors.map((err) => (
+            <p key={err} className="mt-1 text-xs text-red-600/80 dark:text-red-400/80">{err}</p>
+          ))}
+          <p className="mt-2 text-xs text-red-600/60 dark:text-red-400/60">Check the browser console for full details.</p>
+        </div>
+      )}
+
       {/* Low-stock alert banner */}
       {!loading && lowStockCount > 0 && (
         <div className="flex items-start gap-3 rounded-[1.25rem] border border-amber-400/30 bg-amber-400/10 px-4 py-3">
