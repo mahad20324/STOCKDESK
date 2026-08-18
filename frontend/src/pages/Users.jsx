@@ -149,6 +149,7 @@ export default function Users() {
                 <tr>
                   <th className="px-4 py-3">Name</th>
                   <th className="px-4 py-3">Username</th>
+                  <th className="px-4 py-3">Email</th>
                   <th className="px-4 py-3">Role</th>
                   <th className="px-4 py-3">Created</th>
                   <th className="px-4 py-3">Action</th>
@@ -159,6 +160,25 @@ export default function Users() {
                   <tr key={user.id} className="app-row-hover transition">
                     <td className="px-4 py-3 font-medium text-[var(--text-primary)]">{user.name || '-'}</td>
                     <td className="px-4 py-3">{user.username || '-'}</td>
+                    <td className="px-4 py-3">
+                      {user.email ? (
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-sm text-[var(--text-primary)]">{user.email}</span>
+                          {user.isVerified ? (
+                            <span className="inline-flex items-center gap-0.5 rounded-full border border-[var(--success-border)] bg-[var(--success-soft)] px-1.5 py-0.5 text-[10px] font-semibold text-[var(--success)]">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="h-2.5 w-2.5"><polyline points="20 6 9 17 4 12" /></svg>
+                              Verified
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-0.5 rounded-full border border-[var(--warning-border)] bg-[var(--warning-soft)] px-1.5 py-0.5 text-[10px] font-semibold text-[var(--warning)]">
+                              Pending
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-sm text-[var(--text-muted)]">—</span>
+                      )}
+                    </td>
                     <td className="px-4 py-3">
                       <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${
                         (user.displayRole || user.role) === 'Admin'

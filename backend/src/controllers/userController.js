@@ -10,7 +10,7 @@ exports.listUsers = async (req, res, next) => {
   try {
     const users = await User.findAll({
       where: { shopId: req.user.shopId },
-      attributes: ['id', 'name', 'username', 'role', 'displayRole', 'createdAt', 'shopId'],
+      attributes: ['id', 'name', 'username', 'email', 'role', 'displayRole', 'isVerified', 'createdAt', 'shopId'],
       order: [['createdAt', 'ASC']],
     });
     res.json(users);
@@ -56,7 +56,7 @@ exports.createUser = async (req, res, next) => {
     const user = await User.create({
       name: username,
       username,
-      email: null,
+      email: req.user.email || null,
       password: hash,
       role,
       displayRole,
@@ -64,11 +64,11 @@ exports.createUser = async (req, res, next) => {
       isVerified: true,
       verificationToken: null,
     });
-    // Return plaintext password to admin only (visible in response)
     res.status(201).json({
       id: user.id,
       name: user.name,
       username: user.username,
+      email: user.email,
       plainPassword: password,
       role: user.role,
       displayRole: user.displayRole,

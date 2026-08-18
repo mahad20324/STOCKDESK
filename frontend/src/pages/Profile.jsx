@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { fetchProfile, updateProfile, resendVerification, changePassword } from '../utils/api';
 import { getToken, updateToken } from '../utils/auth';
 
-function resizeImage(file, maxSize = 256) {
+function resizeImage(file, maxSize = 512) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (event) => {
@@ -16,7 +16,7 @@ function resizeImage(file, maxSize = 256) {
         canvas.height = height;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(image, 0, 0, width, height);
-        resolve(canvas.toDataURL('image/jpeg', 0.85));
+        resolve(canvas.toDataURL('image/jpeg', 0.9));
       };
       image.onerror = () => reject(new Error('Could not read the selected image'));
       image.src = event.target.result;
@@ -73,19 +73,30 @@ function EyeIcon({ on = false }) {
   );
 }
 
-function StatCard({ icon, label, value }) {
+function ShieldIcon() {
   return (
-    <div className="app-panel rounded-[1.2rem] border border-l-[3px] border-l-[var(--accent)] p-4 transition duration-200 hover:shadow-lg">
-      <div className="flex items-center gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(135deg,rgba(30,167,189,0.18),rgba(30,167,189,0.08))] text-[var(--accent)] ring-1 ring-[rgba(30,167,189,0.12)]">
-          {icon}
-        </span>
-        <div>
-          <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">{label}</p>
-          <p className="mt-0.5 text-2xl font-bold tracking-tight text-[var(--text-primary)]">{value}</p>
-        </div>
-      </div>
-    </div>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    </svg>
+  );
+}
+
+function ShopIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+      <path d="M3 21h18" />
+      <path d="M5 21V8l7-4 7 4v13" />
+      <path d="M9 21v-4h6v4" />
+    </svg>
+  );
+}
+
+function UserIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 21c0-4 3.6-6 8-6s8 2 8 6" />
+    </svg>
   );
 }
 
@@ -100,6 +111,7 @@ export default function Profile() {
   const [resending, setResending] = useState(false);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('success');
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
   const fileInputRef = useRef(null);
 
   const [currentPassword, setCurrentPassword] = useState('');
@@ -141,6 +153,7 @@ export default function Profile() {
       setAvatarUrl(dataUrl);
       setAvatarPreview(dataUrl);
       setAvatarChanged(true);
+      setShowAvatarModal(true);
       setMessage('');
     } catch (error) {
       setMessage(error.message);
@@ -152,6 +165,7 @@ export default function Profile() {
     setAvatarUrl(null);
     setAvatarPreview(null);
     setAvatarChanged(true);
+    setShowAvatarModal(false);
     setMessage('');
   };
 
@@ -238,7 +252,7 @@ export default function Profile() {
   };
 
   const initials = String(profile?.name || 'S').slice(0, 1).toUpperCase();
-  const roleLabel = profile?.role === 'SuperAdmin' ? 'Platform Administrator' : profile?.role || 'User';
+  const roleLabel = profile?.role === 'SuperAdmin' ? 'Platform Administrator' : profile?.displayRole || profile?.role || 'User';
   const memberSince = profile?.createdAt
     ? new Date(profile.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
     : '';
@@ -247,40 +261,53 @@ export default function Profile() {
 
   return (
     <div className="space-y-6">
-      {/* Hero */}
+      {/* Hero with Avatar */}
       <section className="app-panel overflow-hidden rounded-[2rem] border">
-        <div className="relative h-28 bg-[linear-gradient(135deg,var(--accent),var(--accent-hover))]">
+        <div className="relative h-32 bg-[linear-gradient(135deg,var(--accent),var(--accent-hover))]">
           <div className="pointer-events-none absolute -right-10 -top-10 h-44 w-44 rounded-full bg-white/10 blur-2xl" />
           <div className="pointer-events-none absolute -bottom-16 right-1/3 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
           <div className="absolute right-5 top-5 flex items-center gap-2">
             {profile?.isVerified ? (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white backdrop-blur">
                 <CheckIcon />
-                Email verified
+                Verified
               </span>
             ) : email ? (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white backdrop-blur">
                 <AlertIcon />
-                Email pending
+                Pending
               </span>
             ) : null}
           </div>
         </div>
 
         <div className="relative px-6 pb-6">
-          <div className="-mt-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-5">
-            <div className="group relative h-24 w-24 shrink-0 cursor-pointer rounded-full ring-4 ring-[var(--surface-primary)]" onClick={() => fileInputRef.current?.click()}>
-              {avatarPreview ? (
-                <img src={avatarPreview} alt="Profile avatar" className="h-full w-full rounded-full object-cover" />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center rounded-full bg-[var(--accent-soft)] text-4xl font-bold text-[var(--accent)]">
-                  {initials}
-                </div>
-              )}
-              <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 text-white opacity-0 transition group-hover:opacity-100">
-                <CameraIcon />
-              </span>
+          <div className="-mt-14 flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-5">
+            {/* Avatar */}
+            <div className="group relative shrink-0" onClick={() => fileInputRef.current?.click()}>
+              <div className="relative h-28 w-28 cursor-pointer">
+                {avatarPreview ? (
+                  <img
+                    src={avatarPreview}
+                    alt="Profile avatar"
+                    className="h-full w-full rounded-2xl object-cover ring-4 ring-[var(--surface-primary)] shadow-xl"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center rounded-2xl bg-[var(--accent-soft)] text-4xl font-bold text-[var(--accent)] ring-4 ring-[var(--surface-primary)] shadow-xl">
+                    {initials}
+                  </div>
+                )}
+                <span className="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/50 text-white opacity-0 transition group-hover:opacity-100 ring-4 ring-[var(--surface-primary)]">
+                  <CameraIcon />
+                </span>
+                {/* Online status dot */}
+                <span className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-[var(--surface-primary)] bg-[var(--success)]">
+                  <CheckIcon />
+                </span>
+              </div>
             </div>
+
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
 
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2.5">
@@ -293,7 +320,7 @@ export default function Profile() {
                 {isSuperAdmin
                   ? 'Platform Console · All registered shops'
                   : profile?.shop
-                  ? `${profile.shop.name} · ${profile.shop.slug}`
+                  ? `${profile.shop.name} · @${profile.shop.slug}`
                   : 'No shop assigned'}
               </p>
               <p className="mt-1.5 flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
@@ -307,7 +334,6 @@ export default function Profile() {
               </p>
             </div>
 
-            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
             <div className="flex items-center gap-2">
               <button
                 type="button"
@@ -330,6 +356,37 @@ export default function Profile() {
         </div>
       </section>
 
+      {/* Avatar Preview Modal */}
+      {showAvatarModal && avatarPreview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setShowAvatarModal(false)}>
+          <div className="mx-4 w-full max-w-md rounded-3xl border border-[var(--border-default)] bg-[var(--surface-primary)] p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-[var(--text-primary)]">Profile Photo</h3>
+              <button type="button" onClick={() => setShowAvatarModal(false)} className="rounded-lg p-1.5 text-[var(--text-muted)] hover:bg-[var(--surface-secondary)]">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5"><path d="M18 6L6 18M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div className="mt-5 flex justify-center">
+              <div className="relative">
+                <img src={avatarPreview} alt="Avatar preview" className="h-40 w-40 rounded-3xl object-cover shadow-2xl ring-4 ring-[var(--accent)]/20" />
+                <span className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-[var(--surface-primary)] bg-[var(--success)] text-white">
+                  <CheckIcon />
+                </span>
+              </div>
+            </div>
+            <p className="mt-4 text-center text-sm text-[var(--text-muted)]">This photo will be visible across your account</p>
+            <div className="mt-5 flex gap-3">
+              <button type="button" onClick={() => setShowAvatarModal(false)} className="app-btn-primary flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition">
+                Keep Photo
+              </button>
+              <button type="button" onClick={handleRemoveAvatar} className="app-btn-secondary flex-1 rounded-xl border px-4 py-2.5 text-sm font-medium transition">
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {message && (
         <div className={`app-panel rounded-[1.2rem] border px-4 py-3 text-sm ${
           messageType === 'error'
@@ -343,41 +400,39 @@ export default function Profile() {
       {/* Stats */}
       {profile?.stats && (
         <div className="grid gap-4 sm:grid-cols-3">
-          <StatCard
-            label="Products"
-            value={profile.stats.products}
-            icon={
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
-                <path d="m3 7 9-4 9 4-9 4-9-4Z" />
-                <path d="m3 7 9 4 9-4" />
-                <path d="M12 11v10" />
-              </svg>
-            }
-          />
-          <StatCard
-            label="Sales"
-            value={profile.stats.sales}
-            icon={
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
-                <path d="M4 5h16v14H4z" />
-                <path d="M8 9h8" />
-                <path d="M8 13h3" />
-                <path d="M14 13h2" />
-              </svg>
-            }
-          />
-          <StatCard
-            label="Customers"
-            value={profile.stats.customers}
-            icon={
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" />
-                <path d="M9.5 11a4 4 0 1 0 0-8a4 4 0 0 0 0 8Z" />
-                <path d="M21 21v-2a4 4 0 0 0-3-3.9" />
-                <path d="M16 3.1a4 4 0 0 1 0 7.8" />
-              </svg>
-            }
-          />
+          <div className="app-panel rounded-[1.2rem] border border-l-[3px] border-l-[var(--accent)] p-4 transition duration-200 hover:shadow-lg">
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(135deg,rgba(30,167,189,0.18),rgba(30,167,189,0.08))] text-[var(--accent)] ring-1 ring-[rgba(30,167,189,0.12)]">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path d="m3 7 9-4 9 4-9 4-9-4Z" /><path d="m3 7 9 4 9-4" /><path d="M12 11v10" /></svg>
+              </span>
+              <div>
+                <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">Products</p>
+                <p className="mt-0.5 text-2xl font-bold tracking-tight text-[var(--text-primary)]">{profile.stats.products}</p>
+              </div>
+            </div>
+          </div>
+          <div className="app-panel rounded-[1.2rem] border border-l-[3px] border-l-[var(--success)] p-4 transition duration-200 hover:shadow-lg">
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(135deg,rgba(74,168,132,0.18),rgba(74,168,132,0.08))] text-[var(--success)] ring-1 ring-[rgba(74,168,132,0.12)]">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path d="M4 5h16v14H4z" /><path d="M8 9h8" /><path d="M8 13h3" /><path d="M14 13h2" /></svg>
+              </span>
+              <div>
+                <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">Sales</p>
+                <p className="mt-0.5 text-2xl font-bold tracking-tight text-[var(--text-primary)]">{profile.stats.sales}</p>
+              </div>
+            </div>
+          </div>
+          <div className="app-panel rounded-[1.2rem] border border-l-[3px] border-l-[var(--warning)] p-4 transition duration-200 hover:shadow-lg">
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(135deg,rgba(216,155,73,0.18),rgba(216,155,73,0.08))] text-[var(--warning)] ring-1 ring-[rgba(216,155,73,0.12)]">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" /><path d="M9.5 11a4 4 0 1 0 0-8a4 4 0 0 0 0 8Z" /><path d="M21 21v-2a4 4 0 0 0-3-3.9" /><path d="M16 3.1a4 4 0 0 1 0 7.8" /></svg>
+              </span>
+              <div>
+                <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">Customers</p>
+                <p className="mt-0.5 text-2xl font-bold tracking-tight text-[var(--text-primary)]">{profile.stats.customers}</p>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -386,7 +441,10 @@ export default function Profile() {
         <div className="space-y-6 lg:col-span-2">
           <section className="app-panel rounded-[1.2rem] border p-6">
             <div className="flex items-center gap-2">
-              <h2 className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">Account Information</h2>
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--accent-soft)] text-[var(--accent)]">
+                <UserIcon />
+              </span>
+              <h2 className="text-sm font-semibold text-[var(--text-primary)]">Account Information</h2>
             </div>
             <form onSubmit={handleSave} className="mt-5 space-y-5">
               <div className="grid gap-5 sm:grid-cols-2">
@@ -492,7 +550,12 @@ export default function Profile() {
         {/* Right column */}
         <div className="space-y-6">
           <section className="app-panel rounded-[1.2rem] border p-6">
-            <h2 className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">Security</h2>
+            <div className="flex items-center gap-2">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--accent-soft)] text-[var(--accent)]">
+                <ShieldIcon />
+              </span>
+              <h2 className="text-sm font-semibold text-[var(--text-primary)]">Security</h2>
+            </div>
             <form onSubmit={handleChangePassword} className="mt-5 space-y-4">
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-[var(--text-primary)]">Current Password</label>
@@ -552,9 +615,14 @@ export default function Profile() {
           </section>
 
           <section className="app-panel rounded-[1.2rem] border p-6">
-            <h2 className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">
-              {isSuperAdmin ? 'Platform Scope' : 'Shop Information'}
-            </h2>
+            <div className="flex items-center gap-2">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--accent-soft)] text-[var(--accent)]">
+                <ShopIcon />
+              </span>
+              <h2 className="text-sm font-semibold text-[var(--text-primary)]">
+                {isSuperAdmin ? 'Platform Scope' : 'Shop Information'}
+              </h2>
+            </div>
             {isSuperAdmin ? (
               <div className="mt-4 space-y-3">
                 <div className="app-panel-soft rounded-xl border px-4 py-3">

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { fetchPlatformDashboard } from '../utils/api';
 import { getUser } from '../utils/auth';
 
@@ -23,7 +23,7 @@ function formatRelativeTime(value) {
   return date.toLocaleDateString();
 }
 
-function KpiCard({ icon, label, value, hint, accent = false }) {
+function KpiCard({ icon, label, value, hint, accent = false, trend }) {
   return (
     <div
       className={`relative overflow-hidden rounded-2xl border p-4 transition ${
@@ -39,7 +39,14 @@ function KpiCard({ icon, label, value, hint, accent = false }) {
       <p className={`mt-3 text-2xl font-bold tracking-tight ${accent ? 'text-[var(--accent-strong)]' : 'text-[var(--text-primary)]'}`}>
         {value.toLocaleString()}
       </p>
-      <p className="mt-1 text-sm text-[var(--text-muted)]">{hint}</p>
+      <div className="mt-1 flex items-center gap-1.5">
+        <p className="text-sm text-[var(--text-muted)]">{hint}</p>
+        {trend !== undefined && (
+          <span className={`text-[11px] font-semibold ${trend >= 0 ? 'text-[var(--success)]' : 'text-[var(--danger)]'}`}>
+            {trend >= 0 ? '↑' : '↓'} {Math.abs(trend)}%
+          </span>
+        )}
+      </div>
     </div>
   );
 }
@@ -91,7 +98,6 @@ export default function OwnerDashboard() {
       mountedRef.current = false;
       window.clearInterval(intervalId);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const s = data?.summary || {
@@ -109,6 +115,15 @@ export default function OwnerDashboard() {
   const totalSalesSeries = (data?.salesTrend || []).map((d) => ({ ...d, sales: d.count }));
   const maxSales = Math.max(1, ...totalSalesSeries.map((d) => d.sales));
 
+  const shopActivityData = (data?.topShops || []).slice(0, 6).map((shop) => ({
+    name: shop.name.length > 12 ? shop.name.slice(0, 12) + '…' : shop.name,
+    sales: shop.metrics?.saleCount || 0,
+    products: shop.metrics?.productCount || 0,
+  }));
+
+  const activityRate = s.totalShops > 0 ? Math.round((s.recentlyActiveShops / s.totalShops) * 100) : 0;
+  const userGrowthRate = s.totalShops > 0 ? Math.round((s.totalUsers / s.totalShops) * 10) / 10 : 0;
+
   return (
     <div className="space-y-6">
       {/* ── HERO ─────────────────────────────────────────────────────── */}
@@ -117,31 +132,38 @@ export default function OwnerDashboard() {
         <div className="relative flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[var(--accent)]/25 bg-[var(--accent-soft)] px-3 py-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--accent)] opacity-60" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--accent)]" />
+              </span>
               <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--accent-strong)]">
-                Platform Console · Owner Dashboard
+                Platform Console
               </span>
             </div>
-            <h1 className="text-3xl font-bold tracking-tight text-[var(--text-primary)]">Welcome back, {currentUser?.name || 'Owner'}</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-[var(--text-primary)]">
+              Welcome back, {currentUser?.name?.split(' ')[0] || 'Owner'}
+            </h1>
             <p className="mt-2 max-w-xl text-sm leading-6 text-[var(--text-muted)]">
               Live health of every shop on the network — signups, activity, and usage footprint across the platform.
             </p>
           </div>
           <div className="flex shrink-0 flex-col items-end gap-2">
-            <div className="flex items-center gap-2 rounded-2xl border border-[var(--border-default)] bg-[var(--surface-secondary)] px-4 py-2.5">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
-              </span>
-              <span className="text-sm font-semibold text-[var(--text-primary)]">Live monitoring</span>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 rounded-2xl border border-[var(--border-default)] bg-[var(--surface-secondary)] px-4 py-2.5">
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                </span>
+                <span className="text-sm font-medium text-[var(--text-primary)]">{activityRate}% active</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => load(false)}
+                className="rounded-xl border border-[var(--border-default)] bg-[var(--surface-secondary)] px-3 py-2 text-xs font-medium text-[var(--text-muted)] transition hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
+              >
+                {refreshing ? 'Refreshing…' : `Updated ${formatRelativeTime(data?.generatedAt)}`}
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => load(false)}
-              className="rounded-xl border border-[var(--border-default)] bg-[var(--surface-secondary)] px-3 py-2 text-xs font-medium text-[var(--text-muted)] transition hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]"
-            >
-              {refreshing ? 'Refreshing…' : `Updated ${formatRelativeTime(data?.generatedAt)}`}
-            </button>
           </div>
         </div>
 
@@ -149,12 +171,12 @@ export default function OwnerDashboard() {
         <div className="relative mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8">
           <KpiCard accent label="Shops" value={s.totalShops} hint="Registered tenants" icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path d="M3 21h18" /><path d="M5 21V8l7-4 7 4v13" /></svg>} />
           <KpiCard label="Active" value={s.activeShops} hint="Enabled on platform" icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>} />
-          <KpiCard label="Live now" value={s.recentlyActiveShops} hint={`Logins last ${data?.activityWindowHours || 24}h`} icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>} />
+          <KpiCard label="Live now" value={s.recentlyActiveShops} hint={`Last ${data?.activityWindowHours || 24}h`} icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>} />
           <KpiCard label="New today" value={s.newShopsToday} hint="Shops signed up" icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path d="M12 5v14" /><path d="M5 12h14" /></svg>} />
-          <KpiCard label="Users" value={s.totalUsers} hint="Across all shops" icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" /><circle cx="9.5" cy="7" r="4" /><path d="M21 21v-2a4 4 0 0 0-3-3.9" /><path d="M16 3.1a4 4 0 0 1 0 7.8" /></svg>} />
+          <KpiCard label="Users" value={s.totalUsers} hint={`${userGrowthRate} per shop`} icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" /><circle cx="9.5" cy="7" r="4" /><path d="M21 21v-2a4 4 0 0 0-3-3.9" /><path d="M16 3.1a4 4 0 0 1 0 7.8" /></svg>} />
           <KpiCard label="Products" value={s.totalProducts} hint="Listed catalogue" icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path d="m3 7 9-4 9 4-9 4-9-4Z" /><path d="M12 11v10" /></svg>} />
           <KpiCard label="Sales" value={s.totalSales} hint="All-time transactions" icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path d="M4 19h16" /><path d="M7 16V9" /><path d="M12 16V5" /><path d="M17 16v-3" /></svg>} />
-          <KpiCard label="Pending" value={pendingCount} hint="Unverified signups" icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" /><path d="M12 9v4" /><path d="M12 17h.01" /></svg>} />
+          <KpiCard label="Pending" value={pendingCount} hint="Unverified accounts" icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" /><path d="M12 9v4" /><path d="M12 17h.01" /></svg>} />
         </div>
       </section>
 
@@ -175,7 +197,7 @@ export default function OwnerDashboard() {
         </div>
       )}
 
-      {/* ── TRENDS ──────────────────────────────────────────────────── */}
+      {/* ── TRENDS + SHOP COMPARISON ───────────────────────────────── */}
       <div className="grid gap-6 xl:grid-cols-2">
         <div className="app-panel rounded-[1.5rem] border p-5 sm:p-6">
           <div className="border-b border-[var(--border-default)] pb-4">
@@ -234,7 +256,29 @@ export default function OwnerDashboard() {
         </div>
       </div>
 
-      {/* ── ACTIVITY + TOP SHOPS ─────────────────────────────────────── */}
+      {/* ── SHOP COMPARISON BAR CHART ──────────────────────────────── */}
+      {!loading && shopActivityData.length > 0 && (
+        <div className="app-panel rounded-[1.5rem] border p-5 sm:p-6">
+          <div className="border-b border-[var(--border-default)] pb-4">
+            <h3 className="font-semibold text-[var(--text-primary)]">Shop performance comparison</h3>
+            <p className="mt-0.5 text-sm text-[var(--text-muted)]">Sales and product count across top shops</p>
+          </div>
+          <div className="mt-4 h-56">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={shopActivityData} margin={{ top: 6, right: 6, left: -18, bottom: 0 }}>
+                <CartesianGrid vertical={false} stroke="var(--chart-grid)" />
+                <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} tickLine={false} axisLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted)' }} tickLine={false} axisLine={false} allowDecimals={false} />
+                <Tooltip cursor={{ fill: 'var(--surface-secondary)' }} contentStyle={{ borderRadius: '12px', border: '1px solid var(--border-default)', background: 'var(--surface-primary)' }} />
+                <Bar dataKey="sales" name="Sales" fill="var(--chart-1)" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="products" name="Products" fill="#8e7cc3" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
+      {/* ── ACTIVITY + TOP SHOPS + QUICK ACTIONS ───────────────────── */}
       <div className="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
         <div className="app-panel rounded-[1.5rem] border p-5 sm:p-6">
           <div className="border-b border-[var(--border-default)] pb-4">
@@ -317,24 +361,51 @@ export default function OwnerDashboard() {
 
           <div className="app-panel rounded-[1.5rem] border p-5">
             <div className="border-b border-[var(--border-default)] pb-4">
-              <h3 className="font-semibold text-[var(--text-primary)]">Manage platform</h3>
-              <p className="mt-0.5 text-sm text-[var(--text-muted)]">Admin actions &amp; settings</p>
+              <h3 className="font-semibold text-[var(--text-primary)]">Quick actions</h3>
+              <p className="mt-0.5 text-sm text-[var(--text-muted)]">Platform management shortcuts</p>
             </div>
             <div className="mt-4 space-y-2">
               <Link to="/app/shops" className="flex items-center justify-between rounded-xl border border-[var(--border-default)] px-4 py-3 transition hover:bg-[var(--surface-secondary)]">
-                <div>
-                  <p className="text-sm font-semibold text-[var(--text-primary)]">Shops &amp; tenants</p>
-                  <p className="text-xs text-[var(--text-muted)]">View registry, activity &amp; delete shops</p>
+                <div className="flex items-center gap-3">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--accent-soft)] text-[var(--accent)]">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4"><path d="M3 21h18" /><path d="M5 21V8l7-4 7 4v13" /></svg>
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold text-[var(--text-primary)]">Shops & tenants</p>
+                    <p className="text-xs text-[var(--text-muted)]">View registry, activity & manage</p>
+                  </div>
                 </div>
                 <span className="text-[var(--text-muted)]">→</span>
               </Link>
               <Link to="/app/profile" className="flex items-center justify-between rounded-xl border border-[var(--border-default)] px-4 py-3 transition hover:bg-[var(--surface-secondary)]">
-                <div>
-                  <p className="text-sm font-semibold text-[var(--text-primary)]">My profile</p>
-                  <p className="text-xs text-[var(--text-muted)]">Account, security &amp; password</p>
+                <div className="flex items-center gap-3">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--accent-soft)] text-[var(--accent)]">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4"><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6" /></svg>
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold text-[var(--text-primary)]">My profile</p>
+                    <p className="text-xs text-[var(--text-muted)]">Account, security & password</p>
+                  </div>
                 </div>
                 <span className="text-[var(--text-muted)]">→</span>
               </Link>
+              <a
+                href="https://github.com/anomalyco/opencode/issues"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-between rounded-xl border border-[var(--border-default)] px-4 py-3 transition hover:bg-[var(--surface-secondary)]"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--accent-soft)] text-[var(--accent)]">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><path d="M12 17h.01" /></svg>
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold text-[var(--text-primary)]">Support</p>
+                    <p className="text-xs text-[var(--text-muted)]">Report issues & get help</p>
+                  </div>
+                </div>
+                <span className="text-[var(--text-muted)]">→</span>
+              </a>
             </div>
           </div>
         </div>
