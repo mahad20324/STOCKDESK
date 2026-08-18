@@ -62,7 +62,7 @@ function App() {
       <Route path="/owner-login" element={<Navigate to="/owner" replace />} />
       <Route path="/owner" element={session.isAuthenticated ? <Navigate to={isSuperAdmin ? '/app/owner' : '/app'} replace /> : <OwnerLogin />} />
       <Route path="/app" element={session.isAuthenticated ? <Layout /> : <Navigate to="/login" replace />}>
-        <Route index element={isSuperAdmin ? <Navigate to="/app/owner" replace /> : <Dashboard />} />
+        <Route index element={isSuperAdmin ? <Navigate to="/owner" replace /> : <Dashboard />} />
         <Route path="owner" element={isSuperAdmin ? <OwnerDashboard /> : <Navigate to="/app" replace />} />
         <Route path="shops" element={isSuperAdmin ? <Shops /> : <Navigate to="/app" replace />} />
         <Route path="shops/:id" element={isSuperAdmin ? <ShopDetail /> : <Navigate to="/app" replace />} />
