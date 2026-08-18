@@ -7,7 +7,9 @@
     "start": "vite --host 127.0.0.1 --port 5173",
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "eslint src/ --ext .jsx,.js",
+    "lint:fix": "eslint src/ --ext .jsx,.js --fix"
   },
   "dependencies": {
     "react": "^18.3.1",
