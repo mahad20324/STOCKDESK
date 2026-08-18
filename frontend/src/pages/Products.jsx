@@ -413,7 +413,7 @@ export default function Products() {
                 <tr>
                   <th className="px-4 py-3 font-medium">Name</th>
                   <th className="px-4 py-3 font-medium">Category</th>
-                  <th className="px-4 py-3 font-medium">Buy</th>
+                  {isAdmin ? <th className="px-4 py-3 font-medium">Buy</th> : null}
                   <th className="px-4 py-3 font-medium">Sell</th>
                   <th className="px-4 py-3 font-medium">Qty</th>
                   <th className="px-4 py-3 font-medium">Low Stock</th>
@@ -433,7 +433,7 @@ export default function Products() {
                         </div>
                       </td>
                       <td className="px-4 py-3 text-[var(--text-muted)]">{product.category || 'Uncategorized'}</td>
-                      <td className="px-4 py-3 text-[var(--text-muted)]">{formatMoney(currency, product.buyPrice)}</td>
+                      {isAdmin ? <td className="px-4 py-3 text-[var(--text-muted)]">{formatMoney(currency, product.buyPrice)}</td> : null}
                       <td className="px-4 py-3 text-[var(--text-primary)]">{formatMoney(currency, product.sellPrice)}</td>
                       <td className="px-4 py-3">
                         <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${isLow ? 'app-alert-danger' : 'app-alert-success'}`}>
