@@ -45,11 +45,6 @@ npm run start:frontend
 npm run build:frontend
 ```
 
-## Default admin login
-
-- Email: `admin@stockdesk.local`
-- Password: `Admin@123`
-
 ## Notes
 
 - The app stores shop settings and currency in the `settings` table.
@@ -74,8 +69,10 @@ Create an empty GitHub repository, then connect and push:
 
 ```bash
 git remote add origin https://github.com/<your-user>/<your-repo>.git
+git push -u origin main
+```
 
-## WhatsApp receipts (Twilio + S3)
+### WhatsApp receipts (Twilio + S3)
 
 This project supports sending receipts over WhatsApp using Twilio (server global credentials) and storing generated PDFs on S3 (or any public URL).
 
@@ -108,8 +105,6 @@ Notes:
 - The migration script uses `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` and is safe to run multiple times. For production, prefer a proper migration tool.
 - Messages sent to customers may require WhatsApp template approval depending on your Twilio/Meta configuration.
 - Monitor Twilio usage and message costs.
-git push -u origin main
-```
 
 ### Backend on Railway
 

@@ -2,6 +2,11 @@
   "name": "stockdesk-workspace",
   "private": true,
   "version": "0.2.0",
+  "description": "Inventory + POS web application built with React, Tailwind CSS, Node.js, Express, PostgreSQL, and Sequelize.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "install:backend": "npm install --prefix backend",
     "install:frontend": "npm install --prefix frontend",
@@ -11,8 +16,5 @@
     "start:backend": "npm start --prefix backend",
     "start:frontend": "npm start --prefix frontend",
     "build:frontend": "npm run build --prefix frontend"
-  },
-  "dependencies": {
-    "resend": "^6.18.1"
   }
 }
