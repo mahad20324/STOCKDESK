@@ -96,14 +96,18 @@ export default function AuditLogs() {
     try {
       const response = await api.get('/audit/users');
       setUsers(response.data);
-    } catch {/* silent */}
+    } catch (err) {
+      console.error('Failed to load audit users:', err.message);
+    }
   };
 
   const fetchStats = async () => {
     try {
       const response = await api.get('/audit/stats');
       setStats(response.data);
-    } catch {/* silent */}
+    } catch (err) {
+      console.error('Failed to load audit stats:', err.message);
+    }
   };
 
   const fetchLogs = async () => {
@@ -120,7 +124,9 @@ export default function AuditLogs() {
       const response = await api.get(`/audit/logs?${params}`);
       setLogs(response.data.data);
       setPagination((prev) => ({ ...prev, total: response.data.total }));
-    } catch {/* silent */} finally {
+    } catch (err) {
+      console.error('Failed to load audit logs:', err.message);
+    } finally {
       setLoading(false);
     }
   };

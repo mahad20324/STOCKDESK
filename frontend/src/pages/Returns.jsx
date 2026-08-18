@@ -198,7 +198,9 @@ export default function Returns() {
         setLoading(true);
         const [settings] = await Promise.all([fetchSettings()]);
         setCurrency(settings?.currency || 'USD');
-      } finally { /* ignore */ }
+      } catch (err) {
+        console.error('Failed to load settings:', err.message);
+      } finally { /* done */ }
     }
     load();
   }, []);
@@ -213,7 +215,9 @@ export default function Returns() {
       setLoading(true);
       const data = await fetchSales();
       setSales(data);
-    } catch { /* silent */ } finally {
+    } catch (err) {
+      console.error('Failed to load sales:', err.message);
+    } finally {
       setLoading(false);
     }
   };
@@ -223,7 +227,9 @@ export default function Returns() {
       setLoading(true);
       const data = await fetchReturns();
       setReturns(data);
-    } catch { /* silent */ } finally {
+    } catch (err) {
+      console.error('Failed to load returns:', err.message);
+    } finally {
       setLoading(false);
     }
   };
