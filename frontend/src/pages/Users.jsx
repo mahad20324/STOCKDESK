@@ -129,7 +129,7 @@ export default function Users() {
             <h2 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">User Management</h2>
             <p className="mt-2 max-w-2xl text-sm text-[var(--text-muted)]">Create clean team accounts with a full name, username, password, and assigned role.</p>
           </div>
-          <div className="grid gap-3 sm:grid-cols-4 lg:min-w-[580px]">
+          <div className="grid gap-3 grid-cols-2 md:grid-cols-4 lg:min-w-[580px]">
             <StatCard label="Total Users" value={users.length.toLocaleString()} helper="All shop accounts." />
             <StatCard label="Admins" value={adminCount.toLocaleString()} helper="Full-access accounts." />
             <StatCard label="Managers" value={managerCount.toLocaleString()} helper="Operational supervisors." />

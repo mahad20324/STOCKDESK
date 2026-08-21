@@ -303,7 +303,7 @@ export default function Login() {
         <div className="absolute bottom-0 left-1/3 h-56 w-56 rounded-full bg-[var(--accent-hover)]/10 blur-3xl" />
       </div>
 
-      <div className="relative mx-auto flex max-w-6xl justify-end">
+      <div className="relative mx-auto flex max-w-5xl justify-end">
         <button
           type="button"
           onClick={() => setThemeMode(activeTheme === 'dark' ? 'light' : 'dark')}
@@ -327,15 +327,17 @@ export default function Login() {
         </button>
       </div>
 
-      <div className="app-modal relative mx-auto grid w-full max-w-6xl overflow-visible rounded-[2rem] border backdrop-blur lg:min-h-[calc(100vh-4.4rem)] lg:grid-cols-[0.98fr_minmax(0,1.02fr)]">
+      <div className="app-modal relative mx-auto grid w-full max-w-5xl overflow-visible rounded-[2rem] border backdrop-blur lg:min-h-[calc(100vh-6rem)] lg:grid-cols-[0.98fr_minmax(0,1.02fr)]">
         <section className="relative hidden overflow-hidden lg:block lg:px-7 lg:py-6 xl:px-8 xl:py-7" style={{ background: 'var(--sidebar-bg)' }}>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.16),transparent_36%),radial-gradient(circle_at_bottom_right,rgba(30,167,189,0.24),transparent_34%)]" />
           <div className="absolute right-8 top-8 h-24 w-24 rounded-full border border-white/10 bg-white/5 blur-2xl" />
           <div className="absolute bottom-10 left-10 h-32 w-32 rounded-full bg-[var(--accent)]/15 blur-3xl" />
 
           <div className="relative flex h-full flex-col justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <img src={logo} alt="StockDesk logo" className="h-20 w-20 object-contain" />
+            <div className="flex items-center gap-3">
+              <div className="flex h-20 w-20 items-center justify-center rounded-[1.6rem] border border-white/10 bg-white/10 p-2.5 shadow-[0_18px_45px_rgba(0,0,0,0.18)] backdrop-blur">
+                <img src={logo} alt="StockDesk logo" className="h-15 w-15 object-contain" />
+              </div>
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/70">StockDesk</p>
                 <p className="mt-0.5 text-base font-semibold tracking-tight text-white xl:text-lg">Inventory and POS control</p>
@@ -385,7 +387,9 @@ export default function Login() {
           <div className="mx-auto max-w-xl lg:flex lg:h-full lg:flex-col lg:justify-center">
             <div className="mb-5 lg:hidden">
               <div className="flex items-center gap-3">
-                <img src={logo} alt="StockDesk logo" className="h-12 w-12 object-contain" />
+                <div className="flex h-16 w-16 items-center justify-center rounded-[1.3rem] bg-[var(--surface-secondary)] p-2.5 shadow-sm">
+                  <img src={logo} alt="StockDesk logo" className="h-11 w-11 object-contain" />
+                </div>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent-strong)]">StockDesk</p>
                   <p className="mt-1 text-lg font-semibold tracking-tight text-[var(--text-primary)]">Business workspace</p>
@@ -473,8 +477,8 @@ export default function Login() {
                     Icon={LockIcon}
                   />
 
-                  <div className="flex items-center justify-between">
-                    <div className="rounded-[1.1rem] border border-[var(--border-default)] bg-[var(--surface-primary)] px-4 py-2.5 text-sm text-[var(--text-muted)] flex-1 mr-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0 flex-1 rounded-[1.1rem] border border-[var(--border-default)] bg-[var(--surface-primary)] px-4 py-2.5 text-sm leading-5 text-[var(--text-muted)]">
                       {panelCopy.note}
                     </div>
                     <button

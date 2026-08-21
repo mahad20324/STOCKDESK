@@ -147,6 +147,7 @@ body {
   min-height: 100vh;
   background: var(--bg-app);
   color: var(--text-primary);
+  overflow-x: hidden;
   transition: background-color 180ms ease, color 180ms ease;
 }
 

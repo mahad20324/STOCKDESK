@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { fetchProfile, updateProfile, resendVerification, changePassword } from '../utils/api';
-import { getToken, updateToken } from '../utils/auth';
+import { fetchProfile, updateProfile, resendVerification, changePassword, closeAccount } from '../utils/api';
+import { getToken, updateToken, logout } from '../utils/auth';
 
 function resizeImage(file, maxSize = 512) {
   return new Promise((resolve, reject) => {
@@ -121,6 +121,12 @@ export default function Profile() {
   const [pwMessage, setPwMessage] = useState('');
   const [pwMessageType, setPwMessageType] = useState('success');
   const [showPw, setShowPw] = useState(false);
+
+  const [closePw, setClosePw] = useState('');
+  const [closeConfirmText, setCloseConfirmText] = useState('');
+  const [closing, setClosing] = useState(false);
+  const [closeMessage, setCloseMessage] = useState('');
+  const [closeStep, setCloseStep] = useState('confirm');
 
   useEffect(() => {
     loadProfile();
@@ -249,6 +255,39 @@ export default function Profile() {
     } finally {
       setPwSaving(false);
     }
+  };
+
+  const handleCloseAccount = async (event) => {
+    event.preventDefault();
+    setClosing(true);
+    setCloseMessage('');
+    try {
+      if (closeConfirmText.trim() !== 'DELETE') {
+        throw new Error('Type DELETE to confirm you want to close this account.');
+      }
+      if (!closePw) {
+        throw new Error('Enter your password to verify.');
+      }
+      await closeAccount({ currentPassword: closePw, confirm: true });
+      setCloseMessage('Your account has been closed.');
+      logout({ message: 'Your account has been closed. Thank you for using StockDesk.' });
+    } catch (error) {
+      setCloseMessage(error.message);
+    } finally {
+      setClosing(false);
+    }
+  };
+
+  const handleStartClose = () => {
+    setCloseStep('verify');
+    setCloseMessage('');
+  };
+
+  const handleCancelClose = () => {
+    setCloseStep('confirm');
+    setClosePw('');
+    setCloseConfirmText('');
+    setCloseMessage('');
   };
 
   const initials = String(profile?.name || 'S').slice(0, 1).toUpperCase();
@@ -657,6 +696,84 @@ export default function Profile() {
                   <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">{profile?.shopDetails?.address || '—'}</p>
                 </div>
               </div>
+            )}
+          </section>
+
+          <section className="app-panel rounded-[1.2rem] border border-[var(--danger-border)] bg-[var(--danger-soft)] p-6">
+            <div className="flex items-center gap-2">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--danger)] text-white">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
+                  <path d="M3 6h18" />
+                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+                  <path d="M10 11v6" />
+                  <path d="M14 11v6" />
+                </svg>
+              </span>
+              <h2 className="text-sm font-semibold text-[var(--text-primary)]">Close Account</h2>
+            </div>
+            {closeStep === 'confirm' ? (
+              <div className="mt-4">
+                <p className="text-sm text-[var(--text-muted)]">
+                  Closing your account permanently deletes this profile
+                  {isSuperAdmin ? ' and revokes platform access' : profile?.shop ? ' and, if you are the only user, the shop and all its data' : ''}.
+                  This cannot be undone.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleStartClose}
+                  className="mt-4 w-full rounded-xl border border-[var(--danger-border)] bg-[var(--danger-soft)] px-4 py-2.5 text-sm font-semibold text-[var(--danger)] transition hover:bg-[var(--danger)] hover:text-white"
+                >
+                  Close account…
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleCloseAccount} className="mt-4 space-y-4">
+                <p className="text-sm text-[var(--text-muted)]">
+                  Verify this is you, then type <span className="font-mono font-semibold text-[var(--danger)]">DELETE</span> to permanently close this account.
+                </p>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-[var(--text-primary)]">Password</label>
+                  <input
+                    type="password"
+                    value={closePw}
+                    onChange={(e) => setClosePw(e.target.value)}
+                    className="app-input w-full rounded-lg border px-4 py-2.5"
+                    placeholder="Your password"
+                    autoComplete="current-password"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-[var(--text-primary)]">Type DELETE</label>
+                  <input
+                    type="text"
+                    value={closeConfirmText}
+                    onChange={(e) => setCloseConfirmText(e.target.value)}
+                    className="app-input w-full rounded-lg border px-4 py-2.5"
+                    placeholder="DELETE"
+                    required
+                  />
+                </div>
+                {closeMessage && <p className="text-sm text-[var(--danger)]">{closeMessage}</p>}
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={handleCancelClose}
+                    disabled={closing}
+                    className="app-btn-secondary flex-1 rounded-xl border px-4 py-2.5 text-sm font-medium transition disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={closing || closeConfirmText.trim() !== 'DELETE' || !closePw}
+                    className="flex-1 rounded-xl bg-[var(--danger)] px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {closing ? 'Closing…' : 'Close account'}
+                  </button>
+                </div>
+              </form>
             )}
           </section>
         </div>

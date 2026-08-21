@@ -305,7 +305,7 @@ export default function POS() {
             <h2 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">Point of Sale</h2>
             <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">Search products, add items to cart, apply discounts, and complete sales quickly.</p>
           </div>
-          <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[460px]">
+          <div className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:min-w-[460px]">
             <SummaryStat label="Available Products" value={products.length.toLocaleString()} helper="Items ready to sell." />
             <SummaryStat label="Cart Items" value={cart.reduce((sum, item) => sum + item.quantity, 0).toLocaleString()} helper="Units currently in cart." />
             <SummaryStat label="Cart Total" value={formatMoney(currency, total)} helper="Before completing the sale." />

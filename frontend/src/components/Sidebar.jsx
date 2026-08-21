@@ -202,18 +202,18 @@ export default function Sidebar({ user: providedUser, isOpen = false, collapsed 
         className={`app-overlay fixed inset-0 z-30 transition lg:hidden ${isOpen ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
         onClick={onClose}
       />
-      <aside
+<aside
         className={`app-sidebar-shell fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r px-5 py-5 transition-all duration-300 lg:static lg:shadow-none ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         } ${
-          collapsed ? 'lg:-translate-x-full lg:w-0 lg:overflow-hidden lg:px-0 lg:opacity-0' : 'lg:translate-x-0 lg:px-6 lg:py-6'
+          collapsed ? 'lg:translate-x-0 lg:w-20 lg:px-3' : 'lg:translate-x-0 lg:w-72 lg:px-6 lg:py-6'
         }`}
       >
         <div className="flex items-center justify-between lg:block">
           <div>
-              <div className="flex items-center gap-3.5">
-                <img src={logo} alt="StockDesk logo" className="h-16 w-16 object-contain" />
-              <div className="pt-0.5">
+              <div className={`flex items-center ${collapsed ? 'lg:justify-center' : 'lg:gap-3.5'}`}>
+                <img src={logo} alt="StockDesk logo" className={`h-16 w-16 object-contain ${collapsed ? 'lg:h-11 lg:w-11' : ''}`} />
+              <div className={`pt-0.5 ${collapsed ? 'lg:hidden' : ''}`}>
                 <p className="text-[1.9rem] font-semibold leading-none tracking-tight text-[var(--sidebar-text)]">StockDesk</p>
                 <p className="mt-2 text-sm font-medium tracking-[0.02em] text-[var(--sidebar-muted)]">Business overview</p>
               </div>
@@ -232,7 +232,7 @@ export default function Sidebar({ user: providedUser, isOpen = false, collapsed 
           </button>
         </div>
 
-        <div className="app-sidebar-card mt-7 rounded-2xl border p-4">
+        <div className={`app-sidebar-card mt-7 rounded-2xl border p-4 ${collapsed ? 'lg:hidden' : ''}`}>
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sidebar-muted)]">{isSuperAdmin ? 'Platform Scope' : 'Active Shop'}</p>
           <p className="mt-2 text-base font-semibold text-[var(--sidebar-text)]">{shopName}</p>
           <p className="mt-1 text-sm text-[var(--sidebar-muted)]">{shopSlug}</p>
@@ -246,6 +246,8 @@ export default function Sidebar({ user: providedUser, isOpen = false, collapsed 
               onClick={onClose}
               className={({ isActive }) =>
                 `app-sidebar-link flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition ${
+                  collapsed ? 'lg:justify-center lg:px-2' : ''
+                } ${
                   isActive
                     ? 'app-sidebar-link-active'
                     : ''
@@ -253,7 +255,7 @@ export default function Sidebar({ user: providedUser, isOpen = false, collapsed 
               }
             >
               {item.icon}
-              <span>{item.label}</span>
+              <span className={collapsed ? 'lg:hidden' : ''}>{item.label}</span>
             </NavLink>
           ))}
           {!isSuperAdmin && isAdmin && (
@@ -262,6 +264,8 @@ export default function Sidebar({ user: providedUser, isOpen = false, collapsed 
               onClick={onClose}
               className={({ isActive }) =>
                 `app-sidebar-link flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition ${
+                  collapsed ? 'lg:justify-center lg:px-2' : ''
+                } ${
                   isActive
                     ? 'app-sidebar-link-active'
                     : ''
@@ -269,7 +273,7 @@ export default function Sidebar({ user: providedUser, isOpen = false, collapsed 
               }
             >
               <UsersIcon />
-              <span>Users</span>
+              <span className={collapsed ? 'lg:hidden' : ''}>Users</span>
             </NavLink>
           )}
           {!isSuperAdmin && isAdmin && (
@@ -278,6 +282,8 @@ export default function Sidebar({ user: providedUser, isOpen = false, collapsed 
               onClick={onClose}
               className={({ isActive }) =>
                 `app-sidebar-link flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition ${
+                  collapsed ? 'lg:justify-center lg:px-2' : ''
+                } ${
                   isActive
                     ? 'app-sidebar-link-active'
                     : ''
@@ -285,16 +291,16 @@ export default function Sidebar({ user: providedUser, isOpen = false, collapsed 
               }
             >
               <ProfileIcon />
-              <span>Profile</span>
+              <span className={collapsed ? 'lg:hidden' : ''}>Profile</span>
             </NavLink>
           )}
         </nav>
 
-        <div className="app-sidebar-card mt-auto rounded-2xl border p-4">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sidebar-muted)]">
+        <div className={`app-sidebar-card mt-auto rounded-2xl border p-4 ${collapsed ? 'lg:p-3' : ''}`}>
+          <p className={`text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--sidebar-muted)] ${collapsed ? 'lg:hidden' : ''}`}>
             {isSuperAdmin ? 'Platform User' : 'Current User'}
           </p>
-          <div className="mt-3 flex items-center gap-3 rounded-2xl bg-[var(--sidebar-hover)] px-3 py-3">
+          <div className={`flex items-center gap-3 rounded-2xl bg-[var(--sidebar-hover)] px-3 py-3 ${collapsed ? 'lg:mt-0 lg:justify-center lg:px-0' : 'mt-3'}`}>
             {user?.avatarUrl ? (
               <img
                 src={user.avatarUrl}
@@ -306,7 +312,7 @@ export default function Sidebar({ user: providedUser, isOpen = false, collapsed 
                 {String(user?.name || 'S').slice(0, 1).toUpperCase()}
               </div>
             )}
-            <div className="min-w-0 flex-1">
+            <div className={`min-w-0 flex-1 ${collapsed ? 'lg:hidden' : ''}`}>
               <p className="truncate text-sm font-semibold text-[var(--sidebar-text)]">{user?.name || 'Staff'}</p>
               <p className="truncate text-xs text-[var(--sidebar-muted)]">{user?.displayRole || user?.role || 'User'}</p>
             </div>
@@ -335,14 +341,14 @@ export default function Sidebar({ user: providedUser, isOpen = false, collapsed 
           <button
             type="button"
             onClick={onLogout}
-            className="mt-3 flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-[var(--sidebar-muted)] transition hover:bg-white/6 hover:text-[var(--danger)]"
+            className={`mt-3 flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-[var(--sidebar-muted)] transition hover:bg-white/6 hover:text-[var(--danger)] ${collapsed ? 'lg:justify-center lg:px-0' : ''}`}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4 shrink-0">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
               <polyline points="16 17 21 12 16 7" />
               <line x1="21" y1="12" x2="9" y2="12" />
             </svg>
-            Sign out
+            <span className={collapsed ? 'lg:hidden' : ''}>Sign out</span>
           </button>
         </div>
       </aside>

@@ -24,7 +24,7 @@ export default function Layout() {
           onLogout={handleLogout}
         />
         <div className={`flex-1 min-w-0 px-3 py-3 sm:px-4 sm:py-4 lg:px-5 lg:py-4.5 transition-all duration-300`}>
-          <div className="mx-auto w-full max-w-[1440px]">
+          <div className="mx-auto w-full max-w-[1280px]">
             <Header
               onOpenSidebar={() => setSidebarOpen(true)}
               onToggleSidebar={() => setSidebarCollapsed((c) => !c)}

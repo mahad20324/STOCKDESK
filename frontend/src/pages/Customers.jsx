@@ -149,7 +149,7 @@ export default function Customers() {
               </span>
             </div>
           </div>
-          <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[460px]">
+          <div className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:min-w-[460px]">
             <StatCard label="Total Customers" value={customers.length.toLocaleString()} helper="Profiles saved in your shop." eyebrow="Directory" icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>} />
             <StatCard label="Active" value={activeCustomers.toLocaleString()} helper="Customers available for new sales." eyebrow="Availability" tone="success" icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path d="M20 6 9 17l-5-5"/></svg>} />
             <StatCard label="Repeat Buyers" value={repeatCustomers.toLocaleString()} helper="Customers with more than one sale." eyebrow="Loyalty" tone="warning" icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path d="M4 16l5-5 4 4 7-8"/><path d="M14 7h6v6"/></svg>} />

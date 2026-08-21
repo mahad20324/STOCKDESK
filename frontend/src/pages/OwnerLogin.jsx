@@ -121,7 +121,7 @@ export default function OwnerLogin() {
       </div>
 
       {/* Theme toggle */}
-      <div className="relative mx-auto flex max-w-6xl justify-end">
+      <div className="relative mx-auto flex max-w-5xl justify-end">
         <button
           type="button"
           onClick={() => setThemeMode(activeTheme === 'dark' ? 'light' : 'dark')}
@@ -145,7 +145,7 @@ export default function OwnerLogin() {
         </button>
       </div>
 
-      <div className="app-modal relative mx-auto grid w-full max-w-6xl overflow-visible rounded-[2rem] border backdrop-blur lg:min-h-[calc(100vh-4.4rem)] lg:grid-cols-[0.98fr_minmax(0,1.02fr)]">
+      <div className="app-modal relative mx-auto grid w-full max-w-5xl overflow-visible rounded-[2rem] border backdrop-blur lg:min-h-[calc(100vh-6rem)] lg:grid-cols-[0.98fr_minmax(0,1.02fr)]">
         {/* Left panel — branding */}
         <section className="relative hidden overflow-hidden lg:block lg:px-7 lg:py-6 xl:px-8 xl:py-7" style={{ background: 'var(--sidebar-bg)' }}>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.16),transparent_36%),radial-gradient(circle_at_bottom_right,rgba(13,148,136,0.24),transparent_34%)]" />

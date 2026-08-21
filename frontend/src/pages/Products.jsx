@@ -221,7 +221,7 @@ export default function Products() {
                 : 'Review current inventory levels. Only admins can make changes.'}
             </p>
           </div>
-          <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[460px]">
+          <div className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:min-w-[460px]">
             <StatTile label="Products" value={products.length.toLocaleString()} eyebrow="Catalog" />
             <StatTile label="Units In Stock" value={totalUnits.toLocaleString()} tone="success" eyebrow="Availability" />
             <StatTile label="Low Stock" value={lowStockCount.toLocaleString()} tone={lowStockCount ? 'danger' : 'warning'} eyebrow="Attention" />
@@ -358,12 +358,12 @@ export default function Products() {
             <h3 className="text-lg font-semibold text-[var(--text-primary)]">Inventory List</h3>
             <p className="mt-1 text-sm text-[var(--text-muted)]">Current stock, pricing, and reorder thresholds.</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             <div>
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                className="app-input rounded-xl border px-3 py-2 text-sm"
+                className="app-input w-full rounded-xl border px-3 py-2 text-sm sm:w-auto"
               >
                 <option value="">All categories</option>
                 {uniqueCategories.map((cat) => (
@@ -378,7 +378,7 @@ export default function Products() {
                 placeholder="Search products by name..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="app-input w-64 rounded-xl border px-4 py-2 text-sm"
+                className="app-input w-full rounded-xl border px-4 py-2 text-sm sm:w-64"
               />
               {search ? (
                 <button
