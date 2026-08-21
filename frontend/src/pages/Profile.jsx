@@ -100,6 +100,34 @@ function UserIcon() {
   );
 }
 
+function TrashIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
+      <path d="M3 6h18" />
+      <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+      <path d="M10 11v6" />
+      <path d="M14 11v6" />
+    </svg>
+  );
+}
+
+function SectionCard({ icon, title, subtitle, children, className = '', accent = 'accent' }) {
+  const isDanger = accent === 'danger';
+  return (
+    <section className={`app-panel rounded-[1.2rem] border p-6 ${isDanger ? 'border-[var(--danger-border)] bg-[var(--danger-soft)]' : ''} ${className}`}>
+      <div className="flex items-center gap-2.5">
+        <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${isDanger ? 'bg-[var(--danger)] text-white' : 'bg-[var(--accent-soft)] text-[var(--accent)]'}`}>{icon}</span>
+        <div>
+          <h2 className="text-sm font-semibold text-[var(--text-primary)]">{title}</h2>
+          {subtitle ? <p className="text-xs text-[var(--text-muted)]">{subtitle}</p> : null}
+        </div>
+      </div>
+      <div className="mt-5">{children}</div>
+    </section>
+  );
+}
+
 export default function Profile() {
   const [profile, setProfile] = useState(null);
   const [name, setName] = useState('');
@@ -127,6 +155,7 @@ export default function Profile() {
   const [closing, setClosing] = useState(false);
   const [closeMessage, setCloseMessage] = useState('');
   const [closeStep, setCloseStep] = useState('confirm');
+  const [activeTab, setActiveTab] = useState('account');
 
   useEffect(() => {
     loadProfile();
@@ -298,59 +327,75 @@ export default function Profile() {
   const isSuperAdmin = profile?.role === 'SuperAdmin';
   const pwInputType = showPw ? 'text' : 'password';
 
+  const tabs = [
+    { key: 'account', label: 'Account', icon: <UserIcon /> },
+    { key: 'security', label: 'Security', icon: <ShieldIcon /> },
+    { key: 'shop', label: isSuperAdmin ? 'Platform Scope' : 'Shop', icon: <ShopIcon /> },
+    { key: 'danger', label: 'Close Account', icon: <TrashIcon /> },
+  ];
+
+  const shopFields = isSuperAdmin
+    ? [
+        { label: 'Access', value: 'All registered shops' },
+        { label: 'Username', value: profile?.username || '—' },
+      ]
+    : [
+        { label: 'Shop Name', value: profile?.shopDetails?.shopName || profile?.shop?.name || '—' },
+        { label: 'Shop Slug', value: profile?.shop?.slug || '—' },
+        { label: 'Phone', value: profile?.shopDetails?.phone || '—' },
+        { label: 'Currency', value: profile?.shopDetails?.currency || '—' },
+        { label: 'Address', value: profile?.shopDetails?.address || '—' },
+      ];
+
+  const statCards = profile?.stats
+    ? [
+        { label: 'Products', value: profile.stats.products, color: 'var(--accent)', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path d="m3 7 9-4 9 4-9 4-9-4Z" /><path d="m3 7 9 4 9-4" /><path d="M12 11v10" /></svg> },
+        { label: 'Sales', value: profile.stats.sales, color: 'var(--success)', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path d="M4 5h16v14H4z" /><path d="M8 9h8" /><path d="M8 13h3" /><path d="M14 13h2" /></svg> },
+        { label: 'Customers', value: profile.stats.customers, color: 'var(--warning)', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" /><path d="M9.5 11a4 4 0 1 0 0-8a4 4 0 0 0 0 8Z" /><path d="M21 21v-2a4 4 0 0 0-3-3.9" /><path d="M16 3.1a4 4 0 0 1 0 7.8" /></svg> },
+      ]
+    : [];
+
   return (
     <div className="space-y-6">
-      {/* Hero with Avatar */}
-      <section className="app-panel overflow-hidden rounded-[2rem] border">
-        <div className="relative h-32 bg-[linear-gradient(135deg,var(--accent),var(--accent-hover))]">
+      {/* Profile header */}
+      <section className="app-panel overflow-hidden rounded-[1.6rem] border">
+        <div className="relative h-28 bg-[linear-gradient(135deg,var(--accent),var(--accent-hover))]">
           <div className="pointer-events-none absolute -right-10 -top-10 h-44 w-44 rounded-full bg-white/10 blur-2xl" />
           <div className="pointer-events-none absolute -bottom-16 right-1/3 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
-          <div className="absolute right-5 top-5 flex items-center gap-2">
+          <div className="absolute right-4 top-4 flex items-center gap-2">
             {profile?.isVerified ? (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white backdrop-blur">
-                <CheckIcon />
-                Verified
+                <CheckIcon /> Verified
               </span>
             ) : email ? (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white backdrop-blur">
-                <AlertIcon />
-                Pending
+                <AlertIcon /> Pending
               </span>
             ) : null}
           </div>
         </div>
 
-        <div className="relative px-6 pb-6">
-          <div className="-mt-14 flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-5">
-            {/* Avatar */}
+        <div className="relative px-5 pb-5 sm:px-6">
+          <div className="-mt-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-5">
             <div className="group relative shrink-0" onClick={() => fileInputRef.current?.click()}>
-              <div className="relative h-28 w-28 cursor-pointer">
+              <div className="relative h-24 w-24 cursor-pointer sm:h-28 sm:w-28">
                 {avatarPreview ? (
-                  <img
-                    src={avatarPreview}
-                    alt="Profile avatar"
-                    className="h-full w-full rounded-2xl object-cover ring-4 ring-[var(--surface-primary)] shadow-xl"
-                  />
+                  <img src={avatarPreview} alt="Profile avatar" className="h-full w-full rounded-2xl object-cover ring-4 ring-[var(--surface-primary)] shadow-xl" />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center rounded-2xl bg-[var(--accent-soft)] text-4xl font-bold text-[var(--accent)] ring-4 ring-[var(--surface-primary)] shadow-xl">
+                  <div className="flex h-full w-full items-center justify-center rounded-2xl bg-[var(--accent-soft)] text-3xl font-bold text-[var(--accent)] ring-4 ring-[var(--surface-primary)] shadow-xl">
                     {initials}
                   </div>
                 )}
                 <span className="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/50 text-white opacity-0 transition group-hover:opacity-100 ring-4 ring-[var(--surface-primary)]">
                   <CameraIcon />
                 </span>
-                {/* Online status dot */}
-                <span className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-[var(--surface-primary)] bg-[var(--success)]">
-                  <CheckIcon />
-                </span>
               </div>
             </div>
-
             <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
 
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2.5">
-                <h1 className="text-xl font-bold tracking-tight text-[var(--text-primary)]">{profile?.name || 'Loading…'}</h1>
+                <h1 className="text-xl font-bold tracking-tight text-[var(--text-primary)] sm:text-2xl">{profile?.name || 'Loading…'}</h1>
                 <span className="inline-flex items-center rounded-full border border-[var(--accent)]/25 bg-[var(--accent-soft)] px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--accent-strong)]">
                   {roleLabel}
                 </span>
@@ -374,19 +419,11 @@ export default function Profile() {
             </div>
 
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="app-btn-secondary rounded-xl border px-4 py-2 text-sm font-medium transition"
-              >
+              <button type="button" onClick={() => fileInputRef.current?.click()} className="app-btn-secondary rounded-xl border px-4 py-2 text-sm font-medium transition">
                 Change photo
               </button>
               {avatarPreview && (
-                <button
-                  type="button"
-                  onClick={handleRemoveAvatar}
-                  className="app-btn-secondary rounded-xl border px-4 py-2 text-sm font-medium transition"
-                >
+                <button type="button" onClick={handleRemoveAvatar} className="app-btn-secondary rounded-xl border px-4 py-2 text-sm font-medium transition">
                   Remove
                 </button>
               )}
@@ -437,75 +474,60 @@ export default function Profile() {
       )}
 
       {/* Stats */}
-      {profile?.stats && (
-        <div className="grid gap-4 sm:grid-cols-3">
-          <div className="app-panel rounded-[1.2rem] border border-l-[3px] border-l-[var(--accent)] p-4 transition duration-200 hover:shadow-lg">
-            <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(135deg,rgba(30,167,189,0.18),rgba(30,167,189,0.08))] text-[var(--accent)] ring-1 ring-[rgba(30,167,189,0.12)]">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path d="m3 7 9-4 9 4-9 4-9-4Z" /><path d="m3 7 9 4 9-4" /><path d="M12 11v10" /></svg>
-              </span>
-              <div>
-                <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">Products</p>
-                <p className="mt-0.5 text-2xl font-bold tracking-tight text-[var(--text-primary)]">{profile.stats.products}</p>
+      {statCards.length > 0 && (
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+          {statCards.map((card) => (
+            <div key={card.label} className="app-panel rounded-[1.2rem] border border-l-[3px] p-4 transition duration-200 hover:shadow-lg" style={{ borderLeftColor: card.color }}>
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-[var(--accent)] ring-1 ring-[var(--accent)]/10" style={{ backgroundColor: `${card.color}1f`, color: card.color }}>
+                  {card.icon}
+                </span>
+                <div>
+                  <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">{card.label}</p>
+                  <p className="mt-0.5 text-2xl font-bold tracking-tight text-[var(--text-primary)]">{card.value}</p>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="app-panel rounded-[1.2rem] border border-l-[3px] border-l-[var(--success)] p-4 transition duration-200 hover:shadow-lg">
-            <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(135deg,rgba(74,168,132,0.18),rgba(74,168,132,0.08))] text-[var(--success)] ring-1 ring-[rgba(74,168,132,0.12)]">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path d="M4 5h16v14H4z" /><path d="M8 9h8" /><path d="M8 13h3" /><path d="M14 13h2" /></svg>
-              </span>
-              <div>
-                <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">Sales</p>
-                <p className="mt-0.5 text-2xl font-bold tracking-tight text-[var(--text-primary)]">{profile.stats.sales}</p>
-              </div>
-            </div>
-          </div>
-          <div className="app-panel rounded-[1.2rem] border border-l-[3px] border-l-[var(--warning)] p-4 transition duration-200 hover:shadow-lg">
-            <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(135deg,rgba(216,155,73,0.18),rgba(216,155,73,0.08))] text-[var(--warning)] ring-1 ring-[rgba(216,155,73,0.12)]">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" /><path d="M9.5 11a4 4 0 1 0 0-8a4 4 0 0 0 0 8Z" /><path d="M21 21v-2a4 4 0 0 0-3-3.9" /><path d="M16 3.1a4 4 0 0 1 0 7.8" /></svg>
-              </span>
-              <div>
-                <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">Customers</p>
-                <p className="mt-0.5 text-2xl font-bold tracking-tight text-[var(--text-primary)]">{profile.stats.customers}</p>
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Left column */}
-        <div className="space-y-6 lg:col-span-2">
-          <section className="app-panel rounded-[1.2rem] border p-6">
-            <div className="flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--accent-soft)] text-[var(--accent)]">
-                <UserIcon />
-              </span>
-              <h2 className="text-sm font-semibold text-[var(--text-primary)]">Account Information</h2>
-            </div>
-            <form onSubmit={handleSave} className="mt-5 space-y-5">
+      {/* Tab navigation */}
+      <div className="app-panel overflow-x-auto rounded-[1.2rem] border p-1.5">
+        <div className="flex min-w-max gap-1.5">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveTab(tab.key)}
+              className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition ${
+                activeTab === tab.key
+                  ? tab.key === 'danger'
+                    ? 'bg-[var(--danger)] text-white shadow-sm'
+                    : 'bg-[var(--accent)] text-white shadow-sm'
+                  : 'text-[var(--text-muted)] hover:bg-[var(--surface-secondary)] hover:text-[var(--text-primary)]'
+              }`}
+            >
+              {tab.icon}
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Tab: Account */}
+      {activeTab === 'account' && (
+        <div className="space-y-6">
+          <SectionCard icon={<UserIcon />} title="Account Information" subtitle="Update your personal details and contact email.">
+            <form onSubmit={handleSave} className="space-y-5">
               <div className="grid gap-5 sm:grid-cols-2">
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-[var(--text-primary)]">Full Name</label>
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="app-input w-full rounded-lg border px-4 py-3"
-                    placeholder="Your name"
-                    required
-                  />
+                  <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="app-input w-full rounded-lg border px-4 py-3" placeholder="Your name" required />
                 </div>
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-[var(--text-primary)]">Username</label>
-                  <input
-                    type="text"
-                    value={profile?.username || ''}
-                    className="app-input w-full cursor-not-allowed rounded-lg border bg-[var(--surface-secondary)] px-4 py-3 text-[var(--text-muted)]"
-                    disabled
-                  />
+                  <input type="text" value={profile?.username || ''} className="app-input w-full cursor-not-allowed rounded-lg border bg-[var(--surface-secondary)] px-4 py-3 text-[var(--text-muted)]" disabled />
                   <p className="mt-1 text-xs text-[var(--text-muted)]">Username cannot be changed.</p>
                 </div>
                 <div className="sm:col-span-2">
@@ -513,13 +535,11 @@ export default function Profile() {
                     <label className="text-sm font-medium text-[var(--text-primary)]">Email</label>
                     {profile?.isVerified ? (
                       <span className="inline-flex items-center gap-1 rounded-full border border-[var(--success-border)] bg-[var(--success-soft)] px-2 py-0.5 text-[11px] font-semibold text-[var(--success)]">
-                        <CheckIcon />
-                        Verified
+                        <CheckIcon /> Verified
                       </span>
                     ) : email ? (
                       <span className="inline-flex items-center gap-1 rounded-full border border-[var(--warning-border)] bg-[var(--warning-soft)] px-2 py-0.5 text-[11px] font-semibold text-[var(--warning)]">
-                        <AlertIcon />
-                        Not verified
+                        <AlertIcon /> Not verified
                       </span>
                     ) : (
                       <span className="inline-flex items-center rounded-full border border-[var(--border-default)] bg-[var(--surface-secondary)] px-2 py-0.5 text-[11px] font-semibold text-[var(--text-muted)]">
@@ -527,26 +547,14 @@ export default function Profile() {
                       </span>
                     )}
                   </div>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="app-input w-full rounded-lg border px-4 py-3"
-                    placeholder="you@example.com"
-                  />
+                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="app-input w-full rounded-lg border px-4 py-3" placeholder="you@example.com" />
                   {!profile?.isVerified && email && (
-                    <button
-                      type="button"
-                      onClick={handleResend}
-                      disabled={resending}
-                      className="mt-2 text-xs font-medium text-[var(--accent-strong)] hover:underline disabled:opacity-50"
-                    >
+                    <button type="button" onClick={handleResend} disabled={resending} className="mt-2 text-xs font-medium text-[var(--accent-strong)] hover:underline disabled:opacity-50">
                       {resending ? 'Sending…' : 'Resend verification link'}
                     </button>
                   )}
                 </div>
               </div>
-
               <div className="flex items-center justify-between gap-3 border-t border-[var(--border-default)] pt-5">
                 <p className="text-sm text-[var(--text-muted)]">
                   Role: <span className="font-semibold text-[var(--text-primary)]">{roleLabel}</span>
@@ -556,7 +564,7 @@ export default function Profile() {
                 </button>
               </div>
             </form>
-          </section>
+          </SectionCard>
 
           {profile && email && !profile.isVerified && (
             <section className="app-panel rounded-[1.2rem] border border-[var(--warning-border)] bg-[var(--warning-soft)] px-5 py-4">
@@ -568,216 +576,107 @@ export default function Profile() {
                   <div>
                     <p className="text-sm font-semibold text-[var(--warning)]">Email verification required</p>
                     <p className="mt-0.5 text-sm text-[var(--text-muted)]">
-                      We sent a verification link to <strong className="font-semibold text-[var(--text-primary)]">{email}</strong>. Click it to
-                      finish securing your account.
+                      We sent a verification link to <strong className="font-semibold text-[var(--text-primary)]">{email}</strong>. Click it to finish securing your account.
                     </p>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleResend}
-                  disabled={resending}
-                  className="app-btn-secondary shrink-0 rounded-xl border px-4 py-2 text-sm font-medium transition disabled:opacity-50"
-                >
+                <button type="button" onClick={handleResend} disabled={resending} className="app-btn-secondary shrink-0 rounded-xl border px-4 py-2 text-sm font-medium transition disabled:opacity-50">
                   {resending ? 'Sending…' : 'Resend link'}
                 </button>
               </div>
             </section>
           )}
         </div>
+      )}
 
-        {/* Right column */}
-        <div className="space-y-6">
-          <section className="app-panel rounded-[1.2rem] border p-6">
-            <div className="flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--accent-soft)] text-[var(--accent)]">
-                <ShieldIcon />
-              </span>
-              <h2 className="text-sm font-semibold text-[var(--text-primary)]">Security</h2>
-            </div>
-            <form onSubmit={handleChangePassword} className="mt-5 space-y-4">
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-[var(--text-primary)]">Current Password</label>
-                <div className="relative">
-                  <input
-                    type={pwInputType}
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="app-input w-full rounded-lg border px-4 py-2.5 pr-11"
-                    placeholder="Current password"
-                    autoComplete="current-password"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPw((prev) => !prev)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] transition hover:text-[var(--text-primary)]"
-                    aria-label={showPw ? 'Hide passwords' : 'Show passwords'}
-                  >
-                    <EyeIcon on={showPw} />
-                  </button>
-                </div>
-              </div>
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-[var(--text-primary)]">New Password</label>
-                <input
-                  type={pwInputType}
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="app-input w-full rounded-lg border px-4 py-2.5"
-                  placeholder="New password"
-                  autoComplete="new-password"
-                  required
-                />
-              </div>
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-[var(--text-primary)]">Confirm New Password</label>
-                <input
-                  type={pwInputType}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="app-input w-full rounded-lg border px-4 py-2.5"
-                  placeholder="Repeat new password"
-                  autoComplete="new-password"
-                  required
-                />
-              </div>
-
-              {pwMessage && (
-                <p className={`text-sm ${pwMessageType === 'error' ? 'text-[var(--danger)]' : 'text-[var(--success)]'}`}>{pwMessage}</p>
-              )}
-
-              <button type="submit" disabled={pwSaving} className="app-btn-primary w-full rounded-xl px-6 py-2.5 text-sm font-semibold transition disabled:opacity-50">
-                {pwSaving ? 'Updating…' : 'Update Password'}
-              </button>
-            </form>
-          </section>
-
-          <section className="app-panel rounded-[1.2rem] border p-6">
-            <div className="flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--accent-soft)] text-[var(--accent)]">
-                <ShopIcon />
-              </span>
-              <h2 className="text-sm font-semibold text-[var(--text-primary)]">
-                {isSuperAdmin ? 'Platform Scope' : 'Shop Information'}
-              </h2>
-            </div>
-            {isSuperAdmin ? (
-              <div className="mt-4 space-y-3">
-                <div className="app-panel-soft rounded-xl border px-4 py-3">
-                  <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">Access</p>
-                  <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">All registered shops</p>
-                </div>
-                <div className="app-panel-soft rounded-xl border px-4 py-3">
-                  <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">Username</p>
-                  <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">{profile?.username || '—'}</p>
-                </div>
-              </div>
-            ) : (
-              <div className="mt-4 space-y-3">
-                <div className="app-panel-soft rounded-xl border px-4 py-3">
-                  <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">Shop Name</p>
-                  <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">{profile?.shopDetails?.shopName || profile?.shop?.name || '—'}</p>
-                </div>
-                <div className="app-panel-soft rounded-xl border px-4 py-3">
-                  <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">Shop Slug</p>
-                  <p className="mt-1 text-sm font-medium text-[var(--text-primary)]">{profile?.shop?.slug || '—'}</p>
-                </div>
-                <div className="app-panel-soft rounded-xl border px-4 py-3">
-                  <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">Phone</p>
-                  <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">{profile?.shopDetails?.phone || '—'}</p>
-                </div>
-                <div className="app-panel-soft rounded-xl border px-4 py-3">
-                  <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">Currency</p>
-                  <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">{profile?.shopDetails?.currency || '—'}</p>
-                </div>
-                <div className="app-panel-soft rounded-xl border px-4 py-3">
-                  <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">Address</p>
-                  <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">{profile?.shopDetails?.address || '—'}</p>
-                </div>
-              </div>
-            )}
-          </section>
-
-          <section className="app-panel rounded-[1.2rem] border border-[var(--danger-border)] bg-[var(--danger-soft)] p-6">
-            <div className="flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--danger)] text-white">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
-                  <path d="M3 6h18" />
-                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
-                  <path d="M10 11v6" />
-                  <path d="M14 11v6" />
-                </svg>
-              </span>
-              <h2 className="text-sm font-semibold text-[var(--text-primary)]">Close Account</h2>
-            </div>
-            {closeStep === 'confirm' ? (
-              <div className="mt-4">
-                <p className="text-sm text-[var(--text-muted)]">
-                  Closing your account permanently deletes this profile
-                  {isSuperAdmin ? ' and revokes platform access' : profile?.shop ? ' and, if you are the only user, the shop and all its data' : ''}.
-                  This cannot be undone.
-                </p>
-                <button
-                  type="button"
-                  onClick={handleStartClose}
-                  className="mt-4 w-full rounded-xl border border-[var(--danger-border)] bg-[var(--danger-soft)] px-4 py-2.5 text-sm font-semibold text-[var(--danger)] transition hover:bg-[var(--danger)] hover:text-white"
-                >
-                  Close account…
+      {/* Tab: Security */}
+      {activeTab === 'security' && (
+        <SectionCard icon={<ShieldIcon />} title="Security" subtitle="Change your password to keep your account secure.">
+          <form onSubmit={handleChangePassword} className="max-w-xl space-y-4">
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-[var(--text-primary)]">Current Password</label>
+              <div className="relative">
+                <input type={pwInputType} value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className="app-input w-full rounded-lg border px-4 py-2.5 pr-11" placeholder="Current password" autoComplete="current-password" required />
+                <button type="button" onClick={() => setShowPw((prev) => !prev)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] transition hover:text-[var(--text-primary)]" aria-label={showPw ? 'Hide passwords' : 'Show passwords'}>
+                  <EyeIcon on={showPw} />
                 </button>
               </div>
-            ) : (
-              <form onSubmit={handleCloseAccount} className="mt-4 space-y-4">
-                <p className="text-sm text-[var(--text-muted)]">
-                  Verify this is you, then type <span className="font-mono font-semibold text-[var(--danger)]">DELETE</span> to permanently close this account.
-                </p>
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium text-[var(--text-primary)]">Password</label>
-                  <input
-                    type="password"
-                    value={closePw}
-                    onChange={(e) => setClosePw(e.target.value)}
-                    className="app-input w-full rounded-lg border px-4 py-2.5"
-                    placeholder="Your password"
-                    autoComplete="current-password"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium text-[var(--text-primary)]">Type DELETE</label>
-                  <input
-                    type="text"
-                    value={closeConfirmText}
-                    onChange={(e) => setCloseConfirmText(e.target.value)}
-                    className="app-input w-full rounded-lg border px-4 py-2.5"
-                    placeholder="DELETE"
-                    required
-                  />
-                </div>
-                {closeMessage && <p className="text-sm text-[var(--danger)]">{closeMessage}</p>}
-                <div className="flex gap-3">
-                  <button
-                    type="button"
-                    onClick={handleCancelClose}
-                    disabled={closing}
-                    className="app-btn-secondary flex-1 rounded-xl border px-4 py-2.5 text-sm font-medium transition disabled:opacity-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={closing || closeConfirmText.trim() !== 'DELETE' || !closePw}
-                    className="flex-1 rounded-xl bg-[var(--danger)] px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {closing ? 'Closing…' : 'Close account'}
-                  </button>
-                </div>
-              </form>
-            )}
-          </section>
-        </div>
-      </div>
+            </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-[var(--text-primary)]">New Password</label>
+              <input type={pwInputType} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="app-input w-full rounded-lg border px-4 py-2.5" placeholder="New password" autoComplete="new-password" required />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-[var(--text-primary)]">Confirm New Password</label>
+              <input type={pwInputType} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="app-input w-full rounded-lg border px-4 py-2.5" placeholder="Repeat new password" autoComplete="new-password" required />
+            </div>
+            {pwMessage && <p className={`text-sm ${pwMessageType === 'error' ? 'text-[var(--danger)]' : 'text-[var(--success)]'}`}>{pwMessage}</p>}
+            <button type="submit" disabled={pwSaving} className="app-btn-primary w-full rounded-xl px-6 py-2.5 text-sm font-semibold transition disabled:opacity-50">
+              {pwSaving ? 'Updating…' : 'Update Password'}
+            </button>
+          </form>
+        </SectionCard>
+      )}
+
+      {/* Tab: Shop */}
+      {activeTab === 'shop' && (
+        <SectionCard icon={<ShopIcon />} title={isSuperAdmin ? 'Platform Scope' : 'Shop Information'} subtitle={isSuperAdmin ? 'Platform-wide access details.' : 'Your shop profile and contact details.'}>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {shopFields.map((field) => (
+              <div key={field.label} className="app-panel-soft rounded-xl border px-4 py-3">
+                <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">{field.label}</p>
+                <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">{field.value}</p>
+              </div>
+            ))}
+          </div>
+        </SectionCard>
+      )}
+
+      {/* Tab: Danger Zone */}
+      {activeTab === 'danger' && (
+        <SectionCard
+          icon={<TrashIcon />}
+          title="Close Account"
+          subtitle="Permanently delete your profile and associated data."
+          accent="danger"
+        >
+          {closeStep === 'confirm' ? (
+            <div>
+              <p className="text-sm text-[var(--text-muted)]">
+                Closing your account permanently deletes this profile
+                {isSuperAdmin ? ' and revokes platform access' : profile?.shop ? ' and, if you are the only user, the shop and all its data' : ''}.
+                This cannot be undone.
+              </p>
+              <button type="button" onClick={handleStartClose} className="mt-4 w-full rounded-xl border border-[var(--danger-border)] bg-[var(--danger-soft)] px-4 py-2.5 text-sm font-semibold text-[var(--danger)] transition hover:bg-[var(--danger)] hover:text-white">
+                Close account…
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleCloseAccount} className="space-y-4">
+              <p className="text-sm text-[var(--text-muted)]">
+                Verify this is you, then type <span className="font-mono font-semibold text-[var(--danger)]">DELETE</span> to permanently close this account.
+              </p>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-[var(--text-primary)]">Password</label>
+                <input type="password" value={closePw} onChange={(e) => setClosePw(e.target.value)} className="app-input w-full rounded-lg border px-4 py-2.5" placeholder="Your password" autoComplete="current-password" required />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-[var(--text-primary)]">Type DELETE</label>
+                <input type="text" value={closeConfirmText} onChange={(e) => setCloseConfirmText(e.target.value)} className="app-input w-full rounded-lg border px-4 py-2.5" placeholder="DELETE" required />
+              </div>
+              {closeMessage && <p className="text-sm text-[var(--danger)]">{closeMessage}</p>}
+              <div className="flex gap-3">
+                <button type="button" onClick={handleCancelClose} disabled={closing} className="app-btn-secondary flex-1 rounded-xl border px-4 py-2.5 text-sm font-medium transition disabled:opacity-50">
+                  Cancel
+                </button>
+                <button type="submit" disabled={closing || closeConfirmText.trim() !== 'DELETE' || !closePw} className="flex-1 rounded-xl bg-[var(--danger)] px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50">
+                  {closing ? 'Closing…' : 'Close account'}
+                </button>
+              </div>
+            </form>
+          )}
+        </SectionCard>
+      )}
     </div>
   );
 }
